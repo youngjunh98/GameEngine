@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{B319D776-FF1F-435A-8C93-C77DF2D898C6}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Engine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Builds\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Builds\Intermediates\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Builds\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Builds\Intermediates\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Builds\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Builds\Intermediates\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Builds\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Builds\Intermediates\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;RI_D3D11;IMPORT_PLATFORM;IMPORT_RI</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Library\PhysX 4.1\pxshared\include;$(SolutionDir)Library\PhysX 4.1\physx\include;$(SolutionDir)Library\FBX SDK 2019.0\include;$(ProjectDir);$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)Library\PhysX 4.1\physx\bin\win.x86_32.vc141.md\$(Configuration);$(SolutionDir)Library\FBX SDK 2019.0\lib\vs2015\$(PlatformShortName)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;PhysX_static_32.lib;PhysXCommon_static_32.lib;PhysXExtensions_static_32.lib;PhysXFoundation_static_32.lib;PhysXPvdSDK_static_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;RI_D3D11;IMPORT_PLATFORM;IMPORT_RI</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Library\json-3.7.3\;$(ProjectDir)Core\Editor\ImGui\;$(SolutionDir)Library\stb-master\;$(SolutionDir)Library\PhysX 4.1\pxshared\include\;$(SolutionDir)Library\PhysX 4.1\physx\include\;$(SolutionDir)Library\FBX SDK 2019.0\include\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)Binaries\$(Configuration)\;$(SolutionDir)Library\PhysX 4.1\physx\bin\win.x86_64.vc141.md\$(Configuration);$(SolutionDir)Library\FBX SDK 2019.0\lib\vs2015\$(PlatformShortName)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;PhysX_static_64.lib;PhysXCommon_static_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_static_64.lib;PhysXPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;RI_D3D11;IMPORT_PLATFORM;IMPORT_RI</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Library\PhysX 4.1\pxshared\include;$(SolutionDir)Library\PhysX 4.1\physx\include;$(SolutionDir)Library\FBX SDK 2019.0\include;$(ProjectDir);$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)Library\PhysX 4.1\physx\bin\win.x86_32.vc141.md\$(Configuration);$(SolutionDir)Library\FBX SDK 2019.0\lib\vs2015\$(PlatformShortName)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;PhysX_static_32.lib;PhysXCommon_static_32.lib;PhysXExtensions_static_32.lib;PhysXFoundation_static_32.lib;PhysXPvdSDK_static_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;RI_D3D11;IMPORT_PLATFORM;IMPORT_RI</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Library\json-3.7.3\;$(ProjectDir)Core\Editor\ImGui\;$(SolutionDir)Library\stb-master\;$(SolutionDir)Library\PhysX 4.1\pxshared\include\;$(SolutionDir)Library\PhysX 4.1\physx\include\;$(SolutionDir)Library\FBX SDK 2019.0\include\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)Binaries\$(Configuration)\;$(SolutionDir)Library\PhysX 4.1\physx\bin\win.x86_64.vc141.md\$(Configuration);$(SolutionDir)Library\FBX SDK 2019.0\lib\vs2015\$(PlatformShortName)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libfbxsdk-md.lib;PhysX_static_64.lib;PhysXCommon_static_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_static_64.lib;PhysXPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\Application\Application.cpp" />
+    <ClCompile Include="Core\Asset\3D\FBXImporter.cpp" />
+    <ClCompile Include="Core\Asset\3D\FBXMemoryReadStream.cpp" />
+    <ClCompile Include="Core\Asset\3D\OBJImporter.cpp" />
+    <ClCompile Include="Core\Asset\AssetImporter.cpp" />
+    <ClCompile Include="Core\Asset\Image\StbImage.cpp" />
+    <ClCompile Include="Core\Asset\Image\StbImageImporter.cpp" />
+    <ClCompile Include="Core\Asset\Sound\WaveImporter.cpp" />
+    <ClCompile Include="Core\Component\Camera.cpp" />
+    <ClCompile Include="Core\Component\Component.cpp" />
+    <ClCompile Include="Core\Component\Rendering\Light.cpp" />
+    <ClCompile Include="Core\Component\Rendering\MeshRenderer.cpp" />
+    <ClCompile Include="Core\Component\Rendering\Renderer.cpp" />
+    <ClCompile Include="Core\Component\Transform.cpp" />
+    <ClCompile Include="Core\CoreGlobals.cpp" />
+    <ClCompile Include="Core\Engine.cpp" />
+    <ClCompile Include="Core\GameObject.cpp" />
+    <ClCompile Include="Core\Input\Input.cpp" />
+    <ClCompile Include="Core\Component\Physics\BoxCollider.cpp" />
+    <ClCompile Include="Core\Component\Physics\Collider.cpp" />
+    <ClCompile Include="Core\Math\AABB.cpp" />
+    <ClCompile Include="Core\Math\Plane.cpp" />
+    <ClCompile Include="Modular\WindowsImportDLL.cpp" />
+    <ClCompile Include="Core\Physics\Physics.cpp" />
+    <ClCompile Include="Core\Component\Physics\Rigidbody.cpp" />
+    <ClCompile Include="Core\Component\Physics\SphereCollider.cpp" />
+    <ClCompile Include="Core\Physics\PhysicsEventListener.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\Line\DefaultLineRenderPipeline.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\Line\DefaultRenderLinePass.cpp" />
+    <ClCompile Include="Core\Rendering\Material.cpp" />
+    <ClCompile Include="Core\Math\Math.cpp" />
+    <ClCompile Include="Core\Math\Matrix4x4.cpp" />
+    <ClCompile Include="Core\Math\Quaternion.cpp" />
+    <ClCompile Include="Core\Math\Vector2.cpp" />
+    <ClCompile Include="Core\Math\Vector3.cpp" />
+    <ClCompile Include="Core\Math\Vector4.cpp" />
+    <ClCompile Include="Core\Rendering\Mesh.cpp" />
+    <ClCompile Include="Core\Object.cpp" />
+    <ClCompile Include="Core\Asset\AssetManager.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\Forward\DefaultRenderMeshPass.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\Forward\DefaultShadowPass.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\Forward\DefaultForwardRenderPipeline.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\RenderPass.cpp" />
+    <ClCompile Include="Core\Rendering\Pipeline\RenderPipeline.cpp" />
+    <ClCompile Include="Core\Rendering\Texture2D.cpp" />
+    <ClCompile Include="Core\Rendering\GlobalRenderer.cpp" />
+    <ClCompile Include="Core\Rendering\TextureCube.cpp" />
+    <ClCompile Include="Core\Editor\Editor.cpp" />
+    <ClCompile Include="Core\JSON\JsonSerializer.cpp" />
+    <ClCompile Include="Modular\ModuleManager.cpp" />
+    <ClCompile Include="Platform\Windows\WinMain.cpp" />
+    <ClCompile Include="Core\Screen.cpp" />
+    <ClCompile Include="Core\Rendering\Shader.cpp" />
+    <ClCompile Include="Core\Rendering\Texture.cpp" />
+    <ClCompile Include="Core\Sound\Sound.cpp" />
+    <ClCompile Include="Core\Sound\SoundClip.cpp" />
+    <ClCompile Include="Core\Time\Timer.cpp" />
+    <ClCompile Include="Core\Scene\Scene.cpp" />
+    <ClCompile Include="Core\Scene\SceneManager.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\examples\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\examples\imgui_impl_win32.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\imgui.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Core\Editor\ImGui\misc\cpp\imgui_stdlib.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\Application\Application.h" />
+    <ClInclude Include="Core\Asset\3D\FBXImporter.h" />
+    <ClInclude Include="Core\Asset\3D\FBXMemoryReadStream.h" />
+    <ClInclude Include="Core\Asset\3D\OBJImporter.h" />
+    <ClInclude Include="Core\Asset\Image\StbImage.h" />
+    <ClInclude Include="Core\Asset\Image\StbImageImporter.h" />
+    <ClInclude Include="Core\Asset\Sound\WaveImporter.h" />
+    <ClInclude Include="Core\Component\Physics\BoxCollider.h" />
+    <ClInclude Include="Core\Component\Physics\Collider.h" />
+    <ClInclude Include="Core\Component\Physics\Rigidbody.h" />
+    <ClInclude Include="Core\Component\Physics\SphereCollider.h" />
+    <ClInclude Include="Core\Component\Rendering\Light.h" />
+    <ClInclude Include="Core\Math\AABB.h" />
+    <ClInclude Include="Core\Math\Plane.h" />
+    <ClInclude Include="Core\Physics\PhysX.h" />
+    <ClInclude Include="Core\Physics\PhysicsEventListener.h" />
+    <ClInclude Include="Core\Asset\AssetImporter.h" />
+    <ClInclude Include="Core\Component\Camera.h" />
+    <ClInclude Include="Core\Component\Component.h" />
+    <ClInclude Include="Core\Component\Rendering\MeshRenderer.h" />
+    <ClInclude Include="Core\Component\Rendering\Renderer.h" />
+    <ClInclude Include="Core\Component\Transform.h" />
+    <ClInclude Include="Core\CoreForward.h" />
+    <ClInclude Include="Core\CoreGlobals.h" />
+    <ClInclude Include="Core\CoreMinimal.h" />
+    <ClInclude Include="Core\CoreType.h" />
+    <ClInclude Include="Core\Engine.h" />
+    <ClInclude Include="Core\GameObject.h" />
+    <ClInclude Include="Core\Input\Input.h" />
+    <ClInclude Include="Core\Input\InputEnum.h" />
+    <ClInclude Include="Core\Physics\Physics.h" />
+    <ClInclude Include="Core\Rendering\GlobalRendererSettings.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\Forward\DefaultRenderMeshPass.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\Forward\DefaultShadowPass.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\Forward\DefaultForwardRenderPipeline.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\Line\DefaultLineRenderPipeline.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\Line\DefaultRenderLinePass.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\RenderPass.h" />
+    <ClInclude Include="Core\Rendering\Pipeline\RenderPipeline.h" />
+    <ClInclude Include="Core\Rendering\TextureCube.h" />
+    <ClInclude Include="Core\Rendering\Vertex.h" />
+    <ClInclude Include="Core\Rendering\Material.h" />
+    <ClInclude Include="Core\Math\Math.h" />
+    <ClInclude Include="Core\Math\Matrix4x4.h" />
+    <ClInclude Include="Core\Math\Quaternion.h" />
+    <ClInclude Include="Core\Math\Vector2.h" />
+    <ClInclude Include="Core\Math\Vector3.h" />
+    <ClInclude Include="Core\Math\Vector4.h" />
+    <ClInclude Include="Core\Rendering\Mesh.h" />
+    <ClInclude Include="Core\Object.h" />
+    <ClInclude Include="Core\Rendering\GlobalRenderer.h" />
+    <ClInclude Include="Core\Asset\AssetManager.h" />
+    <ClInclude Include="Core\Screen.h" />
+    <ClInclude Include="Core\Rendering\Shader.h" />
+    <ClInclude Include="Core\Rendering\Texture.h" />
+    <ClInclude Include="Core\Rendering\Texture2D.h" />
+    <ClInclude Include="Core\Sound\Sound.h" />
+    <ClInclude Include="Core\Time\Timer.h" />
+    <ClInclude Include="Core\Scene\Scene.h" />
+    <ClInclude Include="Core\Scene\SceneManager.h" />
+    <ClInclude Include="Core\Sound\SoundClip.h" />
+    <ClInclude Include="Core\Editor\Editor.h" />
+    <ClInclude Include="Core\Editor\ImGui\examples\imgui_impl_dx11.h" />
+    <ClInclude Include="Core\Editor\ImGui\examples\imgui_impl_win32.h" />
+    <ClInclude Include="Core\Editor\ImGui\imconfig.h" />
+    <ClInclude Include="Core\Editor\ImGui\imgui.h" />
+    <ClInclude Include="Core\Editor\ImGui\imgui_internal.h" />
+    <ClInclude Include="Core\Editor\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="Core\Editor\ImGui\imstb_textedit.h" />
+    <ClInclude Include="Core\Editor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="Core\Editor\ImGui\misc\cpp\imgui_stdlib.h" />
+    <ClInclude Include="Core\JSON\JsonSerializer.h" />
+    <ClInclude Include="Modular\ModuleBase.h" />
+    <ClInclude Include="Modular\ModuleManager.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
