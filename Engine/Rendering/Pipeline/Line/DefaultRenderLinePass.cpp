@@ -10,6 +10,13 @@
 
 namespace GameEngine
 {
+	void DefaultRenderLinePass::Release ()
+	{
+		m_rsLineCullNone = nullptr;
+		m_depthLessStencilAlways = nullptr;
+		m_whiteMaterial = nullptr;
+	}
+
 	void DefaultRenderLinePass::PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
 	{
 		if (m_rsLineCullNone.get () == nullptr)

@@ -27,6 +27,8 @@ namespace GameEngine
 		RenderPipeline () {}
 		virtual ~RenderPipeline () = 0 {};
 
+		virtual void Release () = 0;
+
 		virtual void Start (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*>& lights) = 0;
 		virtual void End () = 0;
 

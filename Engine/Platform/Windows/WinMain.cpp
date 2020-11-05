@@ -1,4 +1,4 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 
 #include "Engine.h"
 #include "Core/Modular/ModuleManager.h"

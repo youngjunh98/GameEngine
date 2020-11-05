@@ -13,6 +13,8 @@ namespace GameEngine
 		RenderPass () {}
 		virtual ~RenderPass () = 0 {}
 
+		virtual void Release () = 0;
+
 		virtual void PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights) = 0;
 		virtual void Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights) = 0;
 		virtual void PostRender () = 0;

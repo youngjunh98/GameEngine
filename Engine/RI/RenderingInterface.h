@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Core/CoreType.h"
+#include "Core/Modular/Module.h"
 #include "RI/RenderingInterfaceEnum.h"
 #include "RI/RenderingInterfaceResource.h"
 #include "RI/RenderingInterfaceMacro.h"

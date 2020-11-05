@@ -16,9 +16,10 @@ namespace GameEngine
 
 	void AssetManager::Shutdown ()
 	{
-		for (const auto& assetInfo : g_assetManager.m_assetInfoMap)
+		for (auto& assetInfo : g_assetManager.m_assetInfoMap)
 		{
 			assetInfo.second.m_asset->Destroy ();
+			assetInfo.second.m_asset = nullptr;
 		}
 
 		g_assetManager.m_assetInfoMap.clear ();

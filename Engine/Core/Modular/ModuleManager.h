@@ -4,17 +4,28 @@
 #include <memory>
 #include <unordered_map>
 
-#include "ModuleBase.h"
+#include "Module.h"
 #include "Core/CoreMacro.h"
 
 namespace GameEngine
 {
 	namespace Modular
 	{
-		class ModuleLink;
+		using ModuleCreateFunction = ModuleBase * (*) ();
 
-		using ModulePointer = void*;
-		using ModuleCreateFunction = ModuleBase* (*) ();
+		ModuleHandle PlatformLoadModule (const std::string& path);
+		bool PlatformUnloadMoudule (ModuleHandle moduleHandle);
+		ModuleCreateFunction PlatformFindModuleFunction (ModuleHandle moduleHandle, const std::string& functionName);
+
+		class ModuleInfo
+		{
+		public:
+			ModuleInfo () : m_module (nullptr), m_handle (nullptr) {}
+			~ModuleInfo () {}
+
+			std::unique_ptr<ModuleBase> m_module;
+			ModuleHandle m_handle;
+		};
 
 		class ModuleManager
 		{
@@ -33,40 +44,10 @@ namespace GameEngine
 
 		private:
 			using ModuleLinkMap = std::unordered_map<std::string, ModuleLink*>;
-			using ModuleMap = std::unordered_map<std::string, std::unique_ptr<ModuleBase>>;
+			using ModuleInfoMap = std::unordered_map<std::string, std::unique_ptr<ModuleInfo>>;
 
 			ModuleLinkMap m_staticModuleLinkMap;
-			ModuleMap m_moduleMap;
+			ModuleInfoMap m_moduleInfoMap;
 		};
-
-		class ModuleLink
-		{
-		public:
-			ModuleLink (const std::string& name, const std::string& path) :
-				m_name (name),
-				m_path (path)
-			{
-				auto& manager = ModuleManager::GetSingleton ();
-				manager.RegisterModule (name, this);
-			}
-
-			~ModuleLink ()
-			{}
-
-			std::string m_name;
-			std::string m_path;
-		};
-
-		ModulePointer PlatformImportModule (const std::string& path);
-		ModuleCreateFunction PlatformFindModuleFunction (void* moduleHandle, const std::string& functionName);
 	}
 }
-
-#define LINK_MODULE(NAME, PATH, MODULE_CLASS)\
-extern "C" EXPORT_MODULE ::GameEngine::Modular::ModuleBase* CreateModuleFunction##NAME ()\
-{\
-	return new MODULE_CLASS ();\
-}\
-\
-GameEngine::Modular::ModuleLink ModuleLink##NAME (#NAME, #PATH);
-

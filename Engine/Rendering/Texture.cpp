@@ -17,6 +17,18 @@ namespace GameEngine
 	void Texture::Destroy ()
 	{
 		Object::Destroy ();
+
+		m_width = 0;
+		m_height = 0;
+		m_mipMapCount = 0;
+		m_format = ERenderingResourceFormat::None;
+
+		m_filterMode = EFilterMode::Point;
+		m_anisotropicLevel = 1;
+		m_addressMode = EAddressMode::Wrap;
+
+		m_srv = nullptr;
+		m_sampler = nullptr;
 	}
 
 	uint32 Texture::GetWidth () const

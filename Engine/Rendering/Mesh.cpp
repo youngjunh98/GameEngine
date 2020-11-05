@@ -6,6 +6,17 @@ namespace GameEngine
 	void Mesh::Destroy ()
 	{
 		Object::Destroy ();
+
+		for (SubMesh& subMesh : m_subMeshList)
+		{
+			subMesh.m_vertices.clear ();
+			subMesh.m_indices.clear ();
+
+			subMesh.m_vertexBufferResource = nullptr;
+			subMesh.m_indexBufferResource = nullptr;
+		}
+
+		m_subMeshList.clear ();
 	}
 
 	uint32 Mesh::GetSubMeshCount () const

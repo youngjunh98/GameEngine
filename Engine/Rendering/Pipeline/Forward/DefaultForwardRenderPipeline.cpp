@@ -3,6 +3,12 @@
 
 namespace GameEngine
 {
+	void DefaultForwardRenderPipeline::Release ()
+	{
+		m_shadowPass.Release ();
+		m_meshRenderPass.Release ();
+	}
+
 	void DefaultForwardRenderPipeline::Start (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*>& lights)
 	{
 		m_shadowPass.PreRender (cameras, renderers, lights);

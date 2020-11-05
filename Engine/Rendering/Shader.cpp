@@ -49,6 +49,23 @@ namespace GameEngine
 	void Shader::Destroy ()
 	{
 		Object::Destroy ();
+
+		m_inputLayout = nullptr;
+
+		m_vertexShader = nullptr;
+		m_vertexShaderParameterBuffer = nullptr;
+
+		m_pixelShader = nullptr;
+		m_pixelShaderParameterBuffer = nullptr;
+
+		m_hullShader = nullptr;
+		m_hullShaderParameterBuffer = nullptr;
+
+		m_domainShader = nullptr;
+		m_domainShaderParameterBuffer = nullptr;
+
+		m_geometryShader = nullptr;
+		m_geometryShaderParameterBuffer = nullptr;
 	}
 
 	bool Shader::IsShaderStageExist (EShaderStage stage) const

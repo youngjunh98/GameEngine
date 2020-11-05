@@ -14,6 +14,8 @@ namespace GameEngine
 	void TextureCube::Destroy ()
 	{
 		Texture::Destroy ();
+
+		m_textureCube = nullptr;
 	}
 
 	ETextureDimension TextureCube::Dimension () const

@@ -81,6 +81,14 @@ namespace GameEngine
 
 	void Editor::Shutdown ()
 	{
+		m_gameRenderBuffer = nullptr;
+		m_gameRenderTarget = nullptr;
+		m_gameRenderTexture = nullptr;
+
+		m_gameDepthStencilBuffer = nullptr;
+		m_gameDepthStencil = nullptr;
+		m_gameDepthStencilTexture = nullptr;
+
 		// Cleanup
 		ImGui_ImplDX11_Shutdown ();
 		ImGui_ImplWin32_Shutdown ();

@@ -9,6 +9,10 @@
 
 namespace GameEngine
 {
+	void DefaultShadowPass::Release ()
+	{
+	}
+
 	void DefaultShadowPass::PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
 	{
 		g_renderer.ResetLightData ();

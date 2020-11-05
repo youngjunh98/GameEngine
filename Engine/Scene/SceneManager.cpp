@@ -78,9 +78,12 @@ namespace GameEngine
 
 	void SceneManager::UnloadScene ()
 	{
-		m_scene->OnUnload ();
+		if (m_scene != nullptr)
+		{
+			m_scene->OnUnload ();
+			m_scene = nullptr;
+		}
 
-		m_scene = nullptr;
 		m_scenePath = L"";
 	}
 

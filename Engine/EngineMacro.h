@@ -1,4 +1,4 @@
-#include "Core/Modular/ModuleBase.h"
+#include "Core/Modular/ModuleMacro.h"
 
 #if defined(EXPORT_ENGINE)
 	#define ENGINE_API EXPORT_MODULE

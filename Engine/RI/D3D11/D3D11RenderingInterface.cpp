@@ -2,7 +2,6 @@
 #include "RI/D3D11/D3D11RenderingInterfaceResource.h"
 #include "RI/D3D11/D3D11RenderingInterfaceEnum.h"
 #include "Platform/Platform.h"
-#include "Core/Modular/ModuleManager.h"
 
 LINK_MODULE (D3D11RI, Engine_RI.dll, GameEngine::D3D11RenderingInterface)
 
@@ -13,7 +12,6 @@ namespace GameEngine
 	bool D3D11RenderingInterface::Initialize (uint32 swapChainWidth, uint32 swapChainHeight, bool bFullScreen, bool bVSync, uint32 refreshRate, uint32 msaaSampleCount)
 	{
 		// Create Direct3D 11 device and context.
-
 		const D3D_FEATURE_LEVEL targetFeatureLevels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 		const UINT targetFeatureLevelsCount = 2;
 		UINT deviceFlags = 0;
@@ -39,7 +37,6 @@ namespace GameEngine
 		//dxgiOutput->GetDisplayModeList (DXGI_FORMAT_R8G8B8A8_UNORM, 0, &displayModeCount, displayModeList);
 
 		// Create swap chain.
-
 		Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
 		m_device.As (&dxgiDevice);
 
@@ -78,9 +75,12 @@ namespace GameEngine
 	{
 		RenderingInterface::Shutdown ();
 
+		m_swapChainBuffer = nullptr;
 		m_swapChain->SetFullscreenState (false, nullptr);
 		m_swapChain.Reset ();
 
+		m_immediateContext->Flush ();
+		m_immediateContext->ClearState ();
 		m_immediateContext.Reset ();
 		m_device.Reset ();
 	}

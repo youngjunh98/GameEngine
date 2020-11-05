@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "ModuleManager.h"
 
 namespace GameEngine
@@ -6,7 +8,7 @@ namespace GameEngine
 	{
 		ModuleManager::ModuleManager () :
 			m_staticModuleLinkMap (),
-			m_moduleMap ()
+			m_moduleInfoMap ()
 		{
 		}
 
@@ -23,27 +25,27 @@ namespace GameEngine
 
 		ModuleBase* ModuleManager::FindModule (const std::string& moduleName)
 		{
-			auto& moduleMap = ModuleManager::GetSingleton ().m_moduleMap;
-			auto moduleIter = moduleMap.find (moduleName);
+			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_moduleInfoMap;
+			auto moduleInfoIter = moduleInfoMap.find (moduleName);
 
-			if (moduleIter == moduleMap.end ())
+			if (moduleInfoIter == moduleInfoMap.end ())
 			{
 				return nullptr;
 			}
 
-			return moduleIter->second.get ();
+			return moduleInfoIter->second->m_module.get ();
 		}
 
 		ModuleBase* ModuleManager::LoadModule (const std::string& moduleName)
 		{
-			auto* loadedModule = FindModule (moduleName);
+			ModuleBase* loadedModule = FindModule (moduleName);
 
 			if (loadedModule != nullptr)
 			{
 				return loadedModule;
 			}
 
-			auto& moduleLinkMap = ModuleManager::GetSingleton ().m_staticModuleLinkMap;
+			ModuleLinkMap& moduleLinkMap = ModuleManager::GetSingleton ().m_staticModuleLinkMap;
 			auto moduleLinkIter = moduleLinkMap.find (moduleName);
 
 			if (moduleLinkIter == moduleLinkMap.end ())
@@ -51,15 +53,16 @@ namespace GameEngine
 				return nullptr;
 			}
 
-			auto* moduleLink = moduleLinkIter->second;
-			ModulePointer importedModule = PlatformImportModule (moduleLink->m_path);
+			ModuleLink* moduleLink = moduleLinkIter->second;
+			ModuleHandle loadedModuleHandle = PlatformLoadModule (moduleLink->m_path);
 
-			if (importedModule == nullptr)
+			if (loadedModuleHandle == nullptr)
 			{
 				return nullptr;
 			}
 
-			ModuleCreateFunction createModuleFunction = PlatformFindModuleFunction (importedModule, "CreateModuleFunction" + moduleLink->m_name);
+			std::string createFunctionName = "CreateModuleFunction" + moduleLink->m_name;
+			ModuleCreateFunction createModuleFunction = PlatformFindModuleFunction (loadedModuleHandle, createFunctionName);
 
 			if (createModuleFunction == nullptr)
 			{
@@ -68,23 +71,32 @@ namespace GameEngine
 
 			loadedModule = createModuleFunction ();
 
-			auto& moduleMap = ModuleManager::GetSingleton ().m_moduleMap;
-			moduleMap.emplace (moduleName, loadedModule);
+			auto moduleInfo = std::make_unique<ModuleInfo> ();
+			moduleInfo->m_handle = loadedModuleHandle;
+			moduleInfo->m_module = std::unique_ptr<ModuleBase> (loadedModule);
+
+			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_moduleInfoMap;
+			moduleInfoMap.emplace (moduleName, std::move(moduleInfo));
 
 			return loadedModule;
 		}
 
 		void ModuleManager::UnloadModule (const std::string& moduleName)
 		{
-			auto& moduleMap = ModuleManager::GetSingleton ().m_moduleMap;
-			auto moduleIter = moduleMap.find (moduleName);
+			auto& moduleInfoMap = ModuleManager::GetSingleton ().m_moduleInfoMap;
+			auto moduleInfoIter = moduleInfoMap.find (moduleName);
 
-			if (moduleIter == moduleMap.end ())
+			if (moduleInfoIter == moduleInfoMap.end ())
 			{
 				return;
 			}
 
-			moduleMap.erase (moduleIter);
+			ModuleHandle moduleHandle = moduleInfoIter->second->m_handle;
+
+			if (PlatformUnloadMoudule (moduleHandle))
+			{
+				moduleInfoMap.erase (moduleInfoIter);
+			}	
 		}
 
 		void ModuleManager::RegisterModule (const std::string& moduleName, ModuleLink* moduleLink)

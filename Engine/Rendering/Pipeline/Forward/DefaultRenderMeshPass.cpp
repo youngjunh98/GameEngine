@@ -8,6 +8,12 @@
 
 namespace GameEngine
 {
+	void DefaultRenderMeshPass::Release ()
+	{
+		m_rasterizerCullBack = nullptr;
+		m_depthLessStencilAlways = nullptr;
+	}
+
 	void DefaultRenderMeshPass::PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
 	{
 		if (m_rasterizerCullBack.get () == nullptr)

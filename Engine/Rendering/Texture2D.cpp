@@ -16,6 +16,8 @@ namespace GameEngine
 	void Texture2D::Destroy ()
 	{
 		Texture::Destroy ();
+
+		m_texture2D = nullptr;
 	}
 
 	ETextureDimension Texture2D::Dimension () const

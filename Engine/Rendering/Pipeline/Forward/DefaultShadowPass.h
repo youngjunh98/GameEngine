@@ -12,6 +12,8 @@ namespace GameEngine
 		DefaultShadowPass () {}
 		virtual ~DefaultShadowPass () {}
 
+		virtual void Release () override;
+
 		virtual void PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights) override;
 		virtual void Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights) override;
 		virtual void PostRender () override;

@@ -11,6 +11,8 @@ namespace GameEngine
 		DefaultLineRenderPipeline () {}
 		virtual ~DefaultLineRenderPipeline () {}
 
+		virtual void Release () override;
+
 		void Start (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*>& lights) override;
 		void End () override;
 

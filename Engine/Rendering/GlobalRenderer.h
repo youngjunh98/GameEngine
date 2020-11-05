@@ -85,7 +85,7 @@ namespace GameEngine
 
 		void BindMaterial (Material* material);
 
-		void BindGlobalShaderConstantBuffer (const std::string& name);
+		void BindGlobalShaderConstantBuffer (Shader* shader, const std::string& name);
 		void SetGlobalShaderConstantBuffer (const std::string& name, const void* bufferData);
 
 		void DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer);

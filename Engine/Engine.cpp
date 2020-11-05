@@ -1,5 +1,4 @@
 ﻿#include "Engine.h"
-#include "Screen.h"
 #include "Platform/Platform.h"
 #include "Sound/Sound.h"
 #include "Asset/AssetImporter.h"
@@ -7,8 +6,7 @@
 #include "Rendering/GlobalRenderer.h"
 #include "Scene/SceneManager.h"
 #include "Asset/AssetManager.h"
-#include "Physics\Physics.h"
-#include "Core/Modular/ModuleManager.h"
+#include "Physics/Physics.h"
 
 namespace GameEngine
 {
@@ -60,6 +58,7 @@ namespace GameEngine
 		
 		g_physics.Shutdown ();
 		g_renderer.Shutdown ();
+
 		Platform::GetGenericInput ().Shutdown ();
 		Platform::GetGenericApplication ().Shutdown ();
 	}
@@ -71,10 +70,7 @@ namespace GameEngine
 		auto& platformTimer = Platform::GetGenericTimer ();
 
 		AssetImporter::ImportAllAssets ();
-		//g_sceneManager.LoadScene ();
 		platformTimer.Reset (1.0f / 60.0f);
-
-		g_sound.Play (*g_assetManager.FindAsset<SoundClip> (L"Assets/sound/Background Music.wav"));
 
 		while (platformApplication.Update ())
 		{
