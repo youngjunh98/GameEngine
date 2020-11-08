@@ -3,7 +3,7 @@
 namespace GameEngine
 {
 	GenericPlatformFile::GenericPlatformFile () :
-		m_bOpen (false)
+		m_bOpen (false), m_bRead (false), m_bWrite (false)
 	{
 	}
 
@@ -14,5 +14,15 @@ namespace GameEngine
 	bool GenericPlatformFile::IsOpen () const
 	{
 		return m_bOpen;
+	}
+
+	bool GenericPlatformFile::IsRead () const
+	{
+		return m_bOpen && m_bRead;
+	}
+
+	bool GenericPlatformFile::IsWrite () const
+	{
+		return m_bOpen && m_bWrite;
 	}
 }

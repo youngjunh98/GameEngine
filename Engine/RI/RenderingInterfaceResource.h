@@ -168,7 +168,8 @@ namespace GameEngine
 	class RI_Sampler : public RI_Resource
 	{
 	public:
-		RI_Sampler ()
+		RI_Sampler () : m_addressMode (EAddressMode::Wrap),
+			m_filterMode (EFilterMode::Point), m_anisotropicLevel (1)
 		{}
 		virtual ~RI_Sampler ()
 		{}
@@ -210,7 +211,7 @@ namespace GameEngine
 	class RI_Texture2D : public RI_Texture
 	{
 	public:
-		RI_Texture2D ()
+		RI_Texture2D () : m_bTextureCube (false)
 		{}
 		virtual ~RI_Texture2D ()
 		{}

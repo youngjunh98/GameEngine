@@ -9,8 +9,8 @@ namespace GameEngine
 	class PhysicsEventListener : public physx::PxSimulationEventCallback
 	{
 	public:
-		PhysicsEventListener () {}
-		virtual ~PhysicsEventListener () {}
+		PhysicsEventListener ();
+		virtual ~PhysicsEventListener ();
 
 		// Override PxSimulationEventCallback
 		virtual void onConstraintBreak (physx::PxConstraintInfo* constraints, physx::PxU32 count) override;

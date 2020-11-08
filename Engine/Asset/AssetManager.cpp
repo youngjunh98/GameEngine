@@ -1,6 +1,6 @@
 #include "Asset/AssetManager.h"
-#include "Platform/Platform.h"
 #include "Core/JSON/JsonSerializer.h"
+#include "Core/File/File.h"
 
 namespace GameEngine
 {
@@ -86,8 +86,7 @@ namespace GameEngine
 			return;
 		}
 
-		PlatformFile file;
-		file.Open (path, false, true);
+		File file (path, EFileAccessMode::Write);
 
 		if (file.IsOpen ())
 		{

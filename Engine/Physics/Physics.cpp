@@ -30,6 +30,15 @@ namespace GameEngine
 		return physx::PxFilterFlag::eDEFAULT;
 	}
 
+	Physics::Physics () : m_physxFoundation (nullptr), m_physxPhysics (nullptr),
+		m_physxCpuDispatcher (nullptr), m_physxScene (nullptr), m_physxDefaultMaterial (nullptr)
+	{
+	}
+
+	Physics::~Physics ()
+	{
+	}
+
 	bool Physics::Init ()
 	{
 		m_physxFoundation = PxCreateFoundation (PX_PHYSICS_VERSION, g_physxAllocatorCallback, g_physxErrorCallback);

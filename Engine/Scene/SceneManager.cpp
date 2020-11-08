@@ -1,5 +1,5 @@
 #include "Scene/SceneManager.h"
-#include "Platform/Platform.h"
+#include "Core/File/File.h"
 
 namespace GameEngine
 {
@@ -35,8 +35,7 @@ namespace GameEngine
 
 	void SceneManager::SaveScene ()
 	{
-		PlatformFile file;
-		file.Open (m_scenePath, false, true);
+		File file (m_scenePath, EFileAccessMode::Write);
 
 		if (file.IsOpen () == false)
 		{
@@ -89,8 +88,7 @@ namespace GameEngine
 
 	void SceneManager::CreateEmptyScene (const std::wstring& path)
 	{
-		PlatformFile file;
-		file.Open (path, false, true);
+		File file (m_scenePath, EFileAccessMode::Write);
 
 		if (file.IsOpen () == false)
 		{

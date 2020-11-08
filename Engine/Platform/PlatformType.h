@@ -1,5 +1,7 @@
 #pragma once
 
+#include "PlatformMacro.h"
+
 #if defined (PLATFORM_WINDOWS)
 
 namespace GameEngine

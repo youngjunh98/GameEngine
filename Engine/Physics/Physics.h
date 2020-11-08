@@ -12,8 +12,8 @@ namespace GameEngine
 	class Physics
 	{
 	public:
-		Physics () {}
-		virtual ~Physics () {}
+		Physics ();
+		virtual ~Physics ();
 
 		bool Init ();
 		void Shutdown ();

@@ -50,9 +50,9 @@ namespace GameEngine
 			return 0;
 		}
 
-		// Àç»ý ÄÚµå
+		// ìž¬ìƒ ì½”ë“œ
 		UINT framesPerSec = bufferFrameCount / waveFormat->nSamplesPerSec;
-		REFERENCE_TIME hnsActualDuration = REFTIMES_PER_SEC * static_cast<double> (framesPerSec);
+		REFERENCE_TIME hnsActualDuration = REFTIMES_PER_SEC * static_cast<REFERENCE_TIME> (framesPerSec);
 
 		while (true)
 		{
@@ -72,8 +72,9 @@ namespace GameEngine
 				return 0;
 			}
 
-			// ¹Í½º ÄÚµå
-			std::memset (audioData, 0, waveFormat->nBlockAlign * numFramesAvailable);
+			// ë¯¹ìŠ¤ ì½”ë“œ
+			UINT initBytes = static_cast<UINT> (waveFormat->nBlockAlign) * numFramesAvailable;
+			std::memset (audioData, 0, initBytes);
 
 			EnterCriticalSection (&cs);
 
@@ -144,12 +145,15 @@ namespace GameEngine
 		{
 			return 0;
 		}
+		
+		return 0;
 	}
 
 	Sound::Sound () :
 		m_mixSampleCount (0),
 		m_channelCount (0),
-		m_sampleRate (0.0f)
+		m_sampleRate (0.0f),
+		m_bPlay (false)
 	{
 	}
 
@@ -159,7 +163,7 @@ namespace GameEngine
 
 	bool Sound::Initialize (int32 mixSampleCount, int32 channelCount, float sampleRate)
 	{
-		// ½ÃÀÛ ÄÚµå
+		// ì‹œìž‘ ì½”ë“œ
 		if (FAILED (CoCreateInstance (__uuidof (MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof (IMMDeviceEnumerator), reinterpret_cast<void**> (deviceEnumerator.ReleaseAndGetAddressOf ()))))
 		{
 			return false;
@@ -235,7 +239,7 @@ namespace GameEngine
 
 		DeleteCriticalSection (&cs);
 
-		// Á¾·á ÄÚµå
+		// ì¢…ë£Œ ì½”ë“œ
 		CoTaskMemFree (waveFormat);
 		waveFormat = nullptr;
 

@@ -2,6 +2,14 @@
 
 namespace GameEngine
 {
+	Component::Component () : m_gameObject (nullptr)
+	{
+	}
+
+	Component::~Component ()
+	{
+	}
+
 	void Component::Destroy ()
 	{
 		Object::Destroy ();

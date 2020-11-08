@@ -15,10 +15,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/${CMAKE_GENERATO
 add_compile_definitions(UNICODE _UNICODE)
 
 # Game engine macros
-if(BUILD_PLATFORM_WINDOWS)
-    add_compile_definitions(PLATFORM_WINDOWS)
-endif()
-
 if(BUILD_RI_D3D11)
     add_compile_definitions(RI_D3D11)
 endif()

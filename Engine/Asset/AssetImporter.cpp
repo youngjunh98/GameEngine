@@ -10,9 +10,10 @@
 #include "Asset/Sound/WaveImporter.h"
 #include "Asset/AssetManager.h"
 #include "Rendering/Material.h"
-#include "Platform/Platform.h"
 #include "Scene/SceneManager.h"
 #include "Core/Json/JsonSerializer.h"
+#include "Core/File/File.h"
+#include "Core/File/FileSystem.h"
 
 namespace GameEngine
 {
@@ -20,7 +21,6 @@ namespace GameEngine
 	{
 		FBXImporter::Start ();
 
-		auto& fileSystem = Platform::GetGenericFileSystem ();
 		std::wstring currentDirectory;
 		std::stack<std::wstring> directoryStack;
 
@@ -35,13 +35,13 @@ namespace GameEngine
 			{
 				currentDirectory += topDirectory + L"/";
 
-				for (auto& file : fileSystem.GetFileList (currentDirectory))
+				for (auto& file : FileSystem::GetFileList (currentDirectory))
 				{
 					auto path = currentDirectory + file;
 					ImportAsset (path);
 				}
 
-				for (auto& directory : fileSystem.GetDirectoryList (currentDirectory))
+				for (auto& directory : FileSystem::GetDirectoryList (currentDirectory))
 				{
 					directoryStack.push (directory);
 				}
@@ -95,14 +95,13 @@ namespace GameEngine
 		}
 		else if (extension == L"SCENE")
 		{
-			PlatformFile file;
-			file.Open (path, true, false);
-			auto fileSize = file.GetSize ();
+			File file (path, EFileAccessMode::Read);
+			int64 fileSize = file.GetSize ();
 
 			std::string jsonString (fileSize + 1, L'\0');
 			auto* first = const_cast<char*> (jsonString.data ());
 
-			file.ReadAll (first, fileSize);
+			file.ReadAll (first);
 			Json::Json sceneData = Json::Json::parse (jsonString);
 
 			g_sceneManager.RegisterScene (path, sceneData);
@@ -111,14 +110,13 @@ namespace GameEngine
 		}
 		else if (extension == L"MATERIAL")
 		{
-			PlatformFile file;
-			file.Open (path, true, false);
-			auto fileSize = file.GetSize ();
+			File file (path, EFileAccessMode::Read);
+			int64 fileSize = file.GetSize ();
 
 			std::string jsonString (fileSize + 1, L'\0');
 			auto* first = const_cast<char*> (jsonString.data ());
 
-			file.ReadAll (first, fileSize);
+			file.ReadAll (first);
 			Json::Json materialData = Json::Json::parse (jsonString);
 
 			auto material = std::make_shared<Material> ();
@@ -362,22 +360,22 @@ namespace GameEngine
 
 	bool AssetImporter::GetFileDataAndSize (const std::wstring& path, std::unique_ptr<int8[]>& data, int64& size)
 	{
-		PlatformFile file;
+		File file (path, EFileAccessMode::Read);
 
-		if (file.Open (path, true, false) == false)
+		if (file.IsOpen () == false)
 		{
 			return false;
 		}
 
-		size = file.GetSize ();
+		int64 fileSize = file.GetSize ();
 
-		if (size < 0)
+		if (size <= 0)
 		{
 			return false;
 		}
 
 		data = std::make_unique<int8[]> (size);
-		file.ReadAll (data.get (), size);
+		file.ReadAll (data.get ());
 
 		return true;
 	}

@@ -11,7 +11,12 @@ namespace GameEngine
 		WindowsFileSystem ();
 		virtual ~WindowsFileSystem ();
 
-		virtual std::vector<std::wstring> GetDirectoryList (const std::wstring& path) override;
-		virtual std::vector<std::wstring> GetFileList (const std::wstring& path) override;
+		virtual PlatformPathType AppendPath (const PlatformPathType& basePath, const PlatformPathType& pathToAppend) override;
+		
+		virtual bool FileExists (const PlatformPathType& path) override;
+		virtual bool DirectoryExists (const PlatformPathType& path) override;
+
+		virtual std::vector<PlatformPathType> GetFileList (const PlatformPathType& path) override;
+		virtual std::vector<PlatformPathType> GetDirectoryList (const PlatformPathType& path) override;
 	};
 }

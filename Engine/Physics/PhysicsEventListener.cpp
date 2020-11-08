@@ -3,6 +3,14 @@
 
 namespace GameEngine
 {
+	PhysicsEventListener::PhysicsEventListener ()
+	{
+	}
+
+	PhysicsEventListener::~PhysicsEventListener ()
+	{
+	}
+
 	void PhysicsEventListener::onConstraintBreak (physx::PxConstraintInfo* constraints, physx::PxU32 count)
 	{
 	}

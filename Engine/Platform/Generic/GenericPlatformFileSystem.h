@@ -3,8 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "Core/CoreType.h"
 #include "Platform/PlatformMacro.h"
+#include "Platform/Generic/GenericPlatformFile.h"
+#include "Core/CoreType.h"
 
 namespace GameEngine
 {
@@ -14,7 +15,12 @@ namespace GameEngine
 		GenericPlatformFileSystem ();
 		virtual ~GenericPlatformFileSystem () = 0;
 
-		virtual std::vector<std::wstring> GetDirectoryList (const std::wstring& path) = 0;
-		virtual std::vector<std::wstring> GetFileList (const std::wstring& path) = 0;
+		virtual PlatformPathType AppendPath (const PlatformPathType& basePath, const PlatformPathType& pathToAppend) = 0;
+
+		virtual bool FileExists (const PlatformPathType& path) = 0;
+		virtual bool DirectoryExists (const PlatformPathType& path) = 0;
+
+		virtual std::vector<PlatformPathType> GetFileList (const PlatformPathType& path) = 0;
+		virtual std::vector<PlatformPathType> GetDirectoryList (const PlatformPathType& path) = 0;
 	};
 }

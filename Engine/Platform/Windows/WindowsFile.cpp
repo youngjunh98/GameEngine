@@ -2,21 +2,21 @@
 
 namespace GameEngine
 {
-	WindowsFile::WindowsFile ()
+	WindowsFile::WindowsFile () : m_fileHandle (NULL)
 	{
 	}
 
 	WindowsFile::~WindowsFile ()
 	{
-		if (m_file != NULL && m_file != INVALID_HANDLE_VALUE)
+		if (m_fileHandle != NULL && m_fileHandle != INVALID_HANDLE_VALUE)
 		{
-			CloseHandle (m_file);
+			CloseHandle (m_fileHandle);
 		}
 	}
 
-	bool WindowsFile::Open (const std::wstring& path, bool bRead, bool bWrite)
+	bool WindowsFile::Open (const PlatformPathType& path, bool bRead, bool bWrite)
 	{
-		if (IsOpen ())
+		if (IsOpen () || (bRead == false && bWrite == false))
 		{
 			return false;
 		}
@@ -41,21 +41,11 @@ namespace GameEngine
 		DWORD flags = 0;
 		DWORD attributes = FILE_ATTRIBUTE_NORMAL;
 
-		m_file = CreateFile (path.c_str (), accessMode, shareMode, nullptr, creationDisposition, flags | attributes, nullptr);
+		m_fileHandle = CreateFile (path.c_str (), accessMode, shareMode, nullptr, creationDisposition, flags | attributes, nullptr);
 
-		if (m_file == INVALID_HANDLE_VALUE)
+		if (m_fileHandle == INVALID_HANDLE_VALUE)
 		{
-			wchar_t *p_error_message;
-			// GetLastError의 오류 코드 값에 대한 설명을 문자열 형태로 만든다. 
-			// 이 설명은 동적으로 메모리 할당된 메 모리에 저장되며 
-			//그 메모리의 주소는 p_error_message에 저장됩니다.
-			FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER |
-				FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				NULL, GetLastError (), MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-				(LPTSTR) &p_error_message, 0, NULL);
-			std::wstring msg (p_error_message);
-			m_file = nullptr;
-			LocalFree (p_error_message);
+			m_fileHandle = nullptr;
 
 			return false;
 		}
@@ -69,77 +59,115 @@ namespace GameEngine
 
 	void WindowsFile::Close ()
 	{
-		if (IsOpen () == false)
+		if (IsOpen ())
 		{
-			return;
+			if (CloseHandle (m_fileHandle) == TRUE)
+			{
+				m_fileHandle = NULL;
+				m_bOpen = false;
+				m_bRead = false;
+				m_bWrite = false;
+			}
 		}
-
-		CloseHandle (m_file);
-
-		m_file = NULL;
-		m_bOpen = false;
-		m_bRead = false;
-		m_bWrite = false;
 	}
 
-	void WindowsFile::Read (void* buffer, int64 startOffset, int64 readSize)
+	int64 WindowsFile::Read (void* buffer, int64 readSize)
 	{
-		if (IsOpen () == false || m_bRead == false)
-		{
-			return;
-		}
-		
-		LARGE_INTEGER pointer;
-		pointer.QuadPart = startOffset;
+		int64 result = 0;
 
-		if (SetFilePointerEx (m_file, pointer, nullptr, FILE_BEGIN) == FALSE)
+		if (IsRead ())
 		{
-			return;
+			DWORD bytesToRead = static_cast<DWORD> (readSize);
+			DWORD bytesRead;
+
+			if (ReadFile (m_fileHandle, buffer, bytesToRead, &bytesRead, nullptr) == TRUE)
+			{
+				result = static_cast<int64> (bytesRead);
+			}
 		}
 
-		if (ReadFile (m_file, buffer, static_cast<DWORD> (readSize), nullptr, nullptr) == FALSE)
-		{
-			return;
-		}
+		return result;
 	}
 
-	void WindowsFile::ReadAll (void* buffer, int64 bufferSize)
+	int64 WindowsFile::Write (const void* buffer, int64 writeSize)
 	{
-		if (IsOpen () == false || m_bRead == false)
+		int64 result = 0;
+
+		if (IsWrite ())
 		{
-			return;
+			DWORD bytesToWrite = static_cast<DWORD> (writeSize);
+			DWORD bytesWritten;
+
+			if (WriteFile (m_fileHandle, buffer, bytesToWrite, &bytesWritten, nullptr) == TRUE)
+			{
+				result = static_cast<int64> (bytesWritten);
+			}
 		}
 
-		int64 fileSize = GetSize ();
-		int64 maxReadSize = fileSize > bufferSize ? bufferSize : fileSize;
-
-		Read (buffer, 0, maxReadSize);
+		return result;
 	}
-
-	void WindowsFile::Write (const void* buffer, int64 bufferSize)
-	{
-		if (IsOpen () == false || m_bWrite == false)
-		{
-			return;
-		}
-
-		WriteFile (m_file, buffer, bufferSize, nullptr, nullptr);
-	}
-
+	
 	int64 WindowsFile::GetSize () const
 	{
+		int64 result = 0;
+
+		if (IsOpen ())
+		{
+			LARGE_INTEGER size;
+
+			if (GetFileSizeEx (m_fileHandle, &size) == TRUE)
+			{
+				result = size.QuadPart;
+			}
+		}
+
+		return result;
+	}
+	
+	bool WindowsFile::GetPointer (int64& pointer) const
+	{
 		if (IsOpen () == false)
 		{
-			return 0;
+			return false;
 		}
 
-		LARGE_INTEGER size;
+		bool bSucceed = false;
 
-		if (GetFileSizeEx (m_file, &size) == FALSE)
+		LARGE_INTEGER zero;
+		zero.QuadPart = 0;
+
+		LARGE_INTEGER current;
+
+		if (SetFilePointerEx (m_fileHandle, zero, &current, FILE_CURRENT) == TRUE)
 		{
-			return 0;
+			pointer = current.QuadPart;
+			bSucceed = true;
 		}
 
-		return size.QuadPart;
+		return bSucceed;
+	}
+
+	bool WindowsFile::SetPointer (int64 pointer, EFilePointerMode mode)
+	{
+		if (IsOpen () == false)
+		{
+			return false;
+		}
+
+		LARGE_INTEGER move;
+		move.QuadPart = pointer;
+
+		DWORD moveMethod = FILE_BEGIN;
+
+		if (mode == EFilePointerMode::Current)
+		{
+			moveMethod = FILE_CURRENT;
+		}
+		else if (mode == EFilePointerMode::End)
+		{
+			moveMethod = FILE_END;
+		}
+
+		return SetFilePointerEx (m_fileHandle, move, nullptr, moveMethod) == TRUE;
 	}
 }

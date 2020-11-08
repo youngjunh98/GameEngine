@@ -9,8 +9,8 @@ namespace GameEngine
 	class Component : public Object
 	{
 	public:
-		Component () {}
-		virtual ~Component () = 0 {}
+		Component ();
+		virtual ~Component () = 0;
 
 		virtual void Destroy () override;
 

@@ -12,10 +12,10 @@
 #include "Component/Physics/SphereCollider.h"
 #include "Component/Rendering/MeshRenderer.h"
 #include "Component/Rendering/Light.h"
-#include "Platform/Platform.h"
 #include "Asset/AssetManager.h"
 #include "Rendering/GlobalRenderer.h"
 #include "Scene/SceneManager.h"
+#include "Core/File/File.h"
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -527,7 +527,7 @@ namespace GameEngine
 					if (ImGui::Selectable (label.c_str (), &bSelected, ImGuiSelectableFlags_None))
 					{
 						m_selectedGameObject = gameObjects[i].get ();
-						m_selectedGameObjectIndex = i;
+						m_selectedGameObjectIndex = static_cast<int32> (i);
 
 						break;
 					}
@@ -682,8 +682,7 @@ namespace GameEngine
 
 			if (ImGui::Button ("Create"))
 			{
-				PlatformFile file;
-				file.Open (unicodePath, false, true);
+				File file (unicodePath, EFileAccessMode::Write);
 
 				if (file.IsOpen ())
 				{

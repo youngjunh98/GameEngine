@@ -12,17 +12,18 @@ namespace GameEngine
 		WindowsFile ();
 		virtual ~WindowsFile ();
 
-		virtual bool Open (const std::wstring& path, bool bRead, bool bWrite) override;
+		virtual bool Open (const PlatformPathType& path, bool bRead, bool bWrite) override;
 		virtual void Close () override;
 
-		virtual void Read (void* buffer, int64 startOffset, int64 readSize) override;
-		virtual void ReadAll (void* buffer, int64 bufferSize) override;
-
-		virtual void Write (const void* buffer, int64 bufferSize) override;
+		virtual int64 Read (void* buffer, int64 readSize) override;
+		virtual int64 Write (const void* buffer, int64 writeSize) override;
 
 		virtual int64 GetSize () const override;
 
+		virtual bool GetPointer (int64& pointer) const override;
+		virtual bool SetPointer (int64 pointer, EFilePointerMode mode) override;
+
 	protected:
-		HANDLE m_file;
+		HANDLE m_fileHandle;
 	};
 }
