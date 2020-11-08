@@ -8,16 +8,17 @@
 - Engine과 Editor 완전 분리하기.
 - 남은 플랫폼 의존 코드 Cross-platform으로 개선하기.
 - Sound Stream 및 컴포넌트
-- Cross-platform file API
+- Particle effect
 
 ### Future
 - Memory manager
 - Skinned mesh animation
 - Cascaded shadow maps
-- Particle effect
 - OpenGL support
 - DirectX 12 support
 - Vulkan supoort
+- Object Type Reflection
+- XML support
 
 ## Third Party Libraries
 
