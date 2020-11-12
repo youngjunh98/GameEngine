@@ -369,13 +369,13 @@ namespace GameEngine
 
 		int64 fileSize = file.GetSize ();
 
-		if (size <= 0)
+		if (fileSize <= 0)
 		{
 			return false;
 		}
 
-		data = std::make_unique<int8[]> (size);
-		file.ReadAll (data.get ());
+		data = std::make_unique<int8[]> (fileSize);
+		size = file.ReadAll (data.get ());
 
 		return true;
 	}

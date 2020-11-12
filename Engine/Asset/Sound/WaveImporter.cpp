@@ -71,7 +71,7 @@ namespace GameEngine
 			return false;
 		}
 
-		auto* sampleData = data + 44;
+		const int8* sampleData = data + 44;
 		int32 sampleCount = subchunk2Size / blockAlign;
 
 		std::vector<float> samples;
@@ -89,7 +89,7 @@ namespace GameEngine
 			}
 			else if (bitsPerSample == 16)
 			{
-				int16 sample = (sampleData[byteOffset + 1] << 8) | sampleData[byteOffset];
+				int16 sample = (sampleData[byteOffset + 1] << 8) | (sampleData[byteOffset] & 0x00ff);
 				value = static_cast<float> (sample) / 32768.0f;
 			}
 
