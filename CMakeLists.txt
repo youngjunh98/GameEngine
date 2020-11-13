@@ -3,13 +3,12 @@ project(GameEngine)
 
 # Build options
 option(BUILD_STATIC "Build Static Library")
-option(BUILD_PLATFORM_WINDOWS "Build Windows Platform Module")
 option(BUILD_RI_D3D11 "Build D3D11 RI")
 
 # Output directory settings
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Builds/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Builds/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Builds/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
 
 # Unicode support
 add_compile_definitions(UNICODE _UNICODE)
@@ -73,7 +72,9 @@ include_directories(${CMAKE_SOURCE_DIR}/Library/json-3.7.3)
 #############################
 add_subdirectory(Engine)
 
-add_executable(Executable WIN32 "${CMAKE_SOURCE_DIR}/Engine/Platform/Windows/WinMain.cpp")
+if(WIN32)
+    add_executable(Executable WIN32 "${CMAKE_SOURCE_DIR}/Engine/Platform/Windows/WinMain.cpp")
+endif()
 
 add_dependencies(Executable
     Engine
@@ -86,3 +87,5 @@ target_compile_definitions(Executable PRIVATE
 target_link_libraries(Executable
     Engine
 )
+
+set_target_properties(Executable PROPERTIES OUTPUT_NAME "GameEngine")

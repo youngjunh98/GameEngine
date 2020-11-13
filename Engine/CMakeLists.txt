@@ -11,7 +11,7 @@ file(GLOB PLATFORM_SRC
     "Platform/Generic/*.h"
 )
 
-if(BUILD_PLATFORM_WINDOWS)
+if(WIN32)
 
     file(GLOB WINDOWS_PLATFORM_SRC
         "Platform/Windows/*.cpp"
@@ -79,7 +79,7 @@ file(GLOB RI_SRC
     "RI/*.h"
 )
 
-if(BUILD_PLATFORM_WINDOWS)
+if(WIN32)
     if(BUILD_RI_D3D11)
 
         file(GLOB D3D11_SRC
