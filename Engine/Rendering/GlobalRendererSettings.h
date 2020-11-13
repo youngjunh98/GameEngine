@@ -1,7 +1,7 @@
 #ifndef INCLUDE_GLOBAL_RENDERER_SETTINGS
 #define INCLUDE_GLOBAL_RENDERER_SETTINGS
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 
 namespace GameEngine
 {

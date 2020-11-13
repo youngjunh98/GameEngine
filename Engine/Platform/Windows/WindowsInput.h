@@ -2,23 +2,26 @@
 
 #include <Windows.h>
 
-#include "Platform/Generic/GenericPlatformInput.h"
+#include "Platform/Generic/GenericInput.h"
 
 namespace GameEngine
 {
-	class PLATFORM_API WindowsInput : public GenericPlatformInput
+	namespace Platform
 	{
-	public:
-		WindowsInput () {}
-		virtual ~WindowsInput () {}
+		class PLATFORM_API WindowsInput : public GenericInput
+		{
+		public:
+			WindowsInput () {}
+			virtual ~WindowsInput () {}
 
-		virtual bool Initialize () override;
-		virtual void Shutdown () override;
+			virtual bool Initialize () override;
+			virtual void Shutdown () override;
 
-		void ProcessKeyboardMessages (UINT message, WPARAM wParam, LPARAM lParam);
-		void ProcessMouseMessages (UINT message, WPARAM wParam, LPARAM lParam);
+			void ProcessKeyboardMessages (UINT message, WPARAM wParam, LPARAM lParam);
+			void ProcessMouseMessages (UINT message, WPARAM wParam, LPARAM lParam);
 
-	private:
-		EKeyCode MapVirtualKeyToKeyCode (WPARAM virtualKey, bool bExtendedKey);
-	};
+		private:
+			EKeyCode MapVirtualKeyToKeyCode (WPARAM virtualKey, bool bExtendedKey);
+		};
+	}
 }

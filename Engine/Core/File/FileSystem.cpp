@@ -1,34 +1,57 @@
+#include <memory>
+#include <cstring>
+
 #include "Core/File/FileSystem.h"
 
 namespace GameEngine
 {
-    static PlatformFileSystem g_platformFileSystem;
+    static Platform::FileSystem g_platformFileSystem;
 
     FileSystem::FileSystem () {}
     FileSystem::~FileSystem () {}
 
-    PlatformPathType FileSystem::AppendPath (const PlatformPathType& basePath, const PlatformPathType& pathToAppend)
+    PathString FileSystem::AppendPath (const PathString& path, const PathString& pathToAppend)
     {
-        return g_platformFileSystem.AppendPath (basePath, pathToAppend);
+        PathString result (path);
+
+        const path_char* originalPathStart = path.c_str ();
+        size_t originalPathSize = path.size ();
+
+        const path_char* appendPathStart = pathToAppend.c_str ();
+        size_t appendPathSize = pathToAppend.size ();
+
+        size_t bufferSize = originalPathSize + appendPathSize + 1;
+        auto buffer = std::make_unique<path_char[]> (bufferSize);
+        path_char* bufferStart = buffer.get ();
+
+        std::memset (bufferStart, PATH ('\0'), bufferSize);
+        std::memcpy (bufferStart, originalPathStart, originalPathSize);
+
+        if (g_platformFileSystem.AppendPath (bufferStart, bufferSize, appendPathStart) == true)
+        {
+            result = PathString (bufferStart);
+        }
+        
+        return result;
     }
 
-    bool FileSystem::FileExists (const PlatformPathType& path)
+    bool FileSystem::FileExists (const PathString& path)
     {
-        return g_platformFileSystem.FileExists (path);
+        return g_platformFileSystem.FileExists (path.c_str ());
     }
 
-    bool FileSystem::DirectoryExists (const PlatformPathType& path)
+    bool FileSystem::DirectoryExists (const PathString& path)
     {
-        return g_platformFileSystem.DirectoryExists (path);
+        return g_platformFileSystem.DirectoryExists (path.c_str ());
     }
 
-    std::vector<PlatformPathType> FileSystem::GetFileList (const PlatformPathType& path)
+    std::vector<PathString> FileSystem::GetFileList (const PathString& path)
     {
-        return g_platformFileSystem.GetFileList (path);
+        return g_platformFileSystem.GetFileList (path.c_str ());
     }
 
-    std::vector<PlatformPathType> FileSystem::GetDirectoryList (const PlatformPathType& path)
+    std::vector<PathString> FileSystem::GetDirectoryList (const PathString& path)
     {
-        return g_platformFileSystem.GetDirectoryList (path);
+        return g_platformFileSystem.GetDirectoryList (path.c_str ());
     }
 }

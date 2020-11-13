@@ -11,12 +11,12 @@ namespace GameEngine
         FileSystem ();
         virtual ~FileSystem () = 0;
 
-        static PlatformPathType AppendPath (const PlatformPathType& basePath, const PlatformPathType& pathToAppend);
+        static PathString AppendPath (const PathString& path, const PathString& pathToAppend);
 
-		static bool FileExists (const PlatformPathType& path);
-		static bool DirectoryExists (const PlatformPathType& path);
+		static bool FileExists (const PathString& path);
+		static bool DirectoryExists (const PathString& path);
 
-		static std::vector<PlatformPathType> GetFileList (const PlatformPathType& path);
-		static std::vector<PlatformPathType> GetDirectoryList (const PlatformPathType& path);
+		static std::vector<PathString> GetFileList (const PathString& path);
+		static std::vector<PathString> GetDirectoryList (const PathString& path);
     };
 }

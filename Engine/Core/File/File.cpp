@@ -2,13 +2,10 @@
 
 namespace GameEngine
 {
-    File::File (const PlatformPathType& path, EFileAccessMode accessMode) :
-        m_bOpen (false)
+    File::File (const PathString& path, EFileAccessMode accessMode) :
+        m_bOpen ()
     {
-        bool bRead = accessMode == EFileAccessMode::Read || accessMode == EFileAccessMode::ReadWrite;
-        bool bWrite = accessMode == EFileAccessMode::Write || accessMode == EFileAccessMode::ReadWrite;
-
-        m_bOpen = m_platformFile.Open (path, bRead, bWrite);
+        m_bOpen = m_platformFile.Open (path.c_str (), accessMode);
     }
 
     File::~File ()

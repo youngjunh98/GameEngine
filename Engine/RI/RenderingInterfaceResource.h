@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 #include "RI/RenderingInterfaceEnum.h"
 
 namespace GameEngine

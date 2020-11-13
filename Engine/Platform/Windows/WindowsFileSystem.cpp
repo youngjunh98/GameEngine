@@ -7,126 +7,103 @@
 
 namespace GameEngine
 {
-	WindowsFileSystem::WindowsFileSystem ()
+	namespace Platform
 	{
-	}
-
-	WindowsFileSystem::~WindowsFileSystem ()
-	{
-	}
-
-	PlatformPathType WindowsFileSystem::AppendPath (const PlatformPathType& basePath, const PlatformPathType& pathToAppend)
-	{
-		TCHAR combined[MAX_PATH] = { 0 };
-		TCHAR append[MAX_PATH] = { 0 };
-
-		size_t basePathLength = basePath.size ();
-		size_t baseCopyMax = basePathLength <= MAX_PATH ? basePathLength : MAX_PATH;
-
-		for(size_t i = 0; i < baseCopyMax; i++)
+		WindowsFileSystem::WindowsFileSystem ()
 		{
-			combined[i] = basePath[i];
 		}
 
-		size_t appendPathLength = pathToAppend.size ();
-		size_t appendCopyMax = appendPathLength <= MAX_PATH ? appendPathLength : MAX_PATH;
-
-		for(size_t i = 0; i < appendCopyMax; i++)
+		WindowsFileSystem::~WindowsFileSystem ()
 		{
-			append[i] = pathToAppend[i];
 		}
 
-		if (SUCCEEDED (PathCchAppend(combined, MAX_PATH, append)))
+		bool WindowsFileSystem::AppendPath (path_char* path, const uint32 maxPathSize, const path_char* pathToAppend)
 		{
-			return PlatformPathType (combined);
+			bool bSucceed = SUCCEEDED (PathCchAppend(path, maxPathSize, pathToAppend));
+
+			return bSucceed;
 		}
 
-		return PlatformPathType ();
-	}
-
-	bool WindowsFileSystem::FileExists (const PlatformPathType& path)
-	{
-		bool bResult = false;
-		DWORD attributes = GetFileAttributes(path.c_str ());
-
-		if (attributes != INVALID_FILE_ATTRIBUTES)
+		bool WindowsFileSystem::FileExists (const path_char* path)
 		{
-			bResult = (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
-		}
+			bool bResult = false;
+			DWORD attributes = GetFileAttributes(path);
 
-		return bResult;
-	}
-
-	bool WindowsFileSystem::DirectoryExists (const PlatformPathType& path)
-	{
-		bool bResult = false;
-		DWORD attributes = GetFileAttributes(path.c_str ());
-
-		if (attributes != INVALID_FILE_ATTRIBUTES)
-		{
-			bResult = (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-		}
-
-		return bResult;
-	}
-
-	std::vector<PlatformPathType> WindowsFileSystem::GetFileList (const PlatformPathType& path)
-	{
-		std::vector<PlatformPathType> fileList;
-
-		WIN32_FIND_DATA searchData;
-		HANDLE search = FindFirstFile ((path + L"*").c_str (), &searchData);
-
-		if (search == INVALID_HANDLE_VALUE)
-		{
-			return fileList;
-		}
-
-		while (FindNextFile (search, &searchData) != FALSE)
-		{
-			bool bDirectory = (searchData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-
-			if (bDirectory == false && searchData.cFileName[0] != L'.')
+			if (attributes != INVALID_FILE_ATTRIBUTES)
 			{
-				fileList.push_back (searchData.cFileName);
+				bResult = (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
 			}
+
+			return bResult;
 		}
 
-		if (search != INVALID_HANDLE_VALUE)
+		bool WindowsFileSystem::DirectoryExists (const path_char* path)
 		{
-			FindClose (search);
-		}
+			bool bResult = false;
+			DWORD attributes = GetFileAttributes(path);
 
-		return fileList;
-	}
-
-	std::vector<PlatformPathType> WindowsFileSystem::GetDirectoryList (const PlatformPathType& path)
-	{
-		std::vector<PlatformPathType> directoryList;
-
-		WIN32_FIND_DATA searchData;
-		HANDLE search = FindFirstFile ((path + L"*").c_str (), &searchData);
-
-		if (search == INVALID_HANDLE_VALUE)
-		{
-			return directoryList;
-		}
-
-		while (FindNextFile (search, &searchData) != FALSE)
-		{
-			bool bDirectory = (searchData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-
-			if (bDirectory && searchData.cFileName[0] != L'.')
+			if (attributes != INVALID_FILE_ATTRIBUTES)
 			{
-				directoryList.push_back (searchData.cFileName);
+				bResult = (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 			}
+
+			return bResult;
 		}
 
-		if (search != INVALID_HANDLE_VALUE)
+		std::vector<PathString> WindowsFileSystem::GetFileList (const path_char* path)
 		{
-			FindClose (search);
+			std::vector<PathString> foundList;
+
+			PathString searchPattern (path);
+			searchPattern += PATH ("*");
+
+			WIN32_FIND_DATA searchData;
+			HANDLE search = FindFirstFile (searchPattern.c_str (), &searchData);
+
+			if (search != INVALID_HANDLE_VALUE)
+			{
+				while (FindNextFile (search, &searchData) != FALSE)
+				{
+					bool bDirectory = (searchData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+					if (bDirectory == false && searchData.cFileName[0] != PATH('.'))
+					{
+						foundList.push_back (searchData.cFileName);
+					}
+				}
+
+				FindClose (search);
+			}
+
+			return foundList;
 		}
 
-		return directoryList;
+		std::vector<PathString> WindowsFileSystem::GetDirectoryList (const path_char* path)
+		{
+			std::vector<PathString> foundList;
+
+			PathString searchPattern (path);
+			searchPattern += PATH ("*");
+
+			WIN32_FIND_DATA searchData;
+			HANDLE search = FindFirstFile (searchPattern.c_str (), &searchData);
+
+			if (search != INVALID_HANDLE_VALUE)
+			{
+				while (FindNextFile (search, &searchData) != FALSE)
+				{
+					bool bDirectory = (searchData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+					if (bDirectory && searchData.cFileName[0] != PATH('.'))
+					{
+						foundList.push_back (searchData.cFileName);
+					}
+				}
+
+				FindClose (search);
+			}
+
+			return foundList;
+		}
 	}
 }

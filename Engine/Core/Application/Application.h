@@ -1,7 +1,7 @@
 #ifndef INCLUDE_APPLICATION
 #define INCLUDE_APPLICATION
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 #include "Core/CoreMacro.h"
 
 namespace GameEngine

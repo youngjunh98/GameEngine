@@ -1,5 +1,6 @@
-#ifndef INCLUDE_PLATFORM_RENDERING_INTERFACE
-#define INCLUDE_PLATFORM_RENDERING_INTERFACE
+#pragma once
+
+#include "PlatformMacro.h"
 
 #if defined (PLATFORM_WINDOWS) && defined (RI_D3D11)
 
@@ -12,8 +13,6 @@
 		using PlatformRenderingInterface = D3D11RenderingInterface;
 	}
 
-	#else
-		#error ("Missing platform rendering interface!")
-	#endif
-
+#else
+	#error ("Missing platform rendering interface!")
 #endif

@@ -1,7 +1,7 @@
 #ifndef INCLUDE_MATH
 #define INCLUDE_MATH
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 #include "Core/CoreMacro.h"
 #include "Core/Math/Vector2.h"
 #include "Core/Math/Vector3.h"

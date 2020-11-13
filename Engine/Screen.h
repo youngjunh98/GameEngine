@@ -1,7 +1,7 @@
 #ifndef INCLUDE_SCREEN
 #define INCLUDE_SCREEN
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 
 namespace GameEngine
 {

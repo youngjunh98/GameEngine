@@ -6,7 +6,7 @@
 
 #include <single_include/nlohmann/json.hpp>
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 #include "Core/Math/Math.h"
 
 namespace GameEngine

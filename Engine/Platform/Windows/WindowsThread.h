@@ -3,21 +3,24 @@
 #include <Windows.h>
 #include <process.h>
 
-#include "Platform/Generic/GenericPlatformThread.h"
+#include "Platform/Generic/GenericThread.h"
 
 namespace GameEngine
 {
-	class PLATFORM_API WindowsThread : public GenericPlatformThread
+	namespace Platform
 	{
-	public:
-		WindowsThread (ThreadFunction function, void* data);
-		virtual ~WindowsThread ();
+		class PLATFORM_API WindowsThread : public GenericThread
+		{
+		public:
+			WindowsThread (ThreadFunction function, void* data);
+			virtual ~WindowsThread ();
 
-		virtual void Join () override;
+			virtual void Join () override;
 
-		friend unsigned int WINAPI WindowsThreadFunction (void* data);
+			friend unsigned int WINAPI WindowsThreadFunction (void* data);
 
-	protected:
-		HANDLE m_handle;
-	};
+		protected:
+			HANDLE m_handle;
+		};
+	}
 }

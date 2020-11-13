@@ -16,6 +16,7 @@
 #include "Rendering/GlobalRenderer.h"
 #include "Scene/SceneManager.h"
 #include "Core/File/File.h"
+#include "Core/File/FileSystem.h"
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -65,7 +66,7 @@ namespace GameEngine
 		ImGui_ImplDX11_Init (d3d11Device, d3d11Context);
 
 		// Init Editor
-		auto& winApp = static_cast<PlatformApplication&> (Platform::GetGenericApplication ());
+		auto& winApp = static_cast<Platform::Application&> (Platform::GetGenericApplication ());
 		winApp.AddWindowProcedureCallback (ImGui_ImplWin32_WndProcHandler);
 
 		m_gameRenderBuffer = renderingInterface.CreateTexture2D (800, 800, 1, 1, ERenderingResourceFormat::R8G8B8A8_UNorm, nullptr, nullptr, false, true, true, false);
@@ -718,19 +719,18 @@ namespace GameEngine
 
 	void Editor::RenderAssetTree (const std::wstring& directory, const std::wstring& path)
 	{
-		auto& fileSystem = Platform::GetGenericFileSystem ();
-		auto searchPath = path + directory + L"/";
+		PathString searchPath = path + directory + L"/";
 
 		std::string asciiDirectory (directory.begin (), directory.end ());
 
 		if (ImGui::TreeNode (asciiDirectory.c_str ()))
 		{
-			for (auto& directory : fileSystem.GetDirectoryList (searchPath))
+			for (PathString& directory : FileSystem::GetDirectoryList (searchPath))
 			{
 				RenderAssetTree (directory, searchPath);
 			}
 
-			for (auto& file : fileSystem.GetFileList (searchPath))
+			for (auto& file : FileSystem::GetFileList (searchPath))
 			{
 				auto filePath = searchPath + file;
 				bool bSelected = filePath == m_selectedAssetPath;

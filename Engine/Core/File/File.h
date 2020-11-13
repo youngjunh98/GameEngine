@@ -9,7 +9,7 @@ namespace GameEngine
     class CORE_API File
     {
     public:
-        File (const PlatformPathType& path, EFileAccessMode accessMode);
+        File (const PathString& path, EFileAccessMode accessMode);
         virtual ~File ();
 
         int64 Read (void* buffer, int64 readSize);
@@ -21,6 +21,6 @@ namespace GameEngine
 
     private:
         bool m_bOpen;
-        PlatformFile m_platformFile;
+        Platform::File m_platformFile;
     };
 }

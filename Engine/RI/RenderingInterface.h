@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include "Core/CoreType.h"
+#include "EngineType.h"
 #include "Core/Modular/Module.h"
 #include "RI/RenderingInterfaceEnum.h"
 #include "RI/RenderingInterfaceResource.h"

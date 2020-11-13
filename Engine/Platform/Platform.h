@@ -3,16 +3,16 @@
 #include "PlatformMacro.h"
 
 // Generic Platform System
-#include "Generic/GenericPlatformApplication.h"
-#include "Generic/GenericPlatformInput.h"
-#include "Generic/GenericPlatformTimer.h"
+#include "Generic/GenericApplication.h"
+#include "Generic/GenericInput.h"
+#include "Generic/GenericTimer.h"
 
 // Generic Platform File
-#include "Generic/GenericPlatformFile.h"
-#include "Generic/GenericPlatformFileSystem.h"
+#include "Generic/GenericFile.h"
+#include "Generic/GenericFileSystem.h"
 
 // Generic Platform Thread
-#include "Generic/GenericPlatformThread.h"
+#include "Generic/GenericThread.h"
 
 #if defined (PLATFORM_WINDOWS)
 
@@ -30,24 +30,25 @@
 
 	namespace GameEngine
 	{
-		using PlatformApplication = WindowsApplication;
-		using PlatformInput = WindowsInput;
-		using PlatformTimer = WindowsTimer;
-		using PlatformFileSystem = WindowsFileSystem;
-		using PlatformFile = WindowsFile;
-		using PlatformThread = WindowsThread;
+		namespace Platform
+		{
+			using Application = WindowsApplication;
+			using Input = WindowsInput;
+			using Timer = WindowsTimer;
+			using FileSystem = WindowsFileSystem;
+			using File = WindowsFile;
+			using Thread = WindowsThread;
+		}
 	}
 
 #endif
 
 namespace GameEngine
 {
-	class PLATFORM_API Platform
+	namespace Platform
 	{
-	public:
-		static GenericPlatformApplication& GetGenericApplication ();
-		static GenericPlatformInput& GetGenericInput ();
-		static GenericPlatformTimer& GetGenericTimer ();
-		static GenericPlatformFileSystem& GetGenericFileSystem ();
-	};
+		PLATFORM_API GenericApplication& GetGenericApplication ();
+		PLATFORM_API GenericInput& GetGenericInput ();
+		PLATFORM_API GenericTimer& GetGenericTimer ();
+	}
 }

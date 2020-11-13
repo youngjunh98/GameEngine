@@ -1,22 +1,28 @@
 #pragma once
 
-#include "Platform/Generic/GenericPlatformFileSystem.h"
+#include "Platform/Generic/GenericFileSystem.h"
 #include "Platform/PlatformMacro.h"
 
 namespace GameEngine
 {
-	class PLATFORM_API WindowsFileSystem : public GenericPlatformFileSystem
+	namespace Platform
 	{
-	public:
-		WindowsFileSystem ();
-		virtual ~WindowsFileSystem ();
+		class PLATFORM_API WindowsFileSystem : public GenericFileSystem
+		{
+		public:
+			WindowsFileSystem ();
+			virtual ~WindowsFileSystem ();
 
-		virtual PlatformPathType AppendPath (const PlatformPathType& basePath, const PlatformPathType& pathToAppend) override;
-		
-		virtual bool FileExists (const PlatformPathType& path) override;
-		virtual bool DirectoryExists (const PlatformPathType& path) override;
+			virtual bool AppendPath (path_char* path, const uint32 maxPathSize, const path_char* pathToAppend) override;
+			
+			virtual bool FileExists (const path_char* path) override;
+			virtual bool DirectoryExists (const path_char* path) override;
 
-		virtual std::vector<PlatformPathType> GetFileList (const PlatformPathType& path) override;
-		virtual std::vector<PlatformPathType> GetDirectoryList (const PlatformPathType& path) override;
-	};
+			virtual std::vector<PathString> GetFileList (const path_char* path) override;
+			virtual std::vector<PathString> GetDirectoryList (const path_char* path) override;
+
+		protected:
+			
+		};
+	}
 }

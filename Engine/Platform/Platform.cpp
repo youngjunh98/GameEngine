@@ -2,27 +2,24 @@
 
 namespace GameEngine
 {
-	GenericPlatformApplication& GameEngine::Platform::GetGenericApplication ()
+	namespace Platform
 	{
-		static PlatformApplication platformApplicationSingleton;
-		return platformApplicationSingleton;
-	}
+		GenericApplication& GetGenericApplication ()
+		{
+			static Application platformApplicationSingleton;
+			return platformApplicationSingleton;
+		}
 
-	GenericPlatformInput& Platform::GetGenericInput ()
-	{
-		static PlatformInput platformInputSingleton;
-		return platformInputSingleton;
-	}
+		GenericInput& GetGenericInput ()
+		{
+			static Input platformInputSingleton;
+			return platformInputSingleton;
+		}
 
-	GenericPlatformTimer& Platform::GetGenericTimer ()
-	{
-		static PlatformTimer platformTimerSingleton;
-		return platformTimerSingleton;
-	}
-
-	GenericPlatformFileSystem& Platform::GetGenericFileSystem ()
-	{
-		static PlatformFileSystem platformFileSystemSingleton;
-		return platformFileSystemSingleton;
+		GenericTimer& GetGenericTimer ()
+		{
+			static Timer platformTimerSingleton;
+			return platformTimerSingleton;
+		}
 	}
 }

@@ -22,7 +22,7 @@ namespace GameEngine
 	Microsoft::WRL::ComPtr<IAudioRenderClient> audioRenderClient;
 	UINT bufferFrameCount;
 	WAVEFORMATEX* waveFormat;
-	std::unique_ptr<PlatformThread> soundThread;
+	std::unique_ptr<Platform::Thread> soundThread;
 	CRITICAL_SECTION cs;
 
 	Sound g_sound;
@@ -224,7 +224,7 @@ namespace GameEngine
 		}
 
 		m_bPlay = true;
-		soundThread = std::make_unique<PlatformThread> (SoundThreadFunction, this);
+		soundThread = std::make_unique<Platform::Thread> (SoundThreadFunction, this);
 
 		return true;
 	}
