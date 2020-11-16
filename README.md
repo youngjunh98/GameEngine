@@ -6,8 +6,8 @@
 
 ### Working
 - Engine과 Editor 완전 분리하기.
-- 남은 플랫폼 의존 코드 Cross-platform으로 개선하기.
-- Sound Stream 및 컴포넌트
+- Editor 코드 Cross-platform으로 개선하기.
+- Thread Job
 - Particle effect
 
 ### Future
