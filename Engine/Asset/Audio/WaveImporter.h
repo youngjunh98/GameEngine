@@ -10,7 +10,7 @@ namespace GameEngine
 	class WaveImporter
 	{
 	public:
-		static bool Import (SoundClip& soundClip, const int8* data, const int64 dataSize);
+		static bool Import (AudioClip& audioClip, const int8* data, const int64 dataSize);
 	};
 }
 

@@ -61,8 +61,8 @@ namespace GameEngine
 	class BoxCollider;
 	class SphereCollider;
 
-	// Sound
-	class SoundClip;
+	// Audio
+	class AudioClip;
 
 	// Scene
 	class Scene;

@@ -59,22 +59,22 @@ namespace GameEngine
 			m_values[1][1] * (m_values[2][2] * m_values[3][3] - m_values[2][3] * m_values[3][2]) -
 			m_values[1][2] * (m_values[2][1] * m_values[3][3] - m_values[2][3] * m_values[3][1]) +
 			m_values[1][3] * (m_values[2][1] * m_values[3][2] - m_values[2][2] * m_values[3][1])
-			) -
-			m_values[0][1] * (
-				m_values[1][0] * (m_values[2][2] * m_values[3][3] - m_values[2][3] * m_values[3][2]) -
-				m_values[1][2] * (m_values[2][0] * m_values[3][3] - m_values[2][3] * m_values[3][0]) +
-				m_values[1][3] * (m_values[2][0] * m_values[3][2] - m_values[2][2] * m_values[3][0])
-				) +
-			m_values[0][2] * (
-				m_values[1][0] * (m_values[2][1] * m_values[3][3] - m_values[2][3] * m_values[3][1]) -
-				m_values[1][1] * (m_values[2][0] * m_values[3][3] - m_values[2][3] * m_values[3][0]) +
-				m_values[1][3] * (m_values[2][0] * m_values[3][1] - m_values[2][1] * m_values[3][0])
-				) -
-			m_values[0][3] * (
-				m_values[1][0] * (m_values[2][1] * m_values[3][2] - m_values[2][2] * m_values[3][1]) -
-				m_values[1][1] * (m_values[2][0] * m_values[3][2] - m_values[2][2] * m_values[3][0]) +
-				m_values[1][2] * (m_values[2][0] * m_values[3][1] - m_values[2][1] * m_values[3][0])
-				);
+		) - 
+		m_values[0][1] * (
+			m_values[1][0] * (m_values[2][2] * m_values[3][3] - m_values[2][3] * m_values[3][2]) -
+			m_values[1][2] * (m_values[2][0] * m_values[3][3] - m_values[2][3] * m_values[3][0]) +
+			m_values[1][3] * (m_values[2][0] * m_values[3][2] - m_values[2][2] * m_values[3][0])
+		) + 
+		m_values[0][2] * (
+			m_values[1][0] * (m_values[2][1] * m_values[3][3] - m_values[2][3] * m_values[3][1]) -
+			m_values[1][1] * (m_values[2][0] * m_values[3][3] - m_values[2][3] * m_values[3][0]) +
+			m_values[1][3] * (m_values[2][0] * m_values[3][1] - m_values[2][1] * m_values[3][0])
+		) -
+		m_values[0][3] * (
+			m_values[1][0] * (m_values[2][1] * m_values[3][2] - m_values[2][2] * m_values[3][1]) -
+			m_values[1][1] * (m_values[2][0] * m_values[3][2] - m_values[2][2] * m_values[3][0]) +
+			m_values[1][2] * (m_values[2][0] * m_values[3][1] - m_values[2][1] * m_values[3][0])
+		);
 	}
 
 	Matrix4x4 Matrix4x4::Inversed () const
@@ -174,7 +174,7 @@ namespace GameEngine
 		);
 	}
 
-	Vector4 Matrix4x4::GetRow (unsigned int index) const
+	Vector4 Matrix4x4::GetRow (uint32 index) const
 	{
 		if (index > 3)
 		{
@@ -184,7 +184,7 @@ namespace GameEngine
 		return Vector4 (m_values[index][0], m_values[index][1], m_values[index][2], m_values[index][3]);
 	}
 
-	Vector4 Matrix4x4::GetColumn (unsigned int index) const
+	Vector4 Matrix4x4::GetColumn (uint32 index) const
 	{
 		if (index > 3)
 		{
@@ -194,7 +194,7 @@ namespace GameEngine
 		return Vector4 (m_values[0][index], m_values[1][index], m_values[2][index], m_values[3][index]);
 	}
 
-	void Matrix4x4::SetRow (unsigned int index, Vector4 values)
+	void Matrix4x4::SetRow (uint32 index, Vector4 values)
 	{
 		if (index > 3)
 		{
@@ -207,7 +207,7 @@ namespace GameEngine
 		m_values[index][3] = values.m_w;
 	}
 
-	void Matrix4x4::SetColumn (unsigned int index, Vector4 values)
+	void Matrix4x4::SetColumn (uint32 index, Vector4 values)
 	{
 		if (index > 3)
 		{
@@ -249,10 +249,10 @@ namespace GameEngine
 		const float zw = 2.0f * z * w;
 
 		return Matrix4x4 (
-			1.0f -   yy - zz,        xy + zw, xz - yw, 0.0f,
-			xy - zw, 1.0f - xx - zz, yz + xw,          0.0f,
-			xz + yw, yz - xw,        1.0f - xx - yy,   0.0f,
-			0.0f,    0.0f,           0.0f,             1.0f
+			1.0f - yy - zz, xy + zw,        xz - yw,        0.0f,
+			xy - zw,        1.0f - xx - zz, yz + xw,        0.0f,
+			xz + yw,        yz - xw,        1.0f - xx - yy, 0.0f,
+			0.0f,           0.0f,           0.0f,           1.0f
 		);
 	}
 

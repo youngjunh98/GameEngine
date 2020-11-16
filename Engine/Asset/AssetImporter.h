@@ -7,7 +7,7 @@
 #include "Rendering/Mesh.h"
 #include "Rendering/Texture2D.h"
 #include "Rendering/TextureCube.h"
-#include "Sound/SoundClip.h"
+#include "Audio/AudioClip.h"
 
 namespace GameEngine
 {
@@ -27,7 +27,7 @@ namespace GameEngine
 		static std::shared_ptr<Mesh> ImportMesh (const std::wstring& path);
 		static std::shared_ptr<Texture2D> ImportTexture2D (const std::wstring& path, bool bGenerateMipMaps);
 
-		static std::shared_ptr<SoundClip> ImportSoundClip (const std::wstring& path);
+		static std::shared_ptr<AudioClip> ImportAudioClip (const std::wstring& path);
 
 		static bool GetFileDataAndSize (const std::wstring& path, std::unique_ptr<int8[]>& data, int64& size);
 		static std::wstring GetFileExtension (const std::wstring& path);

@@ -7,7 +7,7 @@
 #include "Asset/3D/OBJImporter.h"
 #include "Asset/3D/FbxImporter.h"
 #include "Asset/Image/StbImageImporter.h"
-#include "Asset/Sound/WaveImporter.h"
+#include "Asset/Audio/WaveImporter.h"
 #include "Asset/AssetManager.h"
 #include "Rendering/Material.h"
 #include "Scene/SceneManager.h"
@@ -85,10 +85,10 @@ namespace GameEngine
 		}
 		else if (extension == L"WAV")
 		{
-			auto soundClip = ImportSoundClip (path);
-			g_assetManager.AddAsset (soundClip, path);
+			auto audioClip = ImportAudioClip (path);
+			g_assetManager.AddAsset (audioClip, path);
 
-			if (soundClip != nullptr)
+			if (audioClip != nullptr)
 			{
 				return true;
 			}
@@ -336,7 +336,7 @@ namespace GameEngine
 		return textureCube;
 	}
 
-	std::shared_ptr<SoundClip> AssetImporter::ImportSoundClip (const std::wstring& path)
+	std::shared_ptr<AudioClip> AssetImporter::ImportAudioClip (const std::wstring& path)
 	{
 		std::unique_ptr<int8[]> fileData;
 		int64 fileSize;
@@ -346,16 +346,16 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		auto soundClip = std::make_shared<SoundClip> ();
+		auto audioClip = std::make_shared<AudioClip> ();
 
-		if (WaveImporter::Import (*soundClip, fileData.get (), fileSize) == false)
+		if (WaveImporter::Import (*audioClip, fileData.get (), fileSize) == false)
 		{
 			return nullptr;
 		}
 
-		g_assetManager.AddAsset (soundClip, path);
+		g_assetManager.AddAsset (audioClip, path);
 
-		return soundClip;
+		return audioClip;
 	}
 
 	bool AssetImporter::GetFileDataAndSize (const std::wstring& path, std::unique_ptr<int8[]>& data, int64& size)

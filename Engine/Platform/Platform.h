@@ -6,6 +6,7 @@
 #include "Generic/GenericApplication.h"
 #include "Generic/GenericInput.h"
 #include "Generic/GenericTimer.h"
+#include "Generic/GenericAudio.h"
 
 // Generic Platform File
 #include "Generic/GenericFile.h"
@@ -20,6 +21,7 @@
 	#include "Windows/WindowsApplication.h"
 	#include "Windows/WindowsInput.h"
 	#include "Windows/WindowsTimer.h"
+	#include "Windows/WindowsAudio.h"
 
 	// Windows Platform File
 	#include "Windows/WindowsFileSystem.h"
@@ -35,6 +37,7 @@
 			using Application = WindowsApplication;
 			using Input = WindowsInput;
 			using Timer = WindowsTimer;
+			using Audio = WindowsAudio;
 			using FileSystem = WindowsFileSystem;
 			using File = WindowsFile;
 			using Thread = WindowsThread;

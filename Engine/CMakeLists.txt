@@ -149,9 +149,9 @@ file(GLOB_RECURSE ASSET_SRC
     "Asset/**.h"
 )
 
-file(GLOB_RECURSE SOUND_SRC
-    "Sound/**.cpp"
-    "Sound/**.h"
+file(GLOB_RECURSE AUDIO_SRC
+    "Audio/**.cpp"
+    "Audio/**.h"
 )
 
 file(GLOB_RECURSE PHYSICS_SRC
@@ -182,7 +182,7 @@ if(BUILD_STATIC)
         ${COMPONENT_SRC}
         ${SCENE_SRC}
         ${ASSET_SRC}
-        ${SOUND_SRC}
+        ${AUDIO_SRC}
         ${PHYSICS_SRC}
         ${IMGUI_SRC}
         ${EDITOR_SRC}
@@ -194,7 +194,7 @@ else()
         ${COMPONENT_SRC}
         ${SCENE_SRC}
         ${ASSET_SRC}
-        ${SOUND_SRC}
+        ${AUDIO_SRC}
         ${PHYSICS_SRC}
         ${IMGUI_SRC}
         ${EDITOR_SRC}

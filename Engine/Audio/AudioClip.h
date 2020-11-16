@@ -1,5 +1,4 @@
-#ifndef INCLUDE_SOUND_CLIP
-#define INCLUDE_SOUND_CLIP
+#pragma once
 
 #include <vector>
 
@@ -8,28 +7,24 @@
 
 namespace GameEngine
 {
-	class SoundClip : public Object
+	class AudioClip : public Object
 	{
 	public:
-		SoundClip ();
-		virtual ~SoundClip ();
+		AudioClip ();
+		virtual ~AudioClip ();
 
-		int32 FrameCount () const;
 		int32 ChannelCount () const;
+		int32 SampleFrameCount () const;
 		float SampleRate () const;
 		float Length () const;
-
-		//void ReadNextSamples (float* buffer, int32 sampleCount, int32 channelCount, float sampleRate);
 
 		const float* GetSampleData () const;
 		void SetSampleData (const std::vector<float>& data, int32 channelCount, float sampleRate);
 
 	private:
-		int32 m_frameCount;
 		int32 m_channelCount;
+		int32 m_sampleFrameCount;
 		float m_sampleRate;
 		std::vector<float> m_sampleData;
 	};
 }
-
-#endif

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_MATRIX4X4
 #define INCLUDE_MATRIX4X4
 
+#include "EngineType.h"
 #include "Core/CoreMacro.h"
 
 namespace GameEngine
@@ -27,11 +28,11 @@ namespace GameEngine
 		Matrix4x4 Inversed () const;
 		Matrix4x4 Transposed () const;
 
-		Vector4 GetRow (unsigned int index) const;
-		Vector4 GetColumn (unsigned int index) const;
+		Vector4 GetRow (uint32 index) const;
+		Vector4 GetColumn (uint32 index) const;
 
-		void SetRow (unsigned int index, Vector4 values);
-		void SetColumn (unsigned int index, Vector4 values);
+		void SetRow (uint32 index, Vector4 values);
+		void SetColumn (uint32 index, Vector4 values);
 
 		static Matrix4x4 Translate (Vector3 translation);
 		static Matrix4x4 Rotate (Quaternion rotation);

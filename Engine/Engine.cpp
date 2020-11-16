@@ -1,6 +1,6 @@
 ﻿#include "Engine.h"
 #include "Platform/Platform.h"
-#include "Sound/Sound.h"
+#include "Audio/Audio.h"
 #include "Asset/AssetImporter.h"
 #include "Editor/Editor.h"
 #include "Rendering/GlobalRenderer.h"
@@ -37,7 +37,7 @@ namespace GameEngine
 			return false;
 		}
 
-		if (g_sound.Initialize (512, 2, 44100.0f) == false)
+		if (Audio::Initialize () == false)
 		{
 			return false;
 		}
@@ -51,7 +51,7 @@ namespace GameEngine
 	{
 		g_editor.Shutdown ();
 
-		g_sound.Shutdown ();
+		Audio::Shutdown ();
 
 		g_sceneManager.UnloadScene ();
 		g_assetManager.Shutdown ();

@@ -2,12 +2,12 @@
 #include <vector>
 #include <memory>
 
-#include "Asset/Sound/WaveImporter.h"
-#include "Sound/SoundClip.h"
+#include "Asset/Audio/WaveImporter.h"
+#include "Audio/AudioClip.h"
 
 namespace GameEngine
 {
-	bool WaveImporter::Import (SoundClip& soundClip, const int8* data, const int64 dataSize)
+	bool WaveImporter::Import (AudioClip& audioClip, const int8* data, const int64 dataSize)
 	{
 		bool bInvalidDataSize = dataSize < 44;
 
@@ -96,7 +96,7 @@ namespace GameEngine
 			samples.at (sampleIndex) = value;
 		}
 
-		soundClip.SetSampleData (samples, channels, static_cast<float> (sampleRate));
+		audioClip.SetSampleData (samples, channels, static_cast<float> (sampleRate));
 
 		return true;
 	}
