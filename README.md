@@ -2,6 +2,61 @@
 
 혼자서 만드는 게임 엔진
 
+
+- 그래픽 예시
+
+<img src="https://user-images.githubusercontent.com/8470484/99874502-d5603500-2c2b-11eb-8677-285991c3e95e.png"
+width="30%" height="30%" title="PBR Dielectric" alt="PBR Dielectric"></img>
+<img src="https://user-images.githubusercontent.com/8470484/99874503-d6916200-2c2b-11eb-872d-6b7db963df23.png"
+width="30%" height="30%" title="PBR Metal" alt="PBR Metal"></img>
+
+
+
+## Feature
+
+### Supported Asset Formats
+- 3D: FBX, OBJ
+- Audio: WAV
+- Texture: DDS, JPG, PNG, TGA, BMP, PSD, GIF, HDR, PIC
+
+
+### Engine
+- Cross-platform Frameowrk
+- Component Based Game Object
+- Modular System
+
+
+### Editor
+- GUI Editor using Dear ImGUI
+- Real Time Component Editting
+- Wireframe Mode
+
+### Audio
+- Audio thread
+- WASAPI (Windows)
+
+
+### Physics
+- PhysX SDK
+- Box, Sphere Collider
+- Rigidbody
+
+
+### Rendering
+- PBR
+- Directional, Point, Spot Light
+- Normal Mapping
+- Tessellation
+- Shadow Mapping
+- Customizable Rendering Pipeline
+- Shader Code Reflection
+
+
+### Other
+- CMake를 이용한 빌드
+
+
+
 ## Roadmap
 
 ### Working
@@ -9,6 +64,7 @@
 - Editor 코드 Cross-platform으로 개선하기.
 - Thread Job
 - Particle effect
+
 
 ### Future
 - Memory manager
@@ -20,10 +76,11 @@
 - Object Type Reflection
 - XML support
 
+
+
 ## Third Party Libraries
 
 - ### Autodesk FBX SDK 2019.0
-
 This software contains Autodesk® FBX® code developed by Autodesk, Inc. Copyright 2018 Autodesk, Inc. All rights, reserved. 
 Such code is provided "as is" and Autodesk, Inc. disclaims any and all warranties, whether express or implied, including without 
 limitation the implied warranties of merchantability, fitness for a particular purpose or non-infringement of third party rights. In 
@@ -34,7 +91,6 @@ arising in any way out of such code.
 
 
 - ### NVIDIA PhysX SDK 4.1
-
 Copyright (c) 2019 NVIDIA Corporation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following 
@@ -58,7 +114,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 - ### stb
-
 Public Domain (www.unlicense.org)
 This is free and unencumbered software released into the public domain.
 Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
@@ -79,7 +134,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 - ### Dear ImGui
-
 The MIT License (MIT)
 
 Copyright (c) 2014-2020 Omar Cornut
@@ -104,7 +158,6 @@ SOFTWARE.
 
 
 - ### JSON for Modern C++
-
 MIT License 
 
 Copyright (c) 2013-2020 Niels Lohmann
