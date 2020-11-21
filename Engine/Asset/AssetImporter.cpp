@@ -24,16 +24,16 @@ namespace GameEngine
 		std::wstring currentDirectory;
 		std::stack<std::wstring> directoryStack;
 
-		directoryStack.push (L"Assets");
+		directoryStack.push (PATH ("Assets"));
 
 		while (directoryStack.size () > 0)
 		{
 			auto topDirectory = directoryStack.top ();
-			bool topDirectoryIterated = currentDirectory.rfind (topDirectory + L"/") != std::string::npos;
+			bool topDirectoryIterated = currentDirectory.rfind (topDirectory + PATH ("/")) != std::string::npos;
 
 			if (topDirectoryIterated == false)
 			{
-				currentDirectory += topDirectory + L"/";
+				currentDirectory += topDirectory + PATH ("/");
 
 				for (auto& file : FileSystem::GetFileList (currentDirectory))
 				{
@@ -49,7 +49,7 @@ namespace GameEngine
 
 			if (topDirectory == directoryStack.top ())
 			{
-				auto topDirectoryFind = currentDirectory.rfind (topDirectory + L"/");
+				auto topDirectoryFind = currentDirectory.rfind (topDirectory + PATH ("/"));
 				currentDirectory.erase (currentDirectory.begin () + topDirectoryFind, currentDirectory.end ());
 
 				directoryStack.pop ();
@@ -61,9 +61,9 @@ namespace GameEngine
 
 	bool AssetImporter::ImportAsset (const std::wstring& path)
 	{
-		auto extension = GetFileExtension (path);
+		auto extension = FileSystem::GetFileExtension (path);
 
-		if (extension == L"OBJ" || extension == L"FBX")
+		if (extension == PATH ("OBJ") || extension == PATH ("FBX"))
 		{
 			auto mesh = ImportMesh (path);
 			g_assetManager.AddAsset (mesh, path);
@@ -73,7 +73,7 @@ namespace GameEngine
 				return true;
 			}
 		}
-		else if (extension == L"JPG" || extension == L"JPEG" || extension == L"PNG" || extension == L"TGA")
+		else if (extension == PATH ("JPG") || extension == PATH ("JPEG") || extension == PATH ("PNG") || extension == PATH ("TGA"))
 		{
 			auto texture = ImportTexture2D (path, true);
 			g_assetManager.AddAsset (texture, path);
@@ -83,7 +83,7 @@ namespace GameEngine
 				return true;
 			}
 		}
-		else if (extension == L"WAV")
+		else if (extension == PATH ("WAV"))
 		{
 			auto audioClip = ImportAudioClip (path);
 			g_assetManager.AddAsset (audioClip, path);
@@ -93,7 +93,7 @@ namespace GameEngine
 				return true;
 			}
 		}
-		else if (extension == L"SCENE")
+		else if (extension == PATH ("SCENE"))
 		{
 			File file (path, EFileAccessMode::Read);
 			int64 fileSize = file.GetSize ();
@@ -108,7 +108,7 @@ namespace GameEngine
 
 			return true;
 		}
-		else if (extension == L"MATERIAL")
+		else if (extension == PATH ("MATERIAL"))
 		{
 			File file (path, EFileAccessMode::Read);
 			int64 fileSize = file.GetSize ();
@@ -141,16 +141,16 @@ namespace GameEngine
 		}
 
 		auto mesh = std::make_shared<Mesh> ();
-		auto extension = GetFileExtension (path);
+		auto extension = FileSystem::GetFileExtension (path);
 
-		if (extension == L"OBJ")
+		if (extension == PATH ("OBJ"))
 		{
 			if (OBJImporter::Import (*mesh, fileData.get (), fileSize) == false)
 			{
 				return nullptr;
 			}
 		}
-		else if (extension == L"FBX")
+		else if (extension == PATH ("FBX"))
 		{
 			if (FBXImporter::Import (*mesh, fileData.get (), fileSize) == false)
 			{
@@ -378,18 +378,5 @@ namespace GameEngine
 		size = file.ReadAll (data.get ());
 
 		return true;
-	}
-
-	std::wstring AssetImporter::GetFileExtension (const std::wstring & path)
-	{
-		std::wstring extension = path.substr (path.find_last_of ('.') + 1);
-
-		// To Upper
-		for (auto& wc : extension)
-		{
-			wc = std::towupper (wc);
-		}
-
-		return extension;
 	}
 }

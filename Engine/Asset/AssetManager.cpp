@@ -105,7 +105,7 @@ namespace GameEngine
 			{
 				if (asset == info.second.m_asset.get ())
 				{
-					path = info.second.m_directory + L"/" + info.second.m_name;
+					path = info.second.m_directory + PATH ("/") + info.second.m_name;
 					break;
 				}
 			}

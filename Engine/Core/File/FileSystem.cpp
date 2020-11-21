@@ -12,7 +12,7 @@ namespace GameEngine
 
     PathString FileSystem::AppendPath (const PathString& path, const PathString& pathToAppend)
     {
-        PathString result (path);
+        PathString result = path;
 
         const path_char* originalPathStart = path.c_str ();
         size_t originalPathSize = path.size ();
@@ -33,6 +33,14 @@ namespace GameEngine
         }
         
         return result;
+    }
+
+    PathString FileSystem::GetFileExtension (const PathString& path)
+    {
+        const path_char* pathStart = path.c_str ();
+        uint32 pathSize = path.size () + 1;
+
+        return g_platformFileSystem.GetFileExtension (pathStart, pathSize);
     }
 
     bool FileSystem::FileExists (const PathString& path)

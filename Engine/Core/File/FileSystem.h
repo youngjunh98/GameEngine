@@ -12,6 +12,7 @@ namespace GameEngine
         virtual ~FileSystem () = 0;
 
         static PathString AppendPath (const PathString& path, const PathString& pathToAppend);
+        static PathString GetFileExtension (const PathString& path);
 
 		static bool FileExists (const PathString& path);
 		static bool DirectoryExists (const PathString& path);

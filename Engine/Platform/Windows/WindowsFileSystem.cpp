@@ -24,6 +24,19 @@ namespace GameEngine
 			return bSucceed;
 		}
 
+		PathString WindowsFileSystem::GetFileExtension (const path_char* path, const uint32 maxPathSize)
+		{
+			PathString extension = PATH("");
+			PCWSTR dotBeforeExtension;
+
+			if (SUCCEEDED (PathCchFindExtension (path, maxPathSize, &dotBeforeExtension)))
+			{
+				extension = PathString (dotBeforeExtension + 1);
+			}
+
+			return extension;
+		}
+
 		bool WindowsFileSystem::FileExists (const path_char* path)
 		{
 			bool bResult = false;

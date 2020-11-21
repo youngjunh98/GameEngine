@@ -23,14 +23,11 @@ namespace GameEngine
 		static std::shared_ptr<TextureCube> ImportTextureCube (const std::wstring cubePath[6]);
 
 	private:
-
 		static std::shared_ptr<Mesh> ImportMesh (const std::wstring& path);
 		static std::shared_ptr<Texture2D> ImportTexture2D (const std::wstring& path, bool bGenerateMipMaps);
-
 		static std::shared_ptr<AudioClip> ImportAudioClip (const std::wstring& path);
 
 		static bool GetFileDataAndSize (const std::wstring& path, std::unique_ptr<int8[]>& data, int64& size);
-		static std::wstring GetFileExtension (const std::wstring& path);
 	};
 }
 

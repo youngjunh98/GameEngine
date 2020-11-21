@@ -14,7 +14,8 @@ namespace GameEngine
 			virtual ~WindowsFileSystem ();
 
 			virtual bool AppendPath (path_char* path, const uint32 maxPathSize, const path_char* pathToAppend) override;
-			
+			virtual PathString GetFileExtension (const path_char* path, const uint32 maxPathSize) override;
+
 			virtual bool FileExists (const path_char* path) override;
 			virtual bool DirectoryExists (const path_char* path) override;
 
