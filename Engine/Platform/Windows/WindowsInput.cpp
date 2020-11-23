@@ -1,3 +1,6 @@
+#include <Windows.h>
+#include <hidusage.h>
+
 #include "Platform/Windows/WindowsInput.h"
 #include "Platform/Platform.h"
 
@@ -8,8 +11,8 @@ namespace GameEngine
 		bool WindowsInput::Initialize ()
 		{
 			RAWINPUTDEVICE rawInputDevice;
-			rawInputDevice.usUsagePage = 0x01;
-			rawInputDevice.usUsage = 0x02;
+			rawInputDevice.usUsagePage = HID_USAGE_PAGE_GENERIC;
+			rawInputDevice.usUsage = HID_USAGE_GENERIC_MOUSE;
 			rawInputDevice.dwFlags = 0;
 			rawInputDevice.hwndTarget = reinterpret_cast<HWND> (Platform::GetGenericApplication ().GetNativeWindowHandle ());
 
@@ -45,18 +48,20 @@ namespace GameEngine
 					// Do nothing
 					break;
 				}
-
-				default: return;
 			}
 
 			WPARAM virtualKey = wParam;
 			
 			if (virtualKey == VK_SHIFT)
 			{
+				// 16-23 bits (start from 0) are scan code.
+				// 0000 0000  1111 1111  0000 0000  0000 0000 (32 bits)
 				UINT scanCode = (static_cast<UINT> (lParam) & 0x00ff0000) >> 16;
 				virtualKey = MapVirtualKey (scanCode, MAPVK_VSC_TO_VK_EX);
 			}
 
+			// 24th bit (start from 0) indicates whether the key is an extended key.
+			// 0000 0001  0000 0000  0000 0000  0000 0000 (32 bits)
 			bool bExtendedKey = (static_cast<UINT> (lParam) & 0x01000000) != 0;
 			EKeyCode keyCode = MapVirtualKeyToKeyCode (virtualKey, bExtendedKey);
 			
@@ -94,18 +99,43 @@ namespace GameEngine
 						{
 							MouseDelta (mouseDataX, mouseDataY);
 						}
-						else if (rawInput.data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE)
+
+						/* Need more research
+						if ((rawInput.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE)
 						{
-							MousePosition (mouseDataX, mouseDataY);
+							bool isVirtualDesktop = (rawInput.data.mouse.usFlags & MOUSE_VIRTUAL_DESKTOP) == MOUSE_VIRTUAL_DESKTOP;
+							isVirtualDesktop = (rawInput.data.mouse.usFlags & MOUSE_VIRTUAL_DESKTOP) == MOUSE_VIRTUAL_DESKTOP;
+
+							int width = GetSystemMetrics (isVirtualDesktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
+							int height = GetSystemMetrics (isVirtualDesktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
+
+							POINT normalizedAbsoluteCoordinates;
+							normalizedAbsoluteCoordinates.x = (mouseDataX / 65535.0f) * width;
+							normalizedAbsoluteCoordinates.y = (mouseDataY / 65535.0f) * height;
+
+							if (ScreenToClient (m_hWnd, &normalizedAbsoluteCoordinates))
+							{
+								float absoluteX = static_cast<float> (normalizedAbsoluteCoordinates.x);
+								float absoluteY = static_cast<float> (normalizedAbsoluteCoordinates.y);
+
+								MousePosition (absoluteX, absoluteY);
+							}
 						}
+						else if ((rawInput.data.mouse.usFlags & MOUSE_MOVE_RELATIVE) == MOUSE_MOVE_RELATIVE)
+						{
+							MouseDelta (mouseDataX, mouseDataY);
+						}
+						*/
 					}
 
 					break;
 				}
 
 				case WM_MOUSEMOVE:
+				case WM_MOUSEHOVER:
 				{
-					// Do nothing
+					POINTS position = MAKEPOINTS (lParam);
+					MousePosition (static_cast<float> (position.x), static_cast<float> (position.y));
 					break;
 				}
 
@@ -148,22 +178,16 @@ namespace GameEngine
 				case WM_MOUSEWHEEL:
 				{
 					float mouseScrollDelta = static_cast<float> (GET_WHEEL_DELTA_WPARAM (wParam));
+					MouseWheelScrollDelta (mouseScrollDelta);
+					break;
 				}
 
 				case WM_XBUTTONDOWN:
 				case WM_XBUTTONUP:
 				{
 					// Do nothing
-				}
 					break;
-
-				case WM_MOUSEHOVER:
-				{
-					// Do nothing
 				}
-					break;
-
-				default: return;
 			}
 		}
 

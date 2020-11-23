@@ -189,6 +189,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case WM_INPUT:
 		case WM_MOUSEMOVE:
+		case WM_MOUSEHOVER:
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
 		case WM_RBUTTONDOWN:
@@ -198,7 +199,6 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_MOUSEWHEEL:
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP:
-		case WM_MOUSEHOVER:
 		{
 			auto& input = static_cast<GameEngine::Platform::Input&> (GameEngine::Platform::GetGenericInput ());
 			input.ProcessMouseMessages (message, wParam, lParam);

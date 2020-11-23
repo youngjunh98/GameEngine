@@ -6,14 +6,17 @@ namespace GameEngine
 {
 	namespace Platform
 	{
-		GenericInput::GenericInput () :
+		GenericInput::GenericInput () : m_keyStates { State::Up }, m_prevKeyStates { State::Up },
+			m_mouseButtonStates { State::Up }, m_prevMouseButtonStates { State::Up },
 			m_mousePositionX (0.0f), m_mousePositionY (0.0f),
 			m_mouseDeltaX (0.0f), m_mouseDeltaY (0.0f),
 			m_mouseWheelScrollDelta (0.0f)
-		{}
+		{
+		}
 
 		GenericInput::~GenericInput ()
-		{}
+		{
+		}
 
 		void GenericInput::Update ()
 		{
@@ -31,14 +34,7 @@ namespace GameEngine
 
 		bool GenericInput::GetKey (EKeyCode keyCode) const
 		{
-			if (keyCode == EKeyCode::None)
-			{
-				return false;
-			}
-
-			int32 index = static_cast<int32> (keyCode);
-
-			return m_keyStates[index] == State::Down;
+			return keyCode == EKeyCode::None ? false : m_keyStates[static_cast<int> (keyCode)] == State::Down;
 		}
 
 		bool GenericInput::GetKeyUp (EKeyCode keyCode) const
@@ -48,8 +44,7 @@ namespace GameEngine
 				return false;
 			}
 
-			int32 index = static_cast<int32> (keyCode);
-
+			auto index = static_cast<uint32> (keyCode);
 			return m_prevKeyStates[index] == State::Down && m_keyStates[index] == State::Up;
 		}
 
@@ -60,63 +55,76 @@ namespace GameEngine
 				return false;
 			}
 
-			uint32 index = static_cast<uint32> (keyCode);
-
+			auto index = static_cast<uint32> (keyCode);
 			return m_prevKeyStates[index] == State::Up && m_keyStates[index] == State::Down;
 		}
 
 		bool GenericInput::GetMouseButton (EMouseButton mouseButton) const
 		{
+			State state = State::Up;
+
 			if (mouseButton == EMouseButton::Left)
 			{
-				return m_mouseButtonStates[0] == State::Down;
+				state = m_mouseButtonStates[0];
 			}
 			else if (mouseButton == EMouseButton::Middle)
 			{
-				return m_mouseButtonStates[1] == State::Down;
+				state = m_mouseButtonStates[1];
 			}
 			else if (mouseButton == EMouseButton::Right)
 			{
-				return m_mouseButtonStates[2] == State::Down;
+				state = m_mouseButtonStates[2];
 			}
 
-			return false;
+			return state == State::Down;
 		}
 
 		bool GenericInput::GetMouseButtonUp (EMouseButton mouseButton) const
 		{
+			State prevState = State::Up;
+			State state = State::Up;
+
 			if (mouseButton == EMouseButton::Left)
 			{
-				return m_prevMouseButtonStates[0] == State::Down && m_mouseButtonStates[0] == State::Up;
+				prevState = m_prevMouseButtonStates[0];
+				state = m_mouseButtonStates[0];
 			}
 			else if (mouseButton == EMouseButton::Middle)
 			{
-				return m_prevMouseButtonStates[1] == State::Down && m_mouseButtonStates[1] == State::Up;
+				prevState = m_prevMouseButtonStates[1];
+				state = m_mouseButtonStates[1];
 			}
 			else if (mouseButton == EMouseButton::Right)
 			{
-				return m_prevMouseButtonStates[2] == State::Down && m_mouseButtonStates[2] == State::Up;
+				prevState = m_prevMouseButtonStates[2];
+				state = m_mouseButtonStates[2];
 			}
 
-			return false;
+			return prevState == State::Down && state == State::Up;
 		}
 
 		bool GenericInput::GetMouseButtonDown (EMouseButton mouseButton) const
 		{
+			State prevState = State::Up;
+			State state = State::Up;
+
 			if (mouseButton == EMouseButton::Left)
 			{
-				return m_prevMouseButtonStates[0] == State::Up && m_mouseButtonStates[0] == State::Down;
+				prevState = m_prevMouseButtonStates[0];
+				state = m_mouseButtonStates[0];
 			}
 			else if (mouseButton == EMouseButton::Middle)
 			{
-				return m_prevMouseButtonStates[1] == State::Up && m_mouseButtonStates[1] == State::Down;
+				prevState = m_prevMouseButtonStates[1];
+				state = m_mouseButtonStates[1];
 			}
 			else if (mouseButton == EMouseButton::Right)
 			{
-				return m_prevMouseButtonStates[2] == State::Up && m_mouseButtonStates[2] == State::Down;
+				prevState = m_prevMouseButtonStates[2];
+				state = m_mouseButtonStates[2];
 			}
 
-			return false;
+			return prevState == State::Up && state == State::Down;
 		}
 
 		float GenericInput::GetMousePositionX () const
@@ -151,7 +159,7 @@ namespace GameEngine
 				return;
 			}
 
-			int32 index = static_cast<int32> (keyCode);
+			auto index = static_cast<uint32> (keyCode);
 			m_keyStates[index] = State::Down;
 		}
 
@@ -162,7 +170,7 @@ namespace GameEngine
 				return;
 			}
 
-			int32 index = static_cast<int32> (keyCode);
+			auto index = static_cast<uint32> (keyCode);
 			m_keyStates[index] = State::Up;
 		}
 
