@@ -10,7 +10,7 @@ namespace GameEngine
 	{
 	public:
 		static void ResizeWindow (uint32 width, uint32 height, bool bFullScreen);
-		static void RequestExit ();
+		static void Quit ();
 	};
 }
 

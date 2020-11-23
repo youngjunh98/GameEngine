@@ -22,6 +22,7 @@ namespace GameEngine
 			virtual void Shutdown () override;
 
 			virtual bool Update () override;
+			virtual void RequestQuit () override;
 			virtual void ResizeWindow (uint32 width, uint32 height, bool bFullScreen) override;
 
 			virtual void* GetNativeWindowHandle () const override;

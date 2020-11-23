@@ -94,7 +94,7 @@ namespace GameEngine
 		{
 			MSG message = { };
 
-			while (m_bKeepRunning && PeekMessage (&message, nullptr, 0, 0, PM_REMOVE))
+			while (PeekMessage (&message, nullptr, 0, 0, PM_REMOVE))
 			{
 				if (message.message == WM_QUIT)
 				{
@@ -105,7 +105,12 @@ namespace GameEngine
 				DispatchMessage (&message);
 			}
 
-			return m_bKeepRunning;
+			return true;
+		}
+
+		void WindowsApplication::RequestQuit ()
+		{
+			PostMessage (m_hWnd, WM_CLOSE, 0, 0);
 		}
 
 		void WindowsApplication::ResizeWindow (uint32 width, uint32 height, bool bFullScreenEnabled)

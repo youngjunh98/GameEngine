@@ -4,9 +4,12 @@ namespace GameEngine
 {
 	namespace Platform
 	{
-		void GenericApplication::RequestExit ()
+		GenericApplication::GenericApplication ()
 		{
-			m_bKeepRunning = false;
+		}
+
+		GenericApplication::~GenericApplication ()
+		{
 		}
 	}
 }

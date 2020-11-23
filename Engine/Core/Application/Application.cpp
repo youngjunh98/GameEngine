@@ -8,8 +8,8 @@ namespace GameEngine
 		Platform::GetGenericApplication ().ResizeWindow (width, height, bFullScreen);
 	}
 
-	void Application::RequestExit ()
+	void Application::Quit ()
 	{
-		Platform::GetGenericApplication ().RequestExit ();
+		Platform::GetGenericApplication ().RequestQuit ();
 	}
 }
