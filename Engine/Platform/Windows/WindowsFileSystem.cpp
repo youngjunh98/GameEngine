@@ -37,6 +37,23 @@ namespace GameEngine
 			return extension;
 		}
 
+		bool WindowsFileSystem::RemoveFileName (path_char* path, const uint32 maxPathSize)
+		{
+			bool bSucceed = false;
+
+			if (FileExists (path))
+			{
+				bSucceed = SUCCEEDED (PathCchRemoveFileSpec (path, maxPathSize));
+			}
+
+			return bSucceed;
+		}
+
+		bool WindowsFileSystem::AddDirectorySeparator (path_char* path, const uint32 maxPathSize)
+		{
+			return SUCCEEDED (PathCchAddBackslash (path, maxPathSize));
+		}
+
 		bool WindowsFileSystem::FileExists (const path_char* path)
 		{
 			bool bResult = false;

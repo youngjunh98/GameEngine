@@ -13,6 +13,8 @@ namespace GameEngine
 
         static PathString AppendPath (const PathString& path, const PathString& pathToAppend);
         static PathString GetFileExtension (const PathString& path);
+        static PathString RemoveFileName (const PathString& path);
+        static PathString AddDirectorySeparator (const PathString& path);
 
 		static bool FileExists (const PathString& path);
 		static bool DirectoryExists (const PathString& path);

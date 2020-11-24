@@ -24,8 +24,8 @@ namespace GameEngine
         auto buffer = std::make_unique<path_char[]> (bufferSize);
         path_char* bufferStart = buffer.get ();
 
-        std::memset (bufferStart, PATH ('\0'), bufferSize);
-        std::memcpy (bufferStart, originalPathStart, originalPathSize);
+        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
+        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
 
         if (g_platformFileSystem.AppendPath (bufferStart, bufferSize, appendPathStart) == true)
         {
@@ -41,6 +41,51 @@ namespace GameEngine
         uint32 pathSize = path.size () + 1;
 
         return g_platformFileSystem.GetFileExtension (pathStart, pathSize);
+    }
+
+    PathString FileSystem::RemoveFileName (const PathString& path)
+    {
+        PathString result = path;
+
+        const path_char* originalPathStart = path.c_str ();
+        size_t originalPathSize = path.size ();
+
+        size_t bufferSize = originalPathSize + 1;
+        auto buffer = std::make_unique<path_char[]> (bufferSize);
+        path_char* bufferStart = buffer.get ();
+
+        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
+        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
+
+        if (g_platformFileSystem.RemoveFileName (bufferStart, bufferSize) == true)
+        {
+            result = PathString (bufferStart);
+        }
+
+        return result;
+    }
+
+    PathString FileSystem::AddDirectorySeparator (const PathString& path)
+    {
+        PathString result = path;
+
+        const path_char* originalPathStart = path.c_str ();
+        size_t originalPathSize = path.size ();
+
+        // original path + null character + separator + extra
+        size_t bufferSize = originalPathSize + 10;
+        auto buffer = std::make_unique<path_char[]> (bufferSize);
+        path_char* bufferStart = buffer.get ();
+
+        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
+        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
+
+        if (g_platformFileSystem.AddDirectorySeparator (bufferStart, bufferSize) == true)
+        {
+            result = PathString (bufferStart);
+        }
+
+        return result;
     }
 
     bool FileSystem::FileExists (const PathString& path)
