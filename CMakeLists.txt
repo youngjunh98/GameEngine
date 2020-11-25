@@ -84,7 +84,7 @@ target_compile_definitions(Executable PRIVATE
     IMPORT_ENGINE
 )
 
-target_link_libraries(Executable
+target_link_libraries(Executable PRIVATE
     Engine
 )
 

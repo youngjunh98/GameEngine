@@ -60,10 +60,13 @@ endif()
 
 target_compile_definitions(Core PRIVATE
     EXPORT_CORE
+)
+
+target_compile_definitions(Core PUBLIC
     IMPORT_PLATFORM
 )
 
-target_link_libraries(Core
+target_link_libraries(Core PUBLIC
     Platform
 )
 
@@ -108,11 +111,14 @@ add_dependencies(RI
 
 target_compile_definitions(RI PRIVATE
     EXPORT_RI
+)
+
+target_compile_definitions(RI PUBLIC
     IMPORT_PLATFORM
     IMPORT_CORE
 )
 
-target_link_libraries(RI
+target_link_libraries(RI PUBLIC
     Platform
     Core
 )
@@ -202,22 +208,20 @@ else()
 endif()
 
 add_dependencies(Engine
-    Platform
     Core
     RI
 )
 
 target_compile_definitions(Engine PRIVATE
     EXPORT_ENGINE
-    IMPORT_PLATFORM
+)
+
+target_compile_definitions(Engine PUBLIC
     IMPORT_CORE
     IMPORT_RI
 )
 
-target_link_libraries(Engine
-    Platform
-    Core
-    RI
+target_link_libraries(Engine PRIVATE
     libfbxsdk-md
     PhysX_static_${THIRD_PARTY_PHYSX_SDK_PLATFORM}
     PhysXCommon_static_${THIRD_PARTY_PHYSX_SDK_PLATFORM}
@@ -226,26 +230,9 @@ target_link_libraries(Engine
     PhysXPvdSDK_static_${THIRD_PARTY_PHYSX_SDK_PLATFORM}
 )
 
+target_link_libraries(Engine PUBLIC
+    Core
+    RI
+)
+
 set_target_properties(Engine PROPERTIES OUTPUT_NAME "Engine")
-
-
-#[[
-target_compile_definitions(Engine PRIVATE
-    IMPORT_PLATFORM
-    IMPORT_CORE
-    IMPORT_RI
-)
-
-target_link_libraries(Engine
-    Platform
-    Core
-    RI
-)
-
-add_dependencies(Engine
-    Platform
-    Core
-    RI
-)
-]]
-
