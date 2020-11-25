@@ -7,10 +7,9 @@ namespace GameEngine
 {
 	namespace Modular
 	{
-		ModuleHandle PlatformLoadModule (const std::string& path)
+		ModuleHandle PlatformLoadModule (const PathString& path)
 		{
-			std::wstring wPath (path.begin (), path.end ());
-			HINSTANCE hModule = LoadLibrary (wPath.c_str ());
+			HINSTANCE hModule = LoadLibrary (path.c_str ());
 
 			if (hModule == NULL)
 			{

@@ -26,7 +26,9 @@ namespace GameEngine
 	bool GlobalRenderer::Init (const GlobalRendererSettings settings)
 	{
 		m_settings = settings;
-		m_ri = reinterpret_cast<PlatformRenderingInterface*> (Modular::ModuleManager::LoadModule ("D3D11RI"));
+
+		m_riModulePath = Modular::ModuleManager::GetModulePath ("D3D11RI");
+		m_ri = reinterpret_cast<PlatformRenderingInterface*> (Modular::ModuleManager::CreateModuleInstance (m_riModulePath));
 
 		if (m_ri == nullptr)
 		{
@@ -248,7 +250,7 @@ namespace GameEngine
 		m_ri->Shutdown ();
 		m_ri = nullptr;
 
-		GameEngine::Modular::ModuleManager::UnloadModule ("D3D11RI");
+		Modular::ModuleManager::UnloadModule (m_riModulePath);
 	}
 
 	void GlobalRenderer::ActivateShadowMapShader (int32 lightType)

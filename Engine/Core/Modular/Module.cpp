@@ -3,24 +3,29 @@
 
 namespace GameEngine
 {
-    namespace Modular
-    {
-        ModuleBase::ModuleBase ()
-        {
-        }
+	namespace Modular
+	{
+		ModuleBase::ModuleBase ()
+		{
+		}
 
-        ModuleBase::~ModuleBase ()
-        {
-        }
+		ModuleBase::~ModuleBase ()
+		{
+		}
 
-        ModuleLink::ModuleLink (const std::string& name, const std::string& path) :
-            m_name (name), m_path (path)
-        {
-            auto& manager = ModuleManager::GetSingleton ();
-            manager.RegisterModule (name, this);
-        }
+		ModuleLink::ModuleLink (const std::string& moduleName, const PathString& modulePath) :
+			m_moduleName (moduleName)
+		{
+			ModuleManager::RegisterModule (modulePath, this);
+		}
 
-        ModuleLink::~ModuleLink ()
-        {}
-    }
+		ModuleLink::~ModuleLink ()
+		{
+		}
+
+		std::string ModuleLink::GetModuleName () const
+		{
+			return m_moduleName;
+		}
+	}
 }

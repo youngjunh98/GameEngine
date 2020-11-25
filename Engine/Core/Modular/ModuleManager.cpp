@@ -1,14 +1,14 @@
 #include <utility>
 
 #include "ModuleManager.h"
+#include "Platform/Platform.h"
 
 namespace GameEngine
 {
 	namespace Modular
 	{
 		ModuleManager::ModuleManager () :
-			m_staticModuleLinkMap (),
-			m_moduleInfoMap ()
+			m_linkMap (), m_infoMap ()
 		{
 		}
 
@@ -16,93 +16,154 @@ namespace GameEngine
 		{
 		}
 
-		ModuleManager& ModuleManager::GetSingleton ()
+		void ModuleManager::Initialize ()
 		{
-			static ModuleManager instance;
+			PathString applicationPath = Platform::GetGenericApplication ().GetPath ();
+			PathString moduleSerachPath = FileSystem::AddDirectorySeparator (FileSystem::RemoveFileName (applicationPath));
 
-			return instance;
+			for (PathString fileName : FileSystem::GetFileList (moduleSerachPath))
+			{
+				PathString extension = FileSystem::GetFileExtension (fileName);
+
+				if (extension != PATH ("dll"))
+				{
+					continue;
+				}
+
+				LoadModule (fileName);
+			}
 		}
 
-		ModuleBase* ModuleManager::FindModule (const std::string& moduleName)
+		void ModuleManager::RegisterModule (const PathString& modulePath, ModuleLink* moduleLink)
 		{
-			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_moduleInfoMap;
-			auto moduleInfoIter = moduleInfoMap.find (moduleName);
-
-			if (moduleInfoIter == moduleInfoMap.end ())
-			{
-				return nullptr;
-			}
-
-			return moduleInfoIter->second->m_module.get ();
+			auto& moduleLinkMap = ModuleManager::GetSingleton ().m_linkMap;
+			moduleLinkMap.emplace (modulePath, moduleLink);
 		}
 
-		ModuleBase* ModuleManager::LoadModule (const std::string& moduleName)
+		bool ModuleManager::LoadModule (const PathString& modulePath)
 		{
-			ModuleBase* loadedModule = FindModule (moduleName);
+			ModuleHandle moduleHandle = PlatformLoadModule (modulePath);
 
-			if (loadedModule != nullptr)
+			if (moduleHandle == nullptr)
 			{
-				return loadedModule;
+				return false;
 			}
-
-			ModuleLinkMap& moduleLinkMap = ModuleManager::GetSingleton ().m_staticModuleLinkMap;
-			auto moduleLinkIter = moduleLinkMap.find (moduleName);
-
-			if (moduleLinkIter == moduleLinkMap.end ())
-			{
-				return nullptr;
-			}
-
-			ModuleLink* moduleLink = moduleLinkIter->second;
-			ModuleHandle loadedModuleHandle = PlatformLoadModule (moduleLink->m_path);
-
-			if (loadedModuleHandle == nullptr)
-			{
-				return nullptr;
-			}
-
-			std::string createFunctionName = "CreateModuleFunction" + moduleLink->m_name;
-			ModuleCreateFunction createModuleFunction = PlatformFindModuleFunction (loadedModuleHandle, createFunctionName);
-
-			if (createModuleFunction == nullptr)
-			{
-				return nullptr;
-			}
-
-			loadedModule = createModuleFunction ();
 
 			auto moduleInfo = std::make_unique<ModuleInfo> ();
-			moduleInfo->m_handle = loadedModuleHandle;
-			moduleInfo->m_module = std::unique_ptr<ModuleBase> (loadedModule);
+			moduleInfo->m_handle = moduleHandle;
 
-			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_moduleInfoMap;
-			moduleInfoMap.emplace (moduleName, std::move(moduleInfo));
+			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_infoMap;
+			moduleInfoMap.emplace (modulePath, std::move (moduleInfo));
 
-			return loadedModule;
+			return true;
 		}
 
-		void ModuleManager::UnloadModule (const std::string& moduleName)
+		void ModuleManager::UnloadModule (const const PathString& modulePath)
 		{
-			auto& moduleInfoMap = ModuleManager::GetSingleton ().m_moduleInfoMap;
-			auto moduleInfoIter = moduleInfoMap.find (moduleName);
+			DestroyModuleInstance (modulePath);
+
+			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_infoMap;
+			auto moduleInfoIter = moduleInfoMap.find (modulePath);
 
 			if (moduleInfoIter == moduleInfoMap.end ())
 			{
 				return;
 			}
 
-			ModuleHandle moduleHandle = moduleInfoIter->second->m_handle;
+			ModuleInfo& moduleInfo = *moduleInfoIter->second;
 
-			if (PlatformUnloadMoudule (moduleHandle))
+			if (PlatformUnloadMoudule (moduleInfo.m_handle))
 			{
-				moduleInfoMap.erase (moduleInfoIter);
-			}	
+				moduleInfo.m_handle = nullptr;
+			}
 		}
 
-		void ModuleManager::RegisterModule (const std::string& moduleName, ModuleLink* moduleLink)
+		ModuleBase* ModuleManager::FindModuleInstance (const PathString& modulePath)
 		{
-			auto& moduleLinkMap = ModuleManager::GetSingleton ().m_staticModuleLinkMap;
-			moduleLinkMap.emplace (moduleName, moduleLink);
+			ModuleBase* found = nullptr;
+			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_infoMap;
+			auto moduleInfoIter = moduleInfoMap.find (modulePath);
+
+			if (moduleInfoIter != moduleInfoMap.end ())
+			{
+				found = moduleInfoIter->second->m_instance.get ();
+			}
+
+			return found;
+		}
+
+		ModuleBase* ModuleManager::CreateModuleInstance (const PathString& modulePath)
+		{
+			ModuleBase* moduleInstance = FindModuleInstance (modulePath);
+			bool bModuleInstanceNotFound = moduleInstance == nullptr;
+
+			if (bModuleInstanceNotFound)
+			{
+				ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_infoMap;
+				auto moduleInfoIter = moduleInfoMap.find (modulePath);
+
+				ModuleLinkMap& moduleLinkMap = ModuleManager::GetSingleton ().m_linkMap;
+				auto moduleLinkIter = moduleLinkMap.find (modulePath);
+
+				if (moduleInfoIter != moduleInfoMap.end () && moduleLinkIter != moduleLinkMap.end ())
+				{
+					ModuleInfo& moduleInfo = *moduleInfoIter->second;
+					ModuleHandle moduleHandle = moduleInfo.m_handle;
+
+					ModuleLink& moduleLink = *moduleLinkIter->second;
+					std::string moduleName = moduleLink.GetModuleName ();
+
+					ModuleCreateFunction createModuleFunction = PlatformFindModuleFunction (moduleHandle, "CreateModuleFunction" + moduleName);
+
+					if (createModuleFunction != nullptr)
+					{
+						moduleInstance = createModuleFunction ();
+
+						if (moduleInstance != nullptr)
+						{
+							moduleInfo.m_instance = std::unique_ptr<ModuleBase> (moduleInstance);
+						}
+					}
+				}
+			}
+
+			return moduleInstance;
+		}
+
+		void ModuleManager::DestroyModuleInstance (const PathString& modulePath)
+		{
+			ModuleInfoMap& moduleInfoMap = ModuleManager::GetSingleton ().m_infoMap;
+			auto moduleInfoIter = moduleInfoMap.find (modulePath);
+
+			if (moduleInfoIter == moduleInfoMap.end ())
+			{
+				return;
+			}
+
+			ModuleInfo& moduleInfo = *moduleInfoIter->second;
+			moduleInfo.m_instance = nullptr;
+		}
+
+		PathString ModuleManager::GetModulePath (const std::string& moduleName)
+		{
+			PathString modulePath = PATH ("");
+
+			for (const auto& pairPathLink : ModuleManager::GetSingleton ().m_linkMap)
+			{
+				if (pairPathLink.second->GetModuleName () == moduleName)
+				{
+					modulePath = pairPathLink.first;
+					break;
+				}
+			}
+
+			return modulePath;
+		}
+
+		ModuleManager& ModuleManager::GetSingleton ()
+		{
+			static ModuleManager instance;
+			return instance;
 		}
 	}
 }

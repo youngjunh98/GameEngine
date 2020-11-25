@@ -3,6 +3,7 @@
 #include <string>
 
 #include "Core/CoreMacro.h"
+#include "Core/File/FileSystem.h"
 
 namespace GameEngine
 {
@@ -10,29 +11,31 @@ namespace GameEngine
 	{
 		using ModuleHandle = void*;
 
-		class CORE_API ModuleBase
+		class ModuleBase
 		{
 		public:
-			ModuleBase ();
-			virtual ~ModuleBase () = 0;
+			CORE_API ModuleBase ();
+			CORE_API virtual ~ModuleBase () = 0;
 		};
 
-		class CORE_API ModuleLink
+		class ModuleLink final
 		{
 		public:
-			ModuleLink (const std::string& name, const std::string& path);
-			~ModuleLink ();
+			CORE_API ModuleLink (const std::string& moduleName, const PathString& modulePath);
+			CORE_API ~ModuleLink ();
 
-			std::string m_name;
-			std::string m_path;
+			CORE_API std::string GetModuleName () const;
+
+		private:
+			std::string m_moduleName;
 		};
 	}
 }
 
-#define LINK_MODULE(NAME, PATH, MODULE_CLASS)\
-extern "C" EXPORT_MODULE ::GameEngine::Modular::ModuleBase* CreateModuleFunction##NAME ()\
+#define LINK_MODULE(MODULE_NAME, MODULE_PATH, MODULE_CLASS)\
+extern "C" EXPORT_MODULE ::GameEngine::Modular::ModuleBase* CreateModuleFunction##MODULE_NAME ()\
 {\
 	return new MODULE_CLASS ();\
 }\
 \
-GameEngine::Modular::ModuleLink ModuleLink##NAME (#NAME, #PATH);
+::GameEngine::Modular::ModuleLink ModuleLink##NAME (#MODULE_NAME, PATH(#MODULE_PATH));

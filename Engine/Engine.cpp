@@ -1,5 +1,6 @@
 ﻿#include "Engine.h"
 #include "Platform/Platform.h"
+#include "Core/Modular/ModuleManager.h"
 #include "Audio/Audio.h"
 #include "Asset/AssetImporter.h"
 #include "Editor/Editor.h"
@@ -15,6 +16,8 @@ namespace GameEngine
 
 	bool Engine::Init ()
 	{
+		Modular::ModuleManager::Initialize ();
+
 		GlobalRendererSettings rendererSettings = { 800, 800, false, 4, true, 60, true };
 
 		if (Platform::GetGenericApplication ().Initialize (L"게임 엔진", 800, 800, false) == false)

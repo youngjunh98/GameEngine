@@ -1,11 +1,12 @@
-#ifndef INCLUDE_GLOBAL_RENDERER
-#define INCLUDE_GLOBAL_RENDERER
+#pragma once
 
 #include <vector>
 #include <memory>
 
-#include "Core/CoreMinimal.h"
+#include "EngineType.h"
 #include "Platform/PlatformRenderingInterface.h"
+#include "Core/CoreMinimal.h"
+#include "Core/File/FileSystem.h"
 #include "Rendering/Pipeline/RenderPipeline.h"
 #include "Rendering/Pipeline/Forward/DefaultForwardRenderPipeline.h"
 #include "Rendering/Pipeline/Line/DefaultLineRenderPipeline.h"
@@ -111,6 +112,7 @@ namespace GameEngine
 	private:
 		GlobalRendererSettings m_settings;
 		PlatformRenderingInterface* m_ri;
+		PathString m_riModulePath;
 
 		int32 m_maxLightCount;
 		std::vector<LightData> m_lightData;
@@ -163,5 +165,3 @@ namespace GameEngine
 
 	extern GlobalRenderer g_renderer;
 }
-
-#endif
