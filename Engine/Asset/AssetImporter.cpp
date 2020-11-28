@@ -38,7 +38,11 @@ namespace GameEngine
 				for (auto& file : FileSystem::GetFileList (currentDirectory))
 				{
 					auto path = currentDirectory + file;
-					ImportAsset (path);
+
+					if (g_assetManager.FindAsset<Object> (path) == nullptr)
+					{
+						ImportAsset (path);
+					}
 				}
 
 				for (auto& directory : FileSystem::GetDirectoryList (currentDirectory))
@@ -62,38 +66,21 @@ namespace GameEngine
 	bool AssetImporter::ImportAsset (const std::wstring& path)
 	{
 		auto extension = FileSystem::GetFileExtension (path);
+		std::shared_ptr<Object> imported = nullptr;
 
-		if (extension == PATH ("OBJ") || extension == PATH ("FBX"))
+		if (extension == PATH ("obj") || extension == PATH ("fbx"))
 		{
-			auto mesh = ImportMesh (path);
-			g_assetManager.AddAsset (mesh, path);
-
-			if (mesh != nullptr)
-			{
-				return true;
-			}
+			imported = ImportMesh (path);
 		}
-		else if (extension == PATH ("JPG") || extension == PATH ("JPEG") || extension == PATH ("PNG") || extension == PATH ("TGA"))
+		else if (extension == PATH ("jpg") || extension == PATH ("jpeg") || extension == PATH ("png") || extension == PATH ("tga"))
 		{
-			auto texture = ImportTexture2D (path, true);
-			g_assetManager.AddAsset (texture, path);
-
-			if (texture != nullptr)
-			{
-				return true;
-			}
+			imported = ImportTexture2D (path, true);
 		}
-		else if (extension == PATH ("WAV"))
+		else if (extension == PATH ("wav"))
 		{
-			auto audioClip = ImportAudioClip (path);
-			g_assetManager.AddAsset (audioClip, path);
-
-			if (audioClip != nullptr)
-			{
-				return true;
-			}
+			imported = ImportAudioClip (path);
 		}
-		else if (extension == PATH ("SCENE"))
+		else if (extension == PATH ("scene"))
 		{
 			File file (path, EFileAccessMode::Read);
 			int64 fileSize = file.GetSize ();
@@ -108,7 +95,7 @@ namespace GameEngine
 
 			return true;
 		}
-		else if (extension == PATH ("MATERIAL"))
+		else if (extension == PATH ("material"))
 		{
 			File file (path, EFileAccessMode::Read);
 			int64 fileSize = file.GetSize ();
@@ -122,12 +109,15 @@ namespace GameEngine
 			auto material = std::make_shared<Material> ();
 			material->OnDeserialize (materialData);
 
-			g_assetManager.AddAsset (material, path);
-
-			return true;
+			imported = material;
 		}
 
-		return false;
+		if (imported != nullptr)
+		{
+			g_assetManager.AddAsset (imported, path);
+		}
+
+		return imported != nullptr;
 	}
 
 	std::shared_ptr<Mesh> AssetImporter::ImportMesh (const std::wstring& path)
@@ -143,14 +133,14 @@ namespace GameEngine
 		auto mesh = std::make_shared<Mesh> ();
 		auto extension = FileSystem::GetFileExtension (path);
 
-		if (extension == PATH ("OBJ"))
+		if (extension == PATH ("obj"))
 		{
 			if (OBJImporter::Import (*mesh, fileData.get (), fileSize) == false)
 			{
 				return nullptr;
 			}
 		}
-		else if (extension == PATH ("FBX"))
+		else if (extension == PATH ("fbx"))
 		{
 			if (FBXImporter::Import (*mesh, fileData.get (), fileSize) == false)
 			{
@@ -228,7 +218,7 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		g_assetManager.AddAsset (texture2D, path);
+		//g_assetManager.AddAsset (texture2D, path);
 
 		return texture2D;
 	}
@@ -353,7 +343,7 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		g_assetManager.AddAsset (audioClip, path);
+		//g_assetManager.AddAsset (audioClip, path);
 
 		return audioClip;
 	}

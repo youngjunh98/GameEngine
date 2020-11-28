@@ -63,17 +63,34 @@ namespace GameEngine
 		bool Init (const GlobalRendererSettings settings);
 		void Shutdown ();
 
-		void ActivateShadowMapShader (int32 lightType);
-		void BindShadowRenderTarget (int32 lightType, uint32 renderTargetIndex);
+		void PresentSwapChain ();
+		bool ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen);
+		bool UpdateSwapChainResource ();
+		RI_RenderTargetView* GetSwapChainRenderTarget () const;
+		uint32 GetSwapChainWidth () const;
+		uint32 GetSwapChainHeight () const;
 
-		void ChangeScreenResolution (uint32 width, uint32 height, bool bFullscreenEnabled);
-		bool ResetScreenRenderTarget ();
-		RI_RenderTargetView* GetScreenRenderTarget () const;
+		void ChangeScreenSize (uint32 width, uint32 height, bool bFullscreen);
+		bool UpdateScreenDepthStencilResource ();
 		RI_DepthStencilView* GetScreenDepthStencil () const;
 
+		void BindRenderTargetAndDepthStencil ();
+		void ClearRenderTargetAndDepthStencil (Vector4 color, float depth, uint8 stencil);
 		RI_RenderTargetView* GetRenderTarget () const;
 		RI_DepthStencilView* GetDepthStencil () const;
-		void SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget, RenderingResourcePtr<RI_DepthStencilView> depthStencil);
+		void SetRenderTargetAndDepthStencilAsDefault ();
+		void SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget);
+		void SetDepthStencil (RenderingResourcePtr<RI_DepthStencilView> depthStencil);
+
+		Vector2 GetRenderSize () const;
+		void SetRenderSize (Vector2 size);
+
+		Vector2 GetViewportSize () const;
+		Vector2 GetViewportTopLeft () const;
+		void SetViewport (Vector2 size, Vector2 topLeft = Vector2::Zero);
+
+		void ActivateShadowMapShader (int32 lightType);
+		void BindShadowRenderTarget (int32 lightType, uint32 renderTargetIndex);
 
 		GlobalRendererSettings GetSettings () const;
 
@@ -81,17 +98,12 @@ namespace GameEngine
 		DefaultForwardRenderPipeline* GetDefaultForwardRenderPipeline ();
 		DefaultLineRenderPipeline* GetDefaultLineRenderPipeline ();
 
-		void BindRenderTarget (RI_RenderTargetView* renderTarget, RI_DepthStencilView* depthStencil);
-		void ClearRenderTarget (RI_RenderTargetView* renderTarget, RI_DepthStencilView* depthStencil, Vector4 color, float depth, uint8 stencil);
-
 		void BindMaterial (Material* material);
-
 		void BindGlobalShaderConstantBuffer (Shader* shader, const std::string& name);
 		void SetGlobalShaderConstantBuffer (const std::string& name, const void* bufferData);
 
 		void DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer);
 
-		void PresentScreen ();
 		void RenderScene (Scene* scene);
 		CullData Cull (Camera* camera, const std::vector<Renderer*>& renderers);
 		void DrawSkybox ();
@@ -104,15 +116,24 @@ namespace GameEngine
 		int32 GetLightCount () const;
 		int32 GetMaxLightCount () const;
 
-		Vector2 GetScreenRenderSize () const;
-		bool IsVSyncEnabled () const;
-
 		PlatformRenderingInterface& GetPlatformRenderingInterface ();
 
 	private:
 		GlobalRendererSettings m_settings;
+
 		PlatformRenderingInterface* m_ri;
 		PathString m_riModulePath;
+
+		RenderingResourcePtr<RI_Texture2D> m_swapChainBuffer;
+		RenderingResourcePtr<RI_RenderTargetView> m_swapChainRenderTarget;
+		RenderingResourcePtr<RI_Texture2D> m_screenDepthStencilBuffer;
+		RenderingResourcePtr<RI_DepthStencilView> m_screenDepthStencil;
+
+		RenderingResourcePtr<RI_RenderTargetView> m_usingRenderTarget;
+		RenderingResourcePtr<RI_DepthStencilView> m_usingDepthStencil;
+
+		Vector2 m_viewportSize;
+		Vector2 m_viewportTopLeft;
 
 		int32 m_maxLightCount;
 		std::vector<LightData> m_lightData;
@@ -121,13 +142,6 @@ namespace GameEngine
 		RenderPipeline* m_renderPipeline;
 		DefaultForwardRenderPipeline m_defaultForwardPipeline;
 		DefaultLineRenderPipeline m_defaultLinePipeline;
-
-		RenderingResourcePtr<RI_Texture2D> m_swapChain;
-		RenderingResourcePtr<RI_RenderTargetView> m_swapChainRenderTarget;
-		RenderingResourcePtr<RI_DepthStencilView> m_swapChainDepthStencil;
-
-		RenderingResourcePtr<RI_RenderTargetView> m_renderTarget;
-		RenderingResourcePtr<RI_DepthStencilView> m_depthStencil;
 
 		RenderingResourcePtr<RI_RasterizerState> m_rsCullBack;
 		RenderingResourcePtr<RI_RasterizerState> m_rsCullNone;

@@ -88,7 +88,7 @@ namespace GameEngine
 
 	void SceneManager::CreateEmptyScene (const std::wstring& path)
 	{
-		File file (m_scenePath, EFileAccessMode::Write);
+		File file (path, EFileAccessMode::Write);
 
 		if (file.IsOpen () == false)
 		{

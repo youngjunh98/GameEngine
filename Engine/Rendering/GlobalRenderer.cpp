@@ -1,3 +1,5 @@
+#include "Platform/Platform.h"
+#include "Core/Modular/ModuleManager.h"
 #include "Rendering/GlobalRenderer.h"
 #include "Rendering/Mesh.h"
 #include "Rendering/Material.h"
@@ -6,13 +8,16 @@
 #include "Component/Transform.h"
 #include "Component/Rendering/Light.h"
 #include "Component/Rendering/Renderer.h"
-#include "Core/Modular/ModuleManager.h"
 #include "Asset/AssetManager.h"
 
 namespace GameEngine
 {
 	GlobalRenderer g_renderer;
-	extern Editor g_editor;
+
+	void ChangeResolution (uint32 width, uint32 height)
+	{
+		g_renderer.ChangeScreenSize (width, height, false);
+	}
 
 	GlobalRenderer::GlobalRenderer () :
 		m_maxLightCount (3)
@@ -27,6 +32,7 @@ namespace GameEngine
 	{
 		m_settings = settings;
 
+		// Create and initialize rendering interface module
 		m_riModulePath = Modular::ModuleManager::GetModulePath ("D3D11RI");
 		m_ri = reinterpret_cast<PlatformRenderingInterface*> (Modular::ModuleManager::CreateModuleInstance (m_riModulePath));
 
@@ -40,14 +46,25 @@ namespace GameEngine
 			return false;
 		}
 
-		// Create Swap Chain
-		if (ResetScreenRenderTarget () == false)
+		// Set swap chain as render target
+		if (UpdateSwapChainResource () == false)
 		{
 			return false;
 		}
 
-		m_ri->BindRenderTargetViewAndDepthStencilView (m_renderTarget.get (), m_depthStencil.get ());
-		m_ri->SetViewport (m_settings.m_renderWidth, m_settings.m_renderHeight, 0, 0);
+		if (UpdateScreenDepthStencilResource () == false)
+		{
+			return false;
+		}
+
+		SetRenderTargetAndDepthStencilAsDefault ();
+		BindRenderTargetAndDepthStencil ();
+
+		Vector2 swapChainSize;
+		swapChainSize.m_x = static_cast<float> (GetSwapChainWidth ());
+		swapChainSize.m_y = static_cast<float> (GetSwapChainHeight ());
+
+		SetViewport (swapChainSize);
 
 		m_rsCullBack = m_ri->CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
 
@@ -197,11 +214,15 @@ namespace GameEngine
 
 		m_ri->SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
 
+		Platform::GetGenericApplication ().AddResizeListener (ChangeResolution);
+
 		return true;
 	}
 
 	void GlobalRenderer::Shutdown ()
 	{
+		Platform::GetGenericApplication ().RemoveResizeListener (ChangeResolution);
+
 		if (m_skyboxMaterial != nullptr)
 		{
 			m_skyboxMaterial->Destroy ();
@@ -215,12 +236,13 @@ namespace GameEngine
 		m_defaultForwardPipeline.Release ();
 		m_defaultLinePipeline.Release ();
 
-		m_swapChain = nullptr;
+		m_swapChainBuffer = nullptr;
 		m_swapChainRenderTarget = nullptr;
-		m_swapChainDepthStencil = nullptr;
+		m_screenDepthStencilBuffer = nullptr;
+		m_screenDepthStencil = nullptr;
 
-		m_renderTarget = nullptr;
-		m_depthStencil = nullptr;
+		m_usingRenderTarget = nullptr;
+		m_usingDepthStencil = nullptr;
 
 		m_rsCullBack = nullptr;
 		m_rsCullNone = nullptr;
@@ -251,6 +273,203 @@ namespace GameEngine
 		m_ri = nullptr;
 
 		Modular::ModuleManager::UnloadModule (m_riModulePath);
+	}
+
+	void GlobalRenderer::PresentSwapChain ()
+	{
+		m_ri->Present (m_settings.m_bVSyncEnabled);
+	}
+
+	bool GlobalRenderer::ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen)
+	{
+		uint32 oldWidth = GetSwapChainWidth ();
+		uint32 oldHeight = GetSwapChainHeight ();
+		bool bUpdateSwapChain = (width >= 0 && height >= 0) && (width != oldWidth || height != oldHeight);
+
+		if (bUpdateSwapChain)
+		{
+			bool bUsingSwapChainRenderTarget = m_usingRenderTarget == m_swapChainRenderTarget;
+
+			if (bUsingSwapChainRenderTarget)
+			{
+				m_usingRenderTarget = nullptr;
+			}
+
+			m_swapChainRenderTarget = nullptr;
+			m_swapChainBuffer = nullptr;
+
+			if (m_ri->ResizeSwapChainBuffer (width, height, bFullscreen))
+			{
+				bool bUpdateResource = UpdateSwapChainResource ();
+
+				if (bUsingSwapChainRenderTarget && bUpdateResource)
+				{
+					m_usingRenderTarget = m_swapChainRenderTarget;
+				}
+			}
+		}
+
+		return m_swapChainBuffer != nullptr && m_swapChainRenderTarget != nullptr;
+	}
+
+	bool GlobalRenderer::UpdateSwapChainResource ()
+	{
+		m_swapChainBuffer = m_ri->GetSwapChainBuffer ();
+
+		if (m_swapChainBuffer != nullptr)
+		{
+			RI_Texture2D* swapChain = m_swapChainBuffer.get ();
+			uint32 arraySize = m_swapChainBuffer->m_arraySize;
+
+			m_swapChainRenderTarget = m_ri->CreateRenderTargetView (swapChain, 0, arraySize, 0);
+		}
+
+		return m_swapChainBuffer != nullptr && m_swapChainRenderTarget != nullptr;
+	}
+
+	RI_RenderTargetView* GlobalRenderer::GetSwapChainRenderTarget () const
+	{
+		return m_swapChainRenderTarget.get ();
+	}
+
+	uint32 GlobalRenderer::GetSwapChainWidth () const
+	{
+		return m_swapChainBuffer != nullptr ? m_swapChainBuffer->m_width : 0;
+	}
+
+	uint32 GlobalRenderer::GetSwapChainHeight () const
+	{
+		return m_swapChainBuffer != nullptr ? m_swapChainBuffer->m_height : 0;
+	}
+
+	void GlobalRenderer::ChangeScreenSize (uint32 width, uint32 height, bool bFullscreen)
+	{
+		uint32 oldWidth = GetSwapChainWidth ();
+		uint32 oldHeight = GetSwapChainHeight ();
+		bool bUpdateScreen = (width > 0 && height > 0) && (width != oldWidth || height != oldHeight);
+
+		if (bUpdateScreen)
+		{
+			if (ResizeSwapChain (width, height, bFullscreen))
+			{
+				if (UpdateScreenDepthStencilResource ())
+				{
+					if (m_swapChainRenderTarget == m_usingRenderTarget)
+					{
+						m_settings.m_renderWidth = width;
+						m_settings.m_renderHeight = height;
+					}
+
+					m_settings.m_bFullScreenEnabled = bFullscreen;
+				}
+			}
+		}
+	}
+
+	bool GlobalRenderer::UpdateScreenDepthStencilResource ()
+	{
+		uint32 width = m_swapChainBuffer->m_width;
+		uint32 height = m_swapChainBuffer->m_height;
+		uint32 mipmapCount = m_swapChainBuffer->m_mipmapCount;
+		uint32 arraySize = m_swapChainBuffer->m_arraySize;
+
+		bool bUsingScreenDepthStencil = m_usingDepthStencil == m_screenDepthStencil;
+
+		if (bUsingScreenDepthStencil)
+		{
+			m_usingDepthStencil = nullptr;
+		}
+
+		m_screenDepthStencilBuffer = m_ri->CreateTexture2D (width, height, mipmapCount, arraySize, ERenderingResourceFormat::D24_UNorm_S8_UInt, nullptr, nullptr, false, false, false, true);
+		m_screenDepthStencil = m_ri->CreateDepthStencilView (m_screenDepthStencilBuffer.get (), 0, arraySize, 0);
+
+		if (bUsingScreenDepthStencil && m_screenDepthStencil != nullptr)
+		{
+			m_usingDepthStencil = m_screenDepthStencil;
+		}
+
+		return m_screenDepthStencilBuffer != nullptr && m_screenDepthStencil != nullptr;
+	}
+
+	RI_DepthStencilView* GlobalRenderer::GetScreenDepthStencil () const
+	{
+		return m_screenDepthStencil.get ();
+	}
+
+	void GlobalRenderer::BindRenderTargetAndDepthStencil ()
+	{
+		RI_RenderTargetView* renderTarget = m_usingRenderTarget.get ();
+		RI_DepthStencilView* depthStencil = m_usingDepthStencil.get ();
+
+		m_ri->BindRenderTargetViewAndDepthStencilView (renderTarget, depthStencil);
+	}
+
+	void GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 color, float depth, uint8 stencil)
+	{
+		RI_RenderTargetView* renderTarget = m_usingRenderTarget.get ();
+		RI_DepthStencilView* depthStencil = m_usingDepthStencil.get ();
+
+		m_ri->ClearRenderTarget (renderTarget, color.m_x, color.m_y, color.m_z, color.m_w);
+		m_ri->ClearDepthStencil (depthStencil, depth, stencil);
+	}
+
+	RI_RenderTargetView* GlobalRenderer::GetRenderTarget () const
+	{
+		return m_usingRenderTarget.get ();
+	}
+
+	RI_DepthStencilView* GlobalRenderer::GetDepthStencil () const
+	{
+		return m_usingDepthStencil.get ();
+	}
+
+	void GlobalRenderer::SetRenderTargetAndDepthStencilAsDefault ()
+	{
+		SetRenderTarget (m_swapChainRenderTarget);
+		SetDepthStencil (m_screenDepthStencil);
+	}
+
+	void GlobalRenderer::SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget)
+	{
+		m_usingRenderTarget = renderTarget;
+	}
+
+	void GlobalRenderer::SetDepthStencil (RenderingResourcePtr<RI_DepthStencilView> depthStencil)
+	{
+		m_usingDepthStencil = depthStencil;
+	}
+
+	Vector2 GlobalRenderer::GetRenderSize () const
+	{
+		float width = static_cast<float> (m_settings.m_renderWidth);
+		float height = static_cast<float> (m_settings.m_renderHeight);
+
+		return Vector2 (width, height);
+	}
+
+	void GlobalRenderer::SetRenderSize (Vector2 size)
+	{
+		m_settings.m_renderWidth = static_cast<uint32> (size.m_x);
+		m_settings.m_renderHeight = static_cast<uint32> (size.m_y);
+	}
+
+	Vector2 GlobalRenderer::GetViewportSize () const
+	{
+		return m_viewportSize;
+	}
+
+	Vector2 GlobalRenderer::GetViewportTopLeft () const
+	{
+		return m_viewportTopLeft;
+	}
+
+	void GlobalRenderer::SetViewport (Vector2 size, Vector2 topLeft)
+	{
+		if (m_ri->SetViewport (size.m_x, size.m_y, topLeft.m_x, topLeft.m_y))
+		{
+			m_viewportSize = size;
+			m_viewportTopLeft = topLeft;
+		}
 	}
 
 	void GlobalRenderer::ActivateShadowMapShader (int32 lightType)
@@ -339,78 +558,6 @@ namespace GameEngine
 		}
 	}
 
-	void GlobalRenderer::ChangeScreenResolution (uint32 width, uint32 height, bool bFullscreenEnabled)
-	{
-		m_ri->ResizeSwapChainBuffer (width, height, bFullscreenEnabled);
-		m_ri->SetViewport (width, height, 0, 0);
-
-		ResetScreenRenderTarget ();
-
-		m_settings.m_renderWidth = width;
-		m_settings.m_renderHeight = height;
-		m_settings.m_bFullScreenEnabled = bFullscreenEnabled;
-	}
-
-	bool GlobalRenderer::ResetScreenRenderTarget ()
-	{
-		bool bUpdateRenderTarget = m_renderTarget == m_swapChainRenderTarget;
-
-		m_swapChain = m_ri->GetSwapChainBuffer ();
-		m_swapChainRenderTarget = m_ri->CreateRenderTargetView (m_swapChain.get (), 0, m_swapChain->m_arraySize, 0);
-
-		if (m_swapChainRenderTarget == nullptr)
-		{
-			return false;
-		}
-
-		auto swapChainDepthStencilBuffer = m_ri->CreateTexture2D (m_swapChain->m_width, m_swapChain->m_height, m_swapChain->m_mipmapCount, m_swapChain->m_arraySize, ERenderingResourceFormat::D24_UNorm_S8_UInt, nullptr, nullptr, false, false, false, true);
-		m_swapChainDepthStencil = m_ri->CreateDepthStencilView (swapChainDepthStencilBuffer.get (), 0, m_swapChain->m_arraySize, 0);
-
-		if (m_swapChainDepthStencil == nullptr)
-		{
-			return false;
-		}
-
-		if (bUpdateRenderTarget)
-		{
-			m_renderTarget = m_swapChainRenderTarget;
-			m_depthStencil = m_swapChainDepthStencil;
-		}
-
-		return true;
-	}
-
-	RI_RenderTargetView* GlobalRenderer::GetScreenRenderTarget () const
-	{
-		return m_swapChainRenderTarget.get ();
-	}
-
-	RI_DepthStencilView* GlobalRenderer::GetScreenDepthStencil () const
-	{
-		return m_swapChainDepthStencil.get ();
-	}
-
-	RI_RenderTargetView* GlobalRenderer::GetRenderTarget () const
-	{
-		return m_renderTarget.get ();
-	}
-
-	RI_DepthStencilView* GlobalRenderer::GetDepthStencil () const
-	{
-		return m_depthStencil.get ();
-	}
-
-	void GlobalRenderer::SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget, RenderingResourcePtr<RI_DepthStencilView> depthStencil)
-	{
-		if (renderTarget == nullptr)
-		{
-			return;
-		}
-
-		m_renderTarget = renderTarget;
-		m_depthStencil = depthStencil;
-	}
-
 	void GlobalRenderer::BindRenderPipeline (RenderPipeline* renedrPipeline)
 	{
 		m_renderPipeline = renedrPipeline;
@@ -424,23 +571,6 @@ namespace GameEngine
 	DefaultLineRenderPipeline* GlobalRenderer::GetDefaultLineRenderPipeline ()
 	{
 		return &m_defaultLinePipeline;
-	}
-
-	void GlobalRenderer::BindRenderTarget (RI_RenderTargetView* renderTarget, RI_DepthStencilView* depthStencil)
-	{
-		RI_RenderTargetView* rtv = renderTarget == nullptr ? m_renderTarget.get () : renderTarget;
-		RI_DepthStencilView* dsv = depthStencil == nullptr ? m_depthStencil.get () : depthStencil;
-
-		m_ri->BindRenderTargetViewAndDepthStencilView (rtv, dsv);
-	}
-
-	void GlobalRenderer::ClearRenderTarget (RI_RenderTargetView* renderTarget, RI_DepthStencilView* depthStencil, Vector4 color, float depth, uint8 stencil)
-	{
-		RI_RenderTargetView* rtv = renderTarget == nullptr ? m_renderTarget.get () : renderTarget;
-		RI_DepthStencilView* dsv = depthStencil == nullptr ? m_depthStencil.get () : depthStencil;
-
-		m_ri->ClearRenderTarget (rtv, color.m_x, color.m_y, color.m_z, color.m_w);
-		m_ri->ClearDepthStencil (dsv, depth, stencil);
 	}
 
 	void GlobalRenderer::BindMaterial (Material* material)
@@ -697,11 +827,6 @@ namespace GameEngine
 		}
 	}
 
-	void GlobalRenderer::PresentScreen ()
-	{
-		m_ri->Present (m_settings.m_bVSyncEnabled);
-	}
-
 	void GlobalRenderer::RenderScene (Scene* scene)
 	{
 		if (scene == nullptr)
@@ -760,7 +885,7 @@ namespace GameEngine
 		float cameraNear = Camera::Main->GetNear ();
 		float cameraFar = Camera::Main->GetFar ();
 		float cameraFov = Camera::Main->GetMode () == ECameraMode::Orthographic ? 90.0f : Camera::Main->GetFieldOfView ();
-		float aspectRatio = m_settings.m_renderWidth / m_settings.m_renderHeight;
+		float aspectRatio = Camera::Main->GetAspectRatio ();
 
 		Matrix4x4 cameraViewTransposed = Camera::Main->GetViewMatrix ().Transposed ();
 		Matrix4x4 cameraProjectionTransposed = Matrix4x4::Perspective (cameraFov, aspectRatio, cameraNear, cameraFar).Transposed ();
@@ -838,16 +963,6 @@ namespace GameEngine
 	int32 GlobalRenderer::GetMaxLightCount () const
 	{
 		return m_maxLightCount;
-	}
-
-	Vector2 GlobalRenderer::GetScreenRenderSize () const
-	{
-		return Vector2 (static_cast<float> (m_settings.m_renderWidth), static_cast<float> (m_settings.m_renderHeight));
-	}
-
-	bool GlobalRenderer::IsVSyncEnabled () const
-	{
-		return m_settings.m_bVSyncEnabled;
 	}
 
 	PlatformRenderingInterface& GlobalRenderer::GetPlatformRenderingInterface ()

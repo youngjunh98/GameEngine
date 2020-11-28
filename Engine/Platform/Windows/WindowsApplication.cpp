@@ -39,7 +39,7 @@ namespace GameEngine
 			}
 			else
 			{
-				style |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+				style |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX;
 			}
 
 			UINT screenWidth = GetSystemMetrics (SM_CXSCREEN);
@@ -125,7 +125,7 @@ namespace GameEngine
 			}
 			else
 			{
-				style |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+				style |= WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX;
 			}
 
 			UINT screenWidth = GetSystemMetrics (SM_CXSCREEN);
@@ -178,6 +178,12 @@ namespace GameEngine
 
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	GameEngine::Platform::GenericApplication& application = GameEngine::Platform::GetGenericApplication ();
+	GameEngine::Platform::GenericInput& input = GameEngine::Platform::GetGenericInput ();
+
+	auto& windowsApplication = static_cast<GameEngine::Platform::WindowsApplication&> (application);
+	auto& windowsInput = static_cast<GameEngine::Platform::WindowsInput&> (input);
+
 	switch (message)
 	{
 		case WM_CLOSE:
@@ -190,6 +196,14 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			PostQuitMessage (0);
 			return 0;
+		}
+
+		case WM_SIZE:
+		{
+			UINT width = LOWORD (lParam);
+			UINT height = HIWORD (lParam);
+			windowsApplication.ExecuteResizeCallbacks (width, height);
+			break;
 		}
 
 		case WM_INPUT:
@@ -205,9 +219,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP:
 		{
-			auto& input = static_cast<GameEngine::Platform::Input&> (GameEngine::Platform::GetGenericInput ());
-			input.ProcessMouseMessages (message, wParam, lParam);
-
+			windowsInput.ProcessMouseMessages (message, wParam, lParam);
 			break;
 		}
 
@@ -216,14 +228,11 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
 		{
-			auto& input = static_cast<GameEngine::Platform::Input&> (GameEngine::Platform::GetGenericInput ());
-			input.ProcessKeyboardMessages (message, wParam, lParam);
-
+			windowsInput.ProcessKeyboardMessages (message, wParam, lParam);
 			break;
 		}
 	}
 
-	auto& windowsApplication = static_cast<GameEngine::Platform::WindowsApplication&> (GameEngine::Platform::GetGenericApplication ());
 	windowsApplication.ExecuteWindowProcedureCallback (message, wParam, lParam);
 
 	return DefWindowProc (hWnd, message, wParam, lParam);

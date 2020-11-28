@@ -100,7 +100,7 @@ namespace GameEngine
 			g_sceneManager.UpdateScene ();
 			g_renderer.RenderScene (g_sceneManager.GetScene ());
 			g_editor.RenderGUI ();
-			g_renderer.PresentScreen ();
+			g_renderer.PresentSwapChain ();
 
 			platformInput.Update ();
 		}	

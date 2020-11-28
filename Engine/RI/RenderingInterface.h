@@ -23,10 +23,10 @@ namespace GameEngine
 		virtual void Shutdown ();
 
 		virtual void Present (bool bVSyncEnabled) = 0;
-		virtual void ResizeSwapChainBuffer (uint32 width, uint32 height, bool bFullScreen) = 0;
+		virtual bool ResizeSwapChainBuffer (uint32 width, uint32 height, bool bFullScreen) = 0;
 		virtual RenderingResourcePtr<RI_Texture2D> GetSwapChainBuffer () = 0;
 
-		virtual void SetViewport (uint32 width, uint32 height, uint32 topLeftX, uint32 topLeftY) = 0;
+		virtual bool SetViewport (float width, float height, float topLeftX, float topLeftY) = 0;
 
 		virtual RenderingResourcePtr<RI_VertexBuffer> CreateVertexBuffer (const void* const vertices, uint32 vertexCount, uint32 vertexStride) = 0;
 		virtual RenderingResourcePtr<RI_IndexBuffer> CreateIndexBuffer (const void* const indices, uint32 indexCount, uint32 indexStride) = 0;
@@ -116,7 +116,7 @@ namespace GameEngine
 				}
 			}
 
-			m_resourceRefList.push_back (newResource);
+			//m_resourceRefList.push_back (newResource);
 
 			return newResource;
 		}

@@ -163,6 +163,8 @@ namespace GameEngine
 		{}
 		virtual ~RI_ShaderResourceView ()
 		{}
+
+		virtual void* GetNative () const = 0;
 	};
 
 	class RI_Sampler : public RI_Resource

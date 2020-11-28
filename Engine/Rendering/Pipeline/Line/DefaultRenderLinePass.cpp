@@ -32,12 +32,11 @@ namespace GameEngine
 		g_renderer.GetPlatformRenderingInterface ().SetRasterizerState (m_rsLineCullNone.get ());
 		g_renderer.GetPlatformRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
 
-		Vector2 screenRenderSize = g_renderer.GetScreenRenderSize ();
+		Vector2 renderSize = g_renderer.GetRenderSize ();
+		g_renderer.SetViewport (renderSize);
 
-		g_renderer.BindRenderTarget (nullptr, nullptr);
-		g_renderer.ClearRenderTarget (nullptr, nullptr, Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
-
-		g_renderer.GetPlatformRenderingInterface ().SetViewport (static_cast<uint32> (screenRenderSize.m_x), static_cast<uint32> (screenRenderSize.m_y), 0, 0);
+		g_renderer.BindRenderTargetAndDepthStencil ();
+		g_renderer.ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 	}
 
 	void DefaultRenderLinePass::Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)

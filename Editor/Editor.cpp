@@ -33,7 +33,8 @@ namespace GameEngine
 		m_bOpeningScene (false),
 		m_bCreatingAsset (false),
 		m_selectedGameObject (nullptr),
-		m_selectedGameObjectIndex (0)
+		m_selectedGameObjectIndex (0),
+		m_gameViewSize (Vector2::Zero)
 	{
 	}
 
@@ -62,6 +63,7 @@ namespace GameEngine
 		auto* d3d11Device = reinterpret_cast<ID3D11Device*> (renderingInterface.GetNativeDevice ());
 		auto* d3d11Context = reinterpret_cast<ID3D11DeviceContext*> (renderingInterface.GetNativeContext ());
 
+		// Start the Dear ImGui frame
 		ImGui_ImplWin32_Init (Platform::GetGenericApplication ().GetNativeWindowHandle ());
 		ImGui_ImplDX11_Init (d3d11Device, d3d11Context);
 
@@ -69,15 +71,15 @@ namespace GameEngine
 		auto& winApp = static_cast<Platform::Application&> (Platform::GetGenericApplication ());
 		winApp.AddWindowProcedureCallback (ImGui_ImplWin32_WndProcHandler);
 
-		m_gameRenderBuffer = renderingInterface.CreateTexture2D (800, 800, 1, 1, ERenderingResourceFormat::R8G8B8A8_UNorm, nullptr, nullptr, false, true, true, false);
-		m_gameRenderTarget = renderingInterface.CreateRenderTargetView (m_gameRenderBuffer.get (), 0, 1, 0);
-		m_gameRenderTexture = renderingInterface.CreateShaderResourceView (m_gameRenderBuffer.get(), ERenderingResourceFormat::R8G8B8A8_UNorm, 0, 1, 0);
+		//m_gameRenderBuffer = renderingInterface.CreateTexture2D (800, 800, 1, 1, ERenderingResourceFormat::R8G8B8A8_UNorm, nullptr, nullptr, false, true, true, false);
+		//m_gameRenderTarget = renderingInterface.CreateRenderTargetView (m_gameRenderBuffer.get (), 0, 1, 0);
+		//m_gameRenderTexture = renderingInterface.CreateShaderResourceView (m_gameRenderBuffer.get(), ERenderingResourceFormat::R8G8B8A8_UNorm, 0, 1, 0);
 
-		m_gameDepthStencilBuffer = renderingInterface.CreateTexture2D (800, 800, 1, 1, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
-		m_gameDepthStencil = renderingInterface.CreateDepthStencilView (m_gameDepthStencilBuffer.get (), 0, 1, 0);
-		m_gameDepthStencilTexture = renderingInterface.CreateShaderResourceView (m_gameDepthStencilBuffer.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 1, 0);
+		//m_gameDepthStencilBuffer = renderingInterface.CreateTexture2D (800, 800, 1, 1, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
+		//m_gameDepthStencil = renderingInterface.CreateDepthStencilView (m_gameDepthStencilBuffer.get (), 0, 1, 0);
+		//m_gameDepthStencilTexture = renderingInterface.CreateShaderResourceView (m_gameDepthStencilBuffer.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 1, 0);
 
-		g_renderer.SetRenderTarget (m_gameRenderTarget, m_gameDepthStencil);
+		//g_renderer.SetRenderTarget (m_gameRenderTarget, m_gameDepthStencil);
 	}
 
 	void Editor::Shutdown ()
@@ -98,7 +100,6 @@ namespace GameEngine
 
 	void Editor::RenderGUI ()
 	{
-		// Start the Dear ImGui frame
 		ImGui_ImplDX11_NewFrame ();
 		ImGui_ImplWin32_NewFrame ();
 		ImGui::NewFrame ();
@@ -119,11 +120,11 @@ namespace GameEngine
 			renderingInterface.BindPixelShaderResource (nullptr, i);
 		}
 
-		RI_RenderTargetView* screenRenderTarget = g_renderer.GetScreenRenderTarget ();
+		RI_RenderTargetView* swapChainRenderTarget = g_renderer.GetSwapChainRenderTarget ();
 		RI_DepthStencilView* screenDepthStencil = g_renderer.GetScreenDepthStencil ();
 		
-		renderingInterface.BindRenderTargetViewAndDepthStencilView (screenRenderTarget, screenDepthStencil);
-		renderingInterface.ClearRenderTarget (screenRenderTarget, 0.0f, 0.0f, 0.0f, 1.0f);
+		renderingInterface.BindRenderTargetViewAndDepthStencilView (swapChainRenderTarget, screenDepthStencil);
+		renderingInterface.ClearRenderTarget (swapChainRenderTarget, 0.0f, 0.0f, 0.0f, 1.0f);
 		renderingInterface.ClearDepthStencil (screenDepthStencil, 1.0f, 0);
 
 		// Rendering
@@ -469,12 +470,56 @@ namespace GameEngine
 
 		ImGui::Begin ("Game", &m_bShowGameWindow, ImGuiWindowFlags_None);
 
-		auto contentMin = ImGui::GetWindowContentRegionMin ();
-		auto contentMax = ImGui::GetWindowContentRegionMax ();
+		ImVec2 contentMin = ImGui::GetWindowContentRegionMin ();
+		ImVec2 contentMax = ImGui::GetWindowContentRegionMax ();
 
-		auto* image = reinterpret_cast<D3D11RI_ShaderResourceView*> (m_gameRenderTexture.get ())->m_resource.Get ();
+		float width = Math::Floor (contentMax.x - contentMin.x);
+		float height = Math::Floor (contentMax.y - contentMin.y);
+		bool bSizeChanged = m_gameViewSize != Vector2 (width, height);
 
-		ImGui::Image (image, ImVec2 (contentMax.x - contentMin.x, contentMax.y - contentMin.y));
+		uint32 widthInt = static_cast<uint32> (width);
+		uint32 heightInt = static_cast<uint32> (height);
+
+		if (widthInt > 0 && heightInt > 0)
+		{
+			PlatformRenderingInterface& renderingInterface = g_renderer.GetPlatformRenderingInterface ();
+			bool bRenderTargetChanged = bSizeChanged || m_gameRenderTexture == nullptr;
+			bool bDepthStencilChanged = bSizeChanged || m_gameDepthStencilTexture == nullptr;
+
+			if (bRenderTargetChanged)
+			{
+				m_gameRenderBuffer = renderingInterface.CreateTexture2D (widthInt, heightInt, 1, 1, ERenderingResourceFormat::R8G8B8A8_UNorm, nullptr, nullptr, false, true, true, false);
+				m_gameRenderTarget = renderingInterface.CreateRenderTargetView (m_gameRenderBuffer.get (), 0, 1, 0);
+				m_gameRenderTexture = renderingInterface.CreateShaderResourceView (m_gameRenderBuffer.get (), ERenderingResourceFormat::R8G8B8A8_UNorm, 0, 1, 0);
+			}
+
+			if (bDepthStencilChanged)
+			{
+				m_gameDepthStencilBuffer = renderingInterface.CreateTexture2D (widthInt, heightInt, 1, 1, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
+				m_gameDepthStencil = renderingInterface.CreateDepthStencilView (m_gameDepthStencilBuffer.get (), 0, 1, 0);
+				m_gameDepthStencilTexture = renderingInterface.CreateShaderResourceView (m_gameDepthStencilBuffer.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 1, 0);
+			}
+
+			if (bRenderTargetChanged || bDepthStencilChanged)
+			{
+				Vector2 size (width, height);
+				g_renderer.SetRenderSize (size);
+				g_renderer.SetRenderTarget (m_gameRenderTarget);
+				g_renderer.SetDepthStencil (m_gameDepthStencil);
+			}
+		}
+
+		ImTextureID image = nullptr;
+
+		if (m_gameRenderTexture)
+		{
+			image = m_gameRenderTexture->GetNative ();
+		}
+
+		if (image != nullptr)
+		{
+			ImGui::Image (image, ImVec2 (width, height));
+		}
 
 		ImGui::End ();
 	}

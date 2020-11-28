@@ -17,10 +17,10 @@ namespace GameEngine
 		RI_API virtual void Shutdown () override;
 
 		RI_API virtual void Present (bool bVSyncEnabled) override;
-		RI_API virtual void ResizeSwapChainBuffer (uint32 width, uint32 height, bool bFullScreen) override;
+		RI_API virtual bool ResizeSwapChainBuffer (uint32 width, uint32 height, bool bFullScreen) override;
 		RI_API virtual RenderingResourcePtr<RI_Texture2D> GetSwapChainBuffer () override;
 
-		RI_API virtual void SetViewport (uint32 width, uint32 height, uint32 topLeftX, uint32 topLeftY) override;
+		RI_API virtual bool SetViewport (float width, float height, float topLeftX, float topLeftY) override;
 
 		RI_API virtual RenderingResourcePtr<RI_VertexBuffer> CreateVertexBuffer (const void* const vertices, uint32 vertexCount, uint32 vertexStride) override;
 		RI_API virtual RenderingResourcePtr<RI_IndexBuffer> CreateIndexBuffer (const void* const indices, uint32 indexCount, uint32 indexStride) override;
@@ -99,8 +99,6 @@ namespace GameEngine
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_immediateContext;
 		Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
 		
-		RenderingResourcePtr<RI_Texture2D> m_swapChainBuffer;
-
 		D3D_FEATURE_LEVEL m_featureLevel;
 		UINT m_msaaQuality;
 	};

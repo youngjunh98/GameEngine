@@ -1,4 +1,3 @@
-#include "Screen.h"
 #include "GameObject.h"
 #include "Component/Camera.h"
 #include "Component/Transform.h"
@@ -39,6 +38,19 @@ namespace GameEngine
 		}
 	}
 
+	float Camera::GetAspectRatio () const
+	{
+		float aspectRatio = 1.0f;
+		Vector2 size = g_renderer.GetRenderSize ();
+
+		if (size.m_y > 0.0f)
+		{
+			aspectRatio = size.m_x / size.m_y;
+		}
+
+		return aspectRatio;
+	}
+
 	Matrix4x4 Camera::GetViewMatrix () const
 	{
 		auto& transform = GetGameObject ().GetTransform ();
@@ -51,21 +63,22 @@ namespace GameEngine
 
 	Matrix4x4 Camera::GetProjectionMatrix () const
 	{
-		GlobalRendererSettings settings = g_renderer.GetSettings ();
-		float aspectRatio = static_cast<float> (settings.m_renderWidth) / settings.m_renderHeight;
+		Matrix4x4 projectionMatrix = Matrix4x4::Identity;
+		float aspectRatio = GetAspectRatio ();
 
 		if (m_mode == ECameraMode::Perspective)
 		{
-			return Matrix4x4::Perspective (m_fieldOfView, aspectRatio, m_near, m_far);
+			projectionMatrix = Matrix4x4::Perspective (m_fieldOfView, aspectRatio, m_near, m_far);
 		}
 		else
 		{
 			float width = m_orthographicSize * aspectRatio;
 			float height = m_orthographicSize;
 
-			return Matrix4x4::Orthographic (width, height, m_near, m_far);
-			//return Matrix4x4::Orthographic (static_cast<float> (Screen::Width ()), static_cast<float> (Screen::Height ()), m_near, m_far);
+			projectionMatrix = Matrix4x4::Orthographic (width, height, m_near, m_far);
 		}
+
+		return projectionMatrix;
 	}
 
 	ECameraMode Camera::GetMode () const
@@ -114,7 +127,7 @@ namespace GameEngine
 
 		Matrix4x4 inverseView = GetViewMatrix ().Inversed ();
 		float tangentHalfFOV = Math::Tan (0.5f * m_fieldOfView * Math::Deg2Rad);
-		float aspectRatio = Screen::AspectRatio ();
+		float aspectRatio = GetAspectRatio ();
 
 		float nearHalfHeight = tangentHalfFOV * m_near;
 		float nearHalfWidth = nearHalfHeight * aspectRatio;

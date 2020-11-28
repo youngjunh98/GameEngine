@@ -35,6 +35,7 @@ namespace GameEngine
 
 		virtual void OnStart () override;
 
+		float GetAspectRatio () const;
 		Matrix4x4 GetViewMatrix () const;
 		Matrix4x4 GetProjectionMatrix () const;
 

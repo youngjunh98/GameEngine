@@ -118,6 +118,11 @@ namespace GameEngine
 			m_resource.Reset ();
 		}
 
+		virtual void* GetNative () const override
+		{
+			return m_resource.Get ();
+		}
+
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_resource;
 	};
 

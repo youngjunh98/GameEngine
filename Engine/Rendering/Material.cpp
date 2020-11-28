@@ -330,6 +330,11 @@ namespace GameEngine
 
 		for (auto& texture : m_textureMap)
 		{
+			if (texture.second == nullptr)
+			{
+				continue;
+			}
+
 			auto texturePath = g_assetManager.GetAssetPath (texture.second);
 			std::string asciiTexturePath (texturePath.begin (), texturePath.end ());
 

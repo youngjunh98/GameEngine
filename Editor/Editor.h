@@ -67,6 +67,7 @@ namespace GameEngine
 		std::string m_createAssetPath;
 		std::string m_scenePath;
 
+		Vector2 m_gameViewSize;
 		RenderingResourcePtr<RI_Texture2D> m_gameRenderBuffer;
 		RenderingResourcePtr<RI_Texture2D> m_gameDepthStencilBuffer;
 		RenderingResourcePtr<RI_RenderTargetView> m_gameRenderTarget;

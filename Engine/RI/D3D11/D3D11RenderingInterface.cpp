@@ -79,7 +79,6 @@ namespace GameEngine
 	{
 		RenderingInterface::Shutdown ();
 
-		m_swapChainBuffer = nullptr;
 		m_swapChain->SetFullscreenState (false, nullptr);
 		m_swapChain.Reset ();
 
@@ -101,58 +100,75 @@ namespace GameEngine
 		}
 	}
 
-	void D3D11RenderingInterface::ResizeSwapChainBuffer (uint32 width, uint32 height, bool bFullScreen)
+	bool D3D11RenderingInterface::ResizeSwapChainBuffer (uint32 width, uint32 height, bool bFullScreen)
 	{
-		if (width == 0 || height == 0)
+		bool bSucceed = false;
+
+		if (width > 0 && height > 0)
 		{
-			return;
+			m_immediateContext->OMSetRenderTargets (0, nullptr, nullptr);
+			m_immediateContext->Flush ();
+
+			bSucceed = SUCCEEDED (m_swapChain->ResizeBuffers (0, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+			m_swapChain->SetFullscreenState (bFullScreen, nullptr);
 		}
 
-		m_immediateContext->OMSetRenderTargets (0, nullptr, nullptr);
-		m_immediateContext->Flush ();
-
-		m_swapChain->ResizeBuffers (0, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+		return bSucceed;
 	}
 
 	RenderingResourcePtr<RI_Texture2D> D3D11RenderingInterface::GetSwapChainBuffer ()
 	{
-		if (m_swapChainBuffer == nullptr)
+		RenderingResourcePtr<D3D11RI_Texture2D> buffer = nullptr;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> swapChainBuffer;
+
+		if (m_swapChain)
 		{
-			auto buffer = std::make_shared<D3D11RI_Texture2D> ();
-
-			if (FAILED (m_swapChain->GetBuffer (0, __uuidof (ID3D11Texture2D), (void **) buffer->m_resource.ReleaseAndGetAddressOf ())))
+			if (SUCCEEDED (m_swapChain->GetBuffer (0, __uuidof (ID3D11Texture2D), (void**)swapChainBuffer.ReleaseAndGetAddressOf ())))
 			{
-				return nullptr;
+				D3D11_TEXTURE2D_DESC swapChainBufferDesc;
+				swapChainBuffer->GetDesc (&swapChainBufferDesc);
+
+				buffer = std::make_shared<D3D11RI_Texture2D> ();
+				buffer->m_resource = swapChainBuffer;
+				buffer->m_width = swapChainBufferDesc.Width;
+				buffer->m_height = swapChainBufferDesc.Height;
+				buffer->m_mipmapCount = swapChainBufferDesc.MipLevels;
+				buffer->m_arraySize = swapChainBufferDesc.ArraySize;
+				buffer->m_format = MapDXGIFormatToRenderingResourceFormat (swapChainBufferDesc.Format);
+				buffer->m_bTextureCube = false;
 			}
-
-			D3D11_TEXTURE2D_DESC bufferDesc;
-			buffer->m_resource->GetDesc (&bufferDesc);
-
-			buffer->m_width = bufferDesc.Width;
-			buffer->m_height = bufferDesc.Height;
-			buffer->m_mipmapCount = bufferDesc.MipLevels;
-			buffer->m_arraySize = bufferDesc.ArraySize;
-			buffer->m_format = MapDXGIFormatToRenderingResourceFormat (bufferDesc.Format);
-			buffer->m_bTextureCube = false;
-
-			m_swapChainBuffer = buffer;
 		}
 
-
-		return m_swapChainBuffer;
+		return buffer;
 	}
 
-	void D3D11RenderingInterface::SetViewport (uint32 width, uint32 height, uint32 topLeftX, uint32 topLeftY)
+	bool D3D11RenderingInterface::SetViewport (float width, float height, float topLeftX, float topLeftY)
 	{
-		D3D11_VIEWPORT viewport;
-		viewport.Width = static_cast<FLOAT> (width);
-		viewport.Height = static_cast<FLOAT> (height);
-		viewport.TopLeftX = static_cast<FLOAT> (topLeftX);
-		viewport.TopLeftY = static_cast<FLOAT> (topLeftY);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
+		bool bSucceed = false;
 
-		m_immediateContext->RSSetViewports (1, &viewport);
+		const float MIN = static_cast<float> (D3D11_VIEWPORT_BOUNDS_MIN);
+		const float MAX = static_cast<float> (D3D11_VIEWPORT_BOUNDS_MAX);
+
+		bool bSizeInRange = width >= 0.0f && height >= 0.0f;
+		bool bViewportMinInRange = topLeftX >= MIN && topLeftY >= MIN;
+		bool bViewportMaxInRange = topLeftX + width <= MAX && topLeftY + height <= MAX;
+
+		if (bSizeInRange && bViewportMinInRange && bViewportMaxInRange)
+		{
+			bSucceed = true;
+
+			D3D11_VIEWPORT viewport;
+			viewport.Width = width;
+			viewport.Height = height;
+			viewport.TopLeftX = topLeftX;
+			viewport.TopLeftY = topLeftY;
+			viewport.MinDepth = 0.0f;
+			viewport.MaxDepth = 1.0f;
+
+			m_immediateContext->RSSetViewports (1, &viewport);
+		}
+
+		return bSucceed;
 	}
 
 	RenderingResourcePtr<RI_VertexBuffer> D3D11RenderingInterface::CreateVertexBuffer (const void* const vertices, uint32 vertexCount, uint32 vertexStride)
@@ -1208,6 +1224,11 @@ namespace GameEngine
 
 	void D3D11RenderingInterface::ClearDepthStencil (const RI_DepthStencilView* depthStencilView, float depth, uint8 stencil)
 	{
+		if (depthStencilView == nullptr)
+		{
+			return;
+		}
+
 		auto* dsvResource = static_cast<const D3D11RI_DepthStencilView&> (*depthStencilView).m_resource.Get ();
 		UINT flags = D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL;
 
