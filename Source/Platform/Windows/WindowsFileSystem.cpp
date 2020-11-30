@@ -17,11 +17,9 @@ namespace GameEngine
 		{
 		}
 
-		bool WindowsFileSystem::AppendPath (path_char* path, const uint32 maxPathSize, const path_char* pathToAppend)
+		bool WindowsFileSystem::CombinePath (path_char* path, const uint32 maxPathSize, const path_char* path1, const path_char* path2)
 		{
-			bool bSucceed = SUCCEEDED (PathCchAppend(path, maxPathSize, pathToAppend));
-
-			return bSucceed;
+			return SUCCEEDED (PathCchCombine(path, maxPathSize, path1, path2));
 		}
 
 		PathString WindowsFileSystem::GetFileExtension (const path_char* path, const uint32 maxPathSize)

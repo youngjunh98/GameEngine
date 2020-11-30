@@ -26,7 +26,7 @@ namespace GameEngine
 			GenericFileSystem ();
 			virtual ~GenericFileSystem () = 0;
 
-			virtual bool AppendPath (path_char* path, const uint32 maxPathSize, const path_char* pathToAppend) = 0;
+			virtual bool CombinePath (path_char* path, const uint32 maxPathSize, const path_char* path1, const path_char* path2) = 0;
 			virtual PathString GetFileExtension (const path_char* path, const uint32 maxPathSize) = 0;
 			virtual bool RemoveFileName (path_char* path, const uint32 maxPathSize) = 0;
 			virtual bool AddDirectorySeparator (path_char* path, const uint32 maxPathSize) = 0;

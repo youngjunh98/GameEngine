@@ -10,6 +10,6 @@ namespace GameEngine
 
 	void RenderPass::SetTessellation (bool bTessellation)
 	{
-		g_renderer.GetPlatformRenderingInterface ().SetPrimitiveTopology (bTessellation ? EPrimitiveTopology::TrianglePatchList : EPrimitiveTopology::TriangleList);
+		g_renderer.GetRenderingInterface ().SetPrimitiveTopology (bTessellation ? EPrimitiveTopology::TrianglePatchList : EPrimitiveTopology::TriangleList);
 	}
 }

@@ -471,7 +471,7 @@ namespace GameEngine
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Vertex, name).m_byteOffset;
 
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetPlatformRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
+			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Pixel, name))
@@ -481,7 +481,7 @@ namespace GameEngine
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Pixel, name).m_byteOffset;
 
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetPlatformRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
+			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Hull, name))
@@ -491,7 +491,7 @@ namespace GameEngine
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Hull, name).m_byteOffset;
 
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetPlatformRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
+			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Domain, name))
@@ -501,7 +501,7 @@ namespace GameEngine
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Domain, name).m_byteOffset;
 
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetPlatformRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
+			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Geometry, name))
@@ -511,7 +511,7 @@ namespace GameEngine
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Geometry, name).m_byteOffset;
 
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetPlatformRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
+			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 	}
 }

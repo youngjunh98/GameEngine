@@ -161,16 +161,31 @@ namespace GameEngine
 			return std::wstring (path);
 		}
 
-		void WindowsApplication::AddWindowProcedureCallback (WindowProcedure callback)
+		void WindowsApplication::AddWindowProcedureListener (WindowProcedure callback)
 		{
 			m_windowProcedureCallbacks.push_back (callback);
 		}
 
-		void WindowsApplication::ExecuteWindowProcedureCallback (UINT message, WPARAM wParam, LPARAM lParam)
+		void WindowsApplication::RemoveWindowProcedureListener (WindowProcedure callback)
+		{
+			for (auto it = m_windowProcedureCallbacks.begin (); it != m_windowProcedureCallbacks.end ();)
+			{
+				if (*it == callback)
+				{
+					it = m_windowProcedureCallbacks.erase (it);
+				}
+				else
+				{
+					++it;
+				}
+			}
+		}
+
+		void WindowsApplication::ExecuteWindowProcedureCallbacks (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			for (auto callback : m_windowProcedureCallbacks)
 			{
-				callback (m_hWnd, message, wParam, lParam);
+				callback (hWnd, message, wParam, lParam);
 			}
 		}
 	}
@@ -233,7 +248,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	windowsApplication.ExecuteWindowProcedureCallback (message, wParam, lParam);
+	windowsApplication.ExecuteWindowProcedureCallbacks (hWnd, message, wParam, lParam);
 
 	return DefWindowProc (hWnd, message, wParam, lParam);
 }

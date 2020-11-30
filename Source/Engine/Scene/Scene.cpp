@@ -118,13 +118,19 @@ namespace GameEngine
 
 	GameObject* Scene::SpawnGameObject ()
 	{
-		GameObject* gameObject = new GameObject ("New Game Object");
-		gameObject->SetScene (this);
-		gameObject->Init ();
+		GameObject* temp = nullptr;
+		auto gameObject = std::make_unique<GameObject> ("New Game Object");
 
-		m_gameObjects.push_back (std::move(std::unique_ptr<GameObject> (gameObject)));
+		if (gameObject != nullptr)
+		{
+			gameObject->SetScene (this);
+			gameObject->Init ();
 
-		return gameObject;
+			temp = gameObject.get ();
+			m_gameObjects.push_back (std::move (gameObject));
+		}
+
+		return temp;
 	}
 
 	std::vector<std::unique_ptr<GameObject>>& Scene::GetGameObjects ()

@@ -4,9 +4,9 @@
 #include <memory>
 
 #include "Type.h"
-#include "Platform/PlatformRenderingInterface.h"
 #include "Core/CoreMinimal.h"
 #include "Core/File/FileSystem.h"
+#include "RI/RenderingInterface.h"
 #include "Engine/Rendering/Pipeline/RenderPipeline.h"
 #include "Engine/Rendering/Pipeline/Forward/DefaultForwardRenderPipeline.h"
 #include "Engine/Rendering/Pipeline/Line/DefaultLineRenderPipeline.h"
@@ -116,12 +116,12 @@ namespace GameEngine
 		int32 GetLightCount () const;
 		int32 GetMaxLightCount () const;
 
-		PlatformRenderingInterface& GetPlatformRenderingInterface ();
+		RenderingInterface& GetRenderingInterface ();
 
 	private:
 		GlobalRendererSettings m_settings;
 
-		PlatformRenderingInterface* m_ri;
+		RenderingInterface* m_ri;
 		PathString m_riModulePath;
 
 		RenderingResourcePtr<RI_Texture2D> m_swapChainBuffer;

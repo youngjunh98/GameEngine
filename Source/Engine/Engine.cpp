@@ -12,7 +12,7 @@
 namespace GameEngine
 {
 	Engine g_engine;
-	Editor g_editor;
+	static Editor& g_editor = Editor::GetInstance();
 
 	bool Engine::Init ()
 	{

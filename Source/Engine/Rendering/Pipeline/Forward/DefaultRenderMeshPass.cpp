@@ -17,16 +17,16 @@ namespace GameEngine
 	{
 		if (m_rasterizerCullBack.get () == nullptr)
 		{
-			m_rasterizerCullBack = g_renderer.GetPlatformRenderingInterface ().CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
+			m_rasterizerCullBack = g_renderer.GetRenderingInterface ().CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
 		}
 
 		if (m_depthLessStencilAlways.get () == nullptr)
 		{
-			m_depthLessStencilAlways = g_renderer.GetPlatformRenderingInterface ().CreateDepthStencilState (EComparisonFunction::LessEqual, EComparisonFunction::Always);
+			m_depthLessStencilAlways = g_renderer.GetRenderingInterface ().CreateDepthStencilState (EComparisonFunction::LessEqual, EComparisonFunction::Always);
 		}
 
-		g_renderer.GetPlatformRenderingInterface ().SetRasterizerState (m_rasterizerCullBack.get ());
-		g_renderer.GetPlatformRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
+		g_renderer.GetRenderingInterface ().SetRasterizerState (m_rasterizerCullBack.get ());
+		g_renderer.GetRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
 
 		Vector2 renderSize = g_renderer.GetRenderSize ();
 		g_renderer.SetViewport (renderSize);

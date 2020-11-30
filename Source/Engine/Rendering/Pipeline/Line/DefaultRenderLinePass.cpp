@@ -20,16 +20,16 @@ namespace GameEngine
 	{
 		if (m_rsLineCullNone.get () == nullptr)
 		{
-			m_rsLineCullNone = g_renderer.GetPlatformRenderingInterface ().CreateRasterizerState (EFillMode::Wireframe, EFaceCulling::None, EWindingOrder::CW);
+			m_rsLineCullNone = g_renderer.GetRenderingInterface ().CreateRasterizerState (EFillMode::Wireframe, EFaceCulling::None, EWindingOrder::CW);
 		}
 
 		if (m_depthLessStencilAlways.get () == nullptr)
 		{
-			m_depthLessStencilAlways = g_renderer.GetPlatformRenderingInterface ().CreateDepthStencilState (EComparisonFunction::Always, EComparisonFunction::Always);
+			m_depthLessStencilAlways = g_renderer.GetRenderingInterface ().CreateDepthStencilState (EComparisonFunction::Always, EComparisonFunction::Always);
 		}
 
-		g_renderer.GetPlatformRenderingInterface ().SetRasterizerState (m_rsLineCullNone.get ());
-		g_renderer.GetPlatformRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
+		g_renderer.GetRenderingInterface ().SetRasterizerState (m_rsLineCullNone.get ());
+		g_renderer.GetRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
 
 		Vector2 renderSize = g_renderer.GetRenderSize ();
 		g_renderer.SetViewport (renderSize);
@@ -78,6 +78,6 @@ namespace GameEngine
 
 	void DefaultRenderLinePass::SetTessellation (bool bTessellation)
 	{
-		g_renderer.GetPlatformRenderingInterface ().SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
+		g_renderer.GetRenderingInterface ().SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
 	}
 }

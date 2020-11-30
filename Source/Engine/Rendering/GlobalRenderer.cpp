@@ -32,7 +32,7 @@ namespace GameEngine
 
 		// Create and initialize rendering interface module
 		m_riModulePath = Modular::ModuleManager::GetModulePath ("D3D11RI");
-		m_ri = reinterpret_cast<PlatformRenderingInterface*> (Modular::ModuleManager::CreateModuleInstance (m_riModulePath));
+		m_ri = static_cast<RenderingInterface*> (Modular::ModuleManager::CreateModuleInstance (m_riModulePath));
 
 		if (m_ri == nullptr)
 		{
@@ -963,7 +963,7 @@ namespace GameEngine
 		return m_maxLightCount;
 	}
 
-	PlatformRenderingInterface& GlobalRenderer::GetPlatformRenderingInterface ()
+	RenderingInterface& GlobalRenderer::GetRenderingInterface ()
 	{
 		return *m_ri;
 	}

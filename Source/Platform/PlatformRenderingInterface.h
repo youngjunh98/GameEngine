@@ -10,7 +10,10 @@
 
 	namespace GameEngine
 	{
-		using PlatformRenderingInterface = D3D11RenderingInterface;
+		namespace Platform
+		{
+			using RenderingInterface = D3D11RenderingInterface;
+		}
 	}
 
 #else

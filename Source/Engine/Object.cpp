@@ -3,8 +3,7 @@
 namespace GameEngine
 {
 	Object::Object (const std::string& name) :
-		m_bAlive (true),
-		m_name (name)
+		m_bAlive (true), m_name (name)
 	{
 	}
 

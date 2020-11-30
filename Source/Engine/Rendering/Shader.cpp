@@ -7,7 +7,7 @@ namespace GameEngine
 {
 	bool Shader::Initialize (const std::wstring& sourcePath)
 	{
-		PlatformRenderingInterface& renderingInterface = g_renderer.GetPlatformRenderingInterface ();
+		RenderingInterface& renderingInterface = g_renderer.GetRenderingInterface ();
 		std::unique_ptr<uint8[]> compiledCode;
 		uint32 compiledCodeSize;
 
@@ -368,7 +368,7 @@ namespace GameEngine
 	bool Shader::InitializeShader (const std::wstring& sourcePath, EShaderStage stage, const std::string& entryPoint, std::unique_ptr<uint8[]>& compiledCode, uint32& compiledCodeSize)
 	{
 		bool result = true;
-		PlatformRenderingInterface& renderingInterface = g_renderer.GetPlatformRenderingInterface ();
+		RenderingInterface& renderingInterface = g_renderer.GetRenderingInterface ();
 
 		if (renderingInterface.CompileShader (sourcePath, entryPoint, stage, compiledCode, compiledCodeSize))
 		{
@@ -421,7 +421,7 @@ namespace GameEngine
 	{
 		bool result = true;
 		const auto* globalBufferName = "$Globals";
-		PlatformRenderingInterface& renderingInterface = g_renderer.GetPlatformRenderingInterface ();
+		RenderingInterface& renderingInterface = g_renderer.GetRenderingInterface ();
 
 		if (IsShaderResourceExist (stage, globalBufferName))
 		{

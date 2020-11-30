@@ -1,20 +1,32 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+#include <utility>
+
+#include "Type.h"
+#include "EditorWindow.h"
 #include "Core/CoreMinimal.h"
-#include "Platform/PlatformRenderingInterface.h"
+#include "Core/File/FileSystem.h"
 
 namespace GameEngine
 {
-	class Editor
+	class Editor final
 	{
-	public:
+	private:
 		Editor ();
 		virtual ~Editor ();
+
+	public:
+		static Editor& GetInstance ();
 
 		void Initialize ();
 		void Shutdown ();
 
 		void RenderGUI ();
+
+		GameObject* GetEditingGameObject () const;
+		void SetEditingGameObject (GameObject* gameObject);
 
 		void BeginComponent (const std::string& name, Component* component, bool bDeletable);
 		void AddNextItemSameLine ();
@@ -30,13 +42,55 @@ namespace GameEngine
 		void AddPropertyAsset (const std::string& name, const std::string& type, std::wstring& path);
 		void AddPropertyShaderParameter (const std::string& name, std::string& type, void* value);
 
+		template<typename TEditorWindow>
+		TEditorWindow* CreateWindowInstance ()
+		{
+			TEditorWindow* temp = nullptr;
+			auto window = std::make_unique<TEditorWindow> ();
+
+			if (window != nullptr)
+			{
+				temp = window.get ();
+				m_windows.push_back (std::move (window));
+			}
+
+			return temp;
+		}
+
+		template<typename TEditorWindow>
+		TEditorWindow* FindWindowInstance ()
+		{
+			TEditorWindow* found = nullptr;
+
+			for (auto& window : m_windows)
+			{
+				auto* casted = dynamic_cast<TEditorWindow*> (window.get ());
+
+				if (casted != nullptr)
+				{
+					found = casted;
+					break;
+				}
+			}
+
+			return found;
+		}
+
+		template<typename TEditorWindow>
+		void OpenWindow ()
+		{
+			auto* window = FindWindowInstance<TEditorWindow> ();
+
+			if (window == nullptr)
+			{
+				window = CreateWindowInstance<TEditorWindow> ();
+			}
+
+			window->Show ();
+		}
+	
 	private:
 		void RenderMainMenuBar ();
-		void RenderGameWindow ();
-		void RenderHierarchyWindow ();
-		void RenderInspectorWindow ();
-		void RenderAssetBrowserWindow ();
-		void RenderAssetTree (const std::wstring& directory, const std::wstring& path);
 		void RenderAssetEditWindow ();
 
 		void RenderFileMenu ();
@@ -51,28 +105,17 @@ namespace GameEngine
 		void ImportAsset ();
 
 	private:
-		bool m_bShowGameWindow;
-		bool m_bShowHierarchyWindow;
-		bool m_bShowInspectorWindow;
-		bool m_bShowAssetBrowserWindow;
+		std::vector<std::unique_ptr<EditorWindow>> m_windows;
+
+		GameObject* m_editingGameObject;
+        std::string m_editingScenePath;
+
 		bool m_bShowAssetEditWindow;
 
 		bool m_bCreatingScene;
 		bool m_bOpeningScene;
 		bool m_bCreatingAsset;
 
-		GameObject* m_selectedGameObject;
-		int32 m_selectedGameObjectIndex;
-		std::wstring m_selectedAssetPath;
 		std::string m_createAssetPath;
-		std::string m_scenePath;
-
-		Vector2 m_gameViewSize;
-		RenderingResourcePtr<RI_Texture2D> m_gameRenderBuffer;
-		RenderingResourcePtr<RI_Texture2D> m_gameDepthStencilBuffer;
-		RenderingResourcePtr<RI_RenderTargetView> m_gameRenderTarget;
-		RenderingResourcePtr<RI_DepthStencilView> m_gameDepthStencil;
-		RenderingResourcePtr<RI_ShaderResourceView> m_gameRenderTexture;
-		RenderingResourcePtr<RI_ShaderResourceView> m_gameDepthStencilTexture;
 	};
 }

@@ -10,12 +10,13 @@ namespace GameEngine
     FileSystem::FileSystem () {}
     FileSystem::~FileSystem () {}
 
-    PathString FileSystem::AppendPath (const PathString& path, const PathString& pathToAppend)
+    PathString FileSystem::CombinePath (const PathString& path, const PathString& pathToAppend)
     {
         PathString result = path;
+        PathString separatorAdded = AddDirectorySeparator (path);
 
-        const path_char* originalPathStart = path.c_str ();
-        size_t originalPathSize = path.size ();
+        const path_char* originalPathStart = separatorAdded.c_str ();
+        size_t originalPathSize = separatorAdded.size ();
 
         const path_char* appendPathStart = pathToAppend.c_str ();
         size_t appendPathSize = pathToAppend.size ();
@@ -25,9 +26,8 @@ namespace GameEngine
         path_char* bufferStart = buffer.get ();
 
         std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
-        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
 
-        if (g_platformFileSystem.AppendPath (bufferStart, bufferSize, appendPathStart) == true)
+        if (g_platformFileSystem.CombinePath (bufferStart, bufferSize, originalPathStart, appendPathStart) == true)
         {
             result = PathString (bufferStart);
         }
@@ -100,11 +100,11 @@ namespace GameEngine
 
     std::vector<PathString> FileSystem::GetFileList (const PathString& path)
     {
-        return g_platformFileSystem.GetFileList (path.c_str ());
+        return g_platformFileSystem.GetFileList (AddDirectorySeparator (path).c_str ());
     }
 
     std::vector<PathString> FileSystem::GetDirectoryList (const PathString& path)
     {
-        return g_platformFileSystem.GetDirectoryList (path.c_str ());
+        return g_platformFileSystem.GetDirectoryList (AddDirectorySeparator (path).c_str ());
     }
 }

@@ -28,8 +28,9 @@ namespace GameEngine
 			virtual void* GetNativeWindowHandle () const override;
 			virtual std::wstring GetPath () const override;
 
-			void AddWindowProcedureCallback (WindowProcedure callback);
-			void ExecuteWindowProcedureCallback (UINT message, WPARAM wParam, LPARAM lParam);
+			void AddWindowProcedureListener (WindowProcedure callback);
+			void RemoveWindowProcedureListener (WindowProcedure callback);
+			void ExecuteWindowProcedureCallbacks (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 		private:
 			HINSTANCE m_hInstance;
