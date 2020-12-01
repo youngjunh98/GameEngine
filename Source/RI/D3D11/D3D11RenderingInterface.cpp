@@ -11,7 +11,14 @@ LINK_MODULE (D3D11RI, Engine_RI.dll, GameEngine::D3D11RenderingInterface)
 
 namespace GameEngine
 {
-	D3D11RenderingInterface g_platformRI;
+	D3D11RenderingInterface::D3D11RenderingInterface () :m_device (nullptr), m_immediateContext (nullptr), m_swapChain (nullptr),
+		m_featureLevel (), m_msaaQuality (0)
+	{
+	}
+
+	D3D11RenderingInterface::~D3D11RenderingInterface ()
+	{
+	}
 
 	bool D3D11RenderingInterface::Initialize (uint32 swapChainWidth, uint32 swapChainHeight, bool bFullScreen, bool bVSync, uint32 refreshRate, uint32 msaaSampleCount)
 	{

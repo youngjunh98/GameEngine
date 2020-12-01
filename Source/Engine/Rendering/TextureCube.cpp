@@ -39,7 +39,7 @@ namespace GameEngine
 			pitches.push_back (data.m_dataPitch);
 		}
 
-		m_mipMapCount = resourceData.size () / 6;
+		m_mipMapCount = static_cast<uint32> (resourceData.size () / 6);
 		m_textureCube = g_renderer.GetRenderingInterface ().CreateTexture2D (m_width, m_height, m_mipMapCount, 6, m_format, pixels.data (), pitches.data (), true, true, false, false);
 
 		if (m_textureCube == nullptr)

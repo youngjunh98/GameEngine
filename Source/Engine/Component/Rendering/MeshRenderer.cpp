@@ -43,7 +43,7 @@ namespace GameEngine
 		int32 materialCount = static_cast<int32> (GetMaterials ().size ());
 		int32 renderMeshCount = Math::Min (subMeshCount, materialCount);
 
-		for (uint32 i = 0; i < renderMeshCount; i++)
+		for (int32 i = 0; i < renderMeshCount; i++)
 		{
 			renderPass->BindMaterial (GetMaterials ().at (i));
 			g_renderer.DrawVertices (m_mesh->GetVertexBufferResource (i), m_mesh->GetIndexBufferResource (i));

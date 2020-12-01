@@ -1,17 +1,15 @@
-#ifndef INCLUDE_D3D11_RENDERING_INTERFACE
-#define INCLUDE_D3D11_RENDERING_INTERFACE
+#pragma once
 
 #include "RI/D3D11/D3D11.h"
 #include "RI/RenderingInterface.h"
 
 namespace GameEngine
 {
-	class D3D11RenderingInterface : public RenderingInterface
+	class D3D11RenderingInterface final : public RenderingInterface
 	{
 	public:
-		D3D11RenderingInterface () : m_device (nullptr), m_immediateContext (nullptr), m_swapChain (nullptr),
-			m_featureLevel (), m_msaaQuality (0) {}
-		virtual ~D3D11RenderingInterface () {}
+		D3D11RenderingInterface ();
+		virtual ~D3D11RenderingInterface ();
 
 		RI_API virtual bool Initialize (uint32 swapChainWidth, uint32 swapChainHeight, bool bFullScreen, bool bVSync, uint32 refreshRate, uint32 msaaSampleCount) override;
 		RI_API virtual void Shutdown () override;
@@ -103,5 +101,3 @@ namespace GameEngine
 		UINT m_msaaQuality;
 	};
 }
-
-#endif

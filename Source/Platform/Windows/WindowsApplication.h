@@ -12,25 +12,25 @@ namespace GameEngine
 	{
 		using WindowProcedure = LRESULT (*) (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 		
-		class PLATFORM_API WindowsApplication : public GenericApplication
+		class WindowsApplication : public GenericApplication
 		{
 		public:
-			WindowsApplication () : m_hInstance (nullptr), m_hWnd (nullptr) {}
-			virtual ~WindowsApplication () {}
+			PLATFORM_API WindowsApplication () : m_hInstance (nullptr), m_hWnd (nullptr) {}
+			PLATFORM_API virtual ~WindowsApplication () {}
 
-			virtual bool Initialize (const std::wstring& name, uint32 width, uint32 height, bool bFullScreenEnabled) override;
-			virtual void Shutdown () override;
+			PLATFORM_API virtual bool Initialize (const std::wstring& name, uint32 width, uint32 height, bool bFullScreenEnabled) override;
+			PLATFORM_API virtual void Shutdown () override;
 
-			virtual bool Update () override;
-			virtual void RequestQuit () override;
-			virtual void ResizeWindow (uint32 width, uint32 height, bool bFullScreen) override;
+			PLATFORM_API virtual bool Update () override;
+			PLATFORM_API virtual void RequestQuit () override;
+			PLATFORM_API virtual void ResizeWindow (uint32 width, uint32 height, bool bFullScreen) override;
 
-			virtual void* GetNativeWindowHandle () const override;
-			virtual std::wstring GetPath () const override;
+			PLATFORM_API virtual void* GetNativeWindowHandle () const override;
+			PLATFORM_API virtual std::wstring GetPath () const override;
 
-			void AddWindowProcedureListener (WindowProcedure callback);
-			void RemoveWindowProcedureListener (WindowProcedure callback);
-			void ExecuteWindowProcedureCallbacks (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+			PLATFORM_API void AddWindowProcedureListener (WindowProcedure callback);
+			PLATFORM_API void RemoveWindowProcedureListener (WindowProcedure callback);
+			PLATFORM_API void ExecuteWindowProcedureCallbacks (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 		private:
 			HINSTANCE m_hInstance;

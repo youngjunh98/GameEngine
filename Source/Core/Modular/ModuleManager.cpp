@@ -58,7 +58,7 @@ namespace GameEngine
 			return true;
 		}
 
-		void ModuleManager::UnloadModule (const const PathString& modulePath)
+		void ModuleManager::UnloadModule (const PathString& modulePath)
 		{
 			DestroyModuleInstance (modulePath);
 
