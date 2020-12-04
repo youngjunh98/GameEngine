@@ -102,11 +102,11 @@ namespace GameEngine
 			File file (path, EFileAccessMode::Read);
 			int64 fileSize = file.GetSize ();
 
-			std::string jsonString (fileSize + 1, L'\0');
+			std::string jsonString (fileSize + 1, '\0');
 			auto* first = const_cast<char*> (jsonString.data ());
 
 			file.ReadAll (first);
-			Json::Json materialData = Json::Json::parse (jsonString);
+			Json::Json materialData = Json::Json::parse (jsonString, nullptr, false);
 
 			auto material = std::make_shared<Material> ();
 			material->OnDeserialize (materialData);

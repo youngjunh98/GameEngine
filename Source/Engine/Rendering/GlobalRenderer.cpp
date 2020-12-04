@@ -473,34 +473,29 @@ namespace GameEngine
 	void GlobalRenderer::ActivateShadowMapShader (int32 lightType)
 	{
 		ELightType type = static_cast<ELightType> (lightType);
+		Shader* shader = nullptr;
 
 		if (type == ELightType::Directional || type == ELightType::Spot)
 		{
-			m_ri->ActivateVertexShader (m_shadowMapShader->GetVertexShader ());
-			m_ri->ActivatePixelShader (nullptr);
-			m_ri->ActivateHullShader (nullptr);
-			m_ri->ActivateDomainShader (nullptr);
-			m_ri->ActivateGeometryShader (nullptr);
-
-			m_ri->SetInputLayout (m_shadowMapShader->GetInputLayout ());
-
-			m_ri->BindVertexShaderConstantBuffer (m_constantBufferPerCamera.get (), m_shadowMapShader->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
-			m_ri->BindVertexShaderConstantBuffer (m_constantBufferPerObject.get (), m_shadowMapShader->GetShaderResourceBinding (EShaderStage::Vertex, "CBObject").m_bindIndex);
+			shader = m_shadowMapShader;
 		}
 		else if (type == ELightType::Point)
 		{
-			m_ri->ActivateVertexShader (m_omnidirectionalShadowMapShader->GetVertexShader ());
-			m_ri->ActivatePixelShader (m_omnidirectionalShadowMapShader->GetPixelShader ());
-			m_ri->ActivateHullShader (nullptr);
-			m_ri->ActivateDomainShader (nullptr);
-			m_ri->ActivateGeometryShader (nullptr);
+			shader = m_omnidirectionalShadowMapShader;
+		}
 
-			m_ri->SetInputLayout (m_omnidirectionalShadowMapShader->GetInputLayout ());
+		if (shader != nullptr)
+		{
+			m_ri->SetInputLayout (shader->GetInputLayout ());
+			m_ri->ActivateVertexShader (shader->GetVertexShader ());
+			m_ri->ActivatePixelShader (shader->GetPixelShader ());
+			m_ri->ActivateHullShader (shader->GetHullShader ());
+			m_ri->ActivateDomainShader (shader->GetDomainShader ());
+			m_ri->ActivateGeometryShader (shader->GetGeometryShader ());
 
-			m_ri->BindVertexShaderConstantBuffer (m_constantBufferPerCamera.get (), m_omnidirectionalShadowMapShader->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
-			m_ri->BindVertexShaderConstantBuffer (m_constantBufferPerObject.get (), m_omnidirectionalShadowMapShader->GetShaderResourceBinding (EShaderStage::Vertex, "CBObject").m_bindIndex);
-
-			m_ri->BindPixelShaderConstantBuffer (m_constantBufferPerCamera.get (), m_omnidirectionalShadowMapShader->GetShaderResourceBinding (EShaderStage::Pixel, "CBCamera").m_bindIndex);
+			BindGlobalShaderConstantBuffer (shader, "CBObject");
+			BindGlobalShaderConstantBuffer (shader, "CBCamera");
+			BindGlobalShaderConstantBuffer (shader, "CBLighting");
 		}
 	}
 
@@ -599,97 +594,37 @@ namespace GameEngine
 		// Vertex bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Vertex, "$Globals"))
 		{
+			m_ri->UpdateShaderConstantBuffer (shader->GetVertexShaderParameterBuffer (), material->GetVertexShaderParameterData ());
 			m_ri->BindVertexShaderConstantBuffer (shader->GetVertexShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Vertex, "$Globals").m_bindIndex);
 		}
 
 		// Pixel bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "$Globals"))
 		{
+			m_ri->UpdateShaderConstantBuffer (shader->GetPixelShaderParameterBuffer (), material->GetPixelShaderParameterData ());
 			m_ri->BindPixelShaderConstantBuffer (shader->GetPixelShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "$Globals").m_bindIndex);
 		}
 
-		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_DirectionalLightShadowMap"))
-		{
-			m_directionalLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_DirectionalLightShadowMap").m_bindIndex;
-			m_ri->BindPixelShaderResource (m_directionalLightShadowMapSRV.get (), m_directionalLightShadowMapLastSlot);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_PointLightShadowMap"))
-		{
-			m_pointLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_PointLightShadowMap").m_bindIndex;
-			m_ri->BindPixelShaderResource (m_pointLightShadowMapSRV.get (), m_pointLightShadowMapLastSlot);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_SpotLightShadowMap"))
-		{
-			m_spotLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_SpotLightShadowMap").m_bindIndex;
-			m_ri->BindPixelShaderResource (m_spotLightShadowMapSRV.get (), m_spotLightShadowMapLastSlot);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_ShadowMapSampler"))
-		{
-			m_ri->BindPixelShaderSampler (m_shadowMapSampler.get (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_ShadowMapSampler").m_bindIndex);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTexture"))
-		{
-			m_ri->BindPixelShaderResource (m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTextureSampler"))
-		{
-			m_ri->BindPixelShaderSampler (m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTextureSampler").m_bindIndex);
-		}
-
 		// Hull bindings
-
 		if (shader->IsShaderResourceExist (EShaderStage::Hull, "$Globals"))
 		{
+			m_ri->UpdateShaderConstantBuffer (shader->GetHullShaderParameterBuffer (), material->GetHullShaderParameterData ());
 			m_ri->BindHullShaderConstantBuffer (shader->GetHullShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Hull, "$Globals").m_bindIndex);
 		}
 
 		// Domain bindings
-		if (shader->IsShaderResourceExist (EShaderStage::Domain, "CBObject"))
-		{
-			m_ri->BindDomainShaderConstantBuffer (m_constantBufferPerObject.get (), shader->GetShaderResourceBinding (EShaderStage::Domain, "CBObject").m_bindIndex);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Domain, "CBCamera"))
-		{
-			m_ri->BindDomainShaderConstantBuffer (m_constantBufferPerCamera.get (), shader->GetShaderResourceBinding (EShaderStage::Domain, "CBCamera").m_bindIndex);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Domain, "CBLighting"))
-		{
-			m_ri->BindDomainShaderConstantBuffer (m_lightingConstantBuffer.get (), shader->GetShaderResourceBinding (EShaderStage::Domain, "CBLighting").m_bindIndex);
-		};
-
 		if (shader->IsShaderResourceExist (EShaderStage::Domain, "$Globals"))
 		{
+			m_ri->UpdateShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), material->GetDomainShaderParameterData ());
 			m_ri->BindDomainShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Domain, "$Globals").m_bindIndex);
 		}
 
 		// Geometry bindings
-		if (shader->IsShaderResourceExist (EShaderStage::Geometry, "CBObject"))
-		{
-			m_ri->BindGeometryShaderConstantBuffer (m_constantBufferPerObject.get (), shader->GetShaderResourceBinding (EShaderStage::Geometry, "CBObject").m_bindIndex);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Geometry, "CBCamera"))
-		{
-			m_ri->BindGeometryShaderConstantBuffer (m_constantBufferPerCamera.get (), shader->GetShaderResourceBinding (EShaderStage::Geometry, "CBCamera").m_bindIndex);
-		}
-
-		if (shader->IsShaderResourceExist (EShaderStage::Geometry, "CBLighting"))
-		{
-			m_ri->BindGeometryShaderConstantBuffer (m_lightingConstantBuffer.get (), shader->GetShaderResourceBinding (EShaderStage::Geometry, "CBLighting").m_bindIndex);
-		};
-
 		if (shader->IsShaderResourceExist (EShaderStage::Geometry, "$Globals"))
 		{
+			m_ri->UpdateShaderConstantBuffer (shader->GetGeometryShaderParameterBuffer (), material->GetGeometryShaderParameterData ());
 			m_ri->BindGeometryShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Geometry, "$Globals").m_bindIndex);
 		}
-
 
 		for (const auto& textureBinding : material->GetTextureMap ())
 		{
@@ -729,6 +664,39 @@ namespace GameEngine
 				}
 			}
 		}
+
+		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_DirectionalLightShadowMap"))
+		{
+			m_directionalLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_DirectionalLightShadowMap").m_bindIndex;
+			m_ri->BindPixelShaderResource (m_directionalLightShadowMapSRV.get (), m_directionalLightShadowMapLastSlot);
+		}
+
+		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_PointLightShadowMap"))
+		{
+			m_pointLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_PointLightShadowMap").m_bindIndex;
+			m_ri->BindPixelShaderResource (m_pointLightShadowMapSRV.get (), m_pointLightShadowMapLastSlot);
+		}
+
+		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_SpotLightShadowMap"))
+		{
+			m_spotLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_SpotLightShadowMap").m_bindIndex;
+			m_ri->BindPixelShaderResource (m_spotLightShadowMapSRV.get (), m_spotLightShadowMapLastSlot);
+		}
+
+		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_ShadowMapSampler"))
+		{
+			m_ri->BindPixelShaderSampler (m_shadowMapSampler.get (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_ShadowMapSampler").m_bindIndex);
+		}
+
+		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTexture"))
+		{
+			m_ri->BindPixelShaderResource (m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
+		}
+
+		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTextureSampler"))
+		{
+			m_ri->BindPixelShaderSampler (m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTextureSampler").m_bindIndex);
+		}
 	}
 
 	void GlobalRenderer::BindGlobalShaderConstantBuffer (Shader* shader, const std::string& name)
@@ -745,16 +713,14 @@ namespace GameEngine
 		{
 			buffer = m_constantBufferPerObject.get ();
 		}
-
-		if (name == "CBCamera")
+		else if (name == "CBCamera")
 		{
 			buffer = m_constantBufferPerCamera.get ();
 		}
-
-		if (name == "CBLighting")
+		else if (name == "CBLighting")
 		{
 			buffer = m_lightingConstantBuffer.get ();
-		};
+		}
 
 		if (buffer == nullptr)
 		{
@@ -763,35 +729,30 @@ namespace GameEngine
 
 		if (shader->IsShaderResourceExist (EShaderStage::Vertex, name))
 		{
-
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Vertex, name).m_bindIndex;
 			m_ri->BindVertexShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, name))
 		{
-
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Pixel, name).m_bindIndex;
 			m_ri->BindPixelShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Hull, name))
 		{
-
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Hull, name).m_bindIndex;
 			m_ri->BindHullShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Domain, name))
 		{
-
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Domain, name).m_bindIndex;
 			m_ri->BindDomainShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Geometry, name))
 		{
-
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Geometry, name).m_bindIndex;
 			m_ri->BindGeometryShaderConstantBuffer (buffer, bindIndex);
 		}

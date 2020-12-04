@@ -10,13 +10,16 @@ namespace GameEngine
         EditorWindow (const std::string& title);
         virtual ~EditorWindow () = 0;
 
-        void Render ();
-        virtual void OnRender () = 0;
+        virtual void Render ();
 
         void Show ();
         void Close ();
+        bool IsOpen () const;
 
-    private:
+    protected:
+        virtual void OnRender () = 0;
+
+    protected:
         bool m_bShow;
         std::string m_title;
     };

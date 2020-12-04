@@ -1,8 +1,9 @@
 #include "Transform.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
-	Transform::Transform () : Component (),
+	Transform::Transform () : Component ("Transform"),
 		m_position (Vector3::Zero), m_rotation (Quaternion::Identity), m_scale (Vector3::One)
 	{
 	}
@@ -94,17 +95,11 @@ namespace GameEngine
 		m_scale = scale;
 	}
 
-	void Transform::OnRenderEditor (Editor& editor)
+	void Transform::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Transform", this, false);
-
-		editor.AddPropertyVector3 ("Position", m_position);
-
-		Vector3 eulerAngles = m_rotation.Euler ();
-		editor.AddPropertyVector3 ("Rotation", eulerAngles);
-		m_rotation = Quaternion::FromEuler (eulerAngles);
-
-		editor.AddPropertyVector3 ("Scale", m_scale);
+		m_position = EditorGUI::InputVector3 ("Position", m_position);
+		m_rotation = Quaternion::FromEuler (EditorGUI::InputVector3 ("Rotation", m_rotation.Euler ()));
+		m_scale = EditorGUI::InputVector3 ("Scale", m_scale);
 	}
 
 	void Transform::OnSerialize (Json::Json& json) const

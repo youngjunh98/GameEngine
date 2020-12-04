@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Type.h"
-#include "EditorWindow.h"
+#include "Editor/EditorWindow.h"
 #include "Core/File/FileSystem.h"
 
 namespace GameEngine
 {
+    class Object;
+
     class ProjectWindow final : public EditorWindow
     {
     public:
@@ -19,5 +21,6 @@ namespace GameEngine
 
     private:
         PathString m_selectedAssetPath;
+        Object* m_hoveredAsset;
     };
 }

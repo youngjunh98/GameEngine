@@ -61,9 +61,12 @@ width="30%" height="30%" title="PBR Metal" alt="PBR Metal"></img>
 
 ### Working
 - Engine과 Editor 완전 분리하기.
-- Editor 코드 Cross-platform으로 개선하기.
 - Thread Job
 - Particle effect
+- Asset Manager 개선하기.
+- Global Renderer, Render Pipeline 개선하기.
+- String, WString 클래스.
+- Game 모듈.
 
 
 ### Future

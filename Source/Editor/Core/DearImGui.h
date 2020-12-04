@@ -25,6 +25,9 @@ namespace GameEngine
         static void StartRender ();
         static void FinishRender ();
 
+        static bool BeginMainMenuBar ();
+        static void EndMainMenuBar ();
+
     private:
         DearImGui () {}
         ~DearImGui () {}

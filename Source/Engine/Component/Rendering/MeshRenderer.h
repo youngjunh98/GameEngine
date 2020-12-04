@@ -18,7 +18,7 @@ namespace GameEngine
 
 		void SetTessellation (bool bTessellation);
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 		virtual void OnSerialize (Json::Json& json) const override;
 		virtual void OnDeserialize (const Json::Json& json) override;
 

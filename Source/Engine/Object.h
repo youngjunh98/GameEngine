@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include "Editor/Editor.h"
 #include "Core/JSON/JsonSerializer.h"
 
 namespace GameEngine
@@ -21,7 +20,7 @@ namespace GameEngine
 
 		bool IsAlive () const;
 
-		virtual void OnRenderEditor (Editor& editor) {}
+		virtual void OnRenderEditor () {}
 		virtual void OnSerialize (Json::Json& json) const;
 		virtual void OnDeserialize (const Json::Json& json);
 

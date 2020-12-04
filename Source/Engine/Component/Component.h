@@ -1,6 +1,8 @@
 #ifndef INCLUDE_COMPONENT
 #define INCLUDE_COMPONENT
 
+#include <string>
+
 #include "Core/CoreMinimal.h"
 #include "Engine/Object.h"
 
@@ -9,7 +11,7 @@ namespace GameEngine
 	class Component : public Object
 	{
 	public:
-		Component ();
+		Component (const std::string& name);
 		virtual ~Component () = 0;
 
 		virtual void Destroy () override;

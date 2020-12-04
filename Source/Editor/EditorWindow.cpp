@@ -1,9 +1,9 @@
 #include "EditorWindow.h"
-#include "DearImGui.h"
+#include "Core/DearImGui.h"
 
 namespace GameEngine
 {
-    EditorWindow::EditorWindow (const std::string& title) : m_bShow (true), m_title (title)
+    EditorWindow::EditorWindow (const std::string& title) : m_bShow (false), m_title (title)
     {
     }
 
@@ -32,5 +32,10 @@ namespace GameEngine
     void EditorWindow::Close ()
     {
         m_bShow = false;
+    }
+
+    bool EditorWindow::IsOpen () const
+    {
+        return m_bShow;
     }
 }

@@ -13,7 +13,7 @@ namespace GameEngine
 	public:
 		friend Physics;
 
-		Collider ();
+		Collider (const std::string& name);
 		virtual ~Collider ();
 
 		virtual void Destroy () override;

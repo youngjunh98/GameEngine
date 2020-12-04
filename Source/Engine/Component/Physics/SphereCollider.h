@@ -1,5 +1,4 @@
-#ifndef INCLUDE_SPHERE_COLLIDER
-#define INCLUDE_SPHERE_COLLIDER
+#pragma once
 
 #include "Engine/Component/Physics/Collider.h"
 
@@ -16,11 +15,9 @@ namespace GameEngine
 		void SetRadius (float radius);
 		float GetRadius () const;
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 
 	private:
 		float m_radius;
 	};
 }
-
-#endif

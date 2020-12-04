@@ -34,7 +34,7 @@ namespace GameEngine
 		Vector3 GetScale () const;
 		void SetScale (Vector3 scale);
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 
 		virtual void OnSerialize (Json::Json& json) const override;
 		virtual void OnDeserialize (const Json::Json& json) override;

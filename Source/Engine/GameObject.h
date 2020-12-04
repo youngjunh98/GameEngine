@@ -33,7 +33,6 @@ namespace GameEngine
 
 			auto component = std::make_unique<T> ();
 			component->SetGameObject (*this);
-			component->SetName (GetName ());
 			component->OnInit ();
 
 			if (m_scene->IsLoaded ())

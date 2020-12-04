@@ -1,6 +1,4 @@
-#ifndef INCLUDE_LIGHT
-#define INCLUDE_LIGHT
-
+#pragma once
 
 #include "Core/CoreMinimal.h"
 #include "Engine/Component/Component.h"
@@ -24,17 +22,8 @@ namespace GameEngine
 	class Light : public Component
 	{
 	public:
-		Light () :
-			m_type (ELightType::Directional),
-			m_color (Vector4::One),
-			m_intensity (1.0f),
-			m_range (0.0f),
-			m_spotAngle (0.0f),
-			m_shadowType (EShadowType::Hard),
-			m_shadowIntensity (1.0f),
-			m_shadowDepthBias (0.001f)
-		{}
-		virtual ~Light () {}
+		Light ();
+		virtual ~Light ();
 
 		ELightType GetType () const;
 		void SetType (ELightType type);
@@ -60,7 +49,7 @@ namespace GameEngine
 		float GetShadowDepthBias () const;
 		void SetShadowDepthBias (float shadowDepthBias);
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 
 		virtual void OnSerialize (Json::Json& json) const override;
 		virtual void OnDeserialize (const Json::Json& json) override;
@@ -76,5 +65,3 @@ namespace GameEngine
 		float m_shadowDepthBias;
 	};
 }
-
-#endif

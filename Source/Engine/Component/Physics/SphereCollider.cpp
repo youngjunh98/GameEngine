@@ -1,8 +1,10 @@
 #include "SphereCollider.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
-	SphereCollider::SphereCollider ()
+	SphereCollider::SphereCollider () : Collider ("Sphere Collider"),
+		m_radius (1.0f)
 	{
 	}
 
@@ -35,14 +37,10 @@ namespace GameEngine
 		return m_radius;
 	}
 
-	void SphereCollider::OnRenderEditor (Editor& editor)
+	void SphereCollider::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Sphere Collider", this, true);
-
-		editor.AddPropertyFloat ("Radius", m_radius);
-		m_radius = Math::Max (m_radius, 0.0f);
-
-		editor.AddPropertyVector3 ("Offset", m_offset);
+		m_radius = Math::Max (EditorGUI::InputFloat ("Size", m_radius), 0.0f);
+		m_offset = EditorGUI::InputVector3 ("Offset", m_offset);
 
 		if (m_physxShape != nullptr)
 		{

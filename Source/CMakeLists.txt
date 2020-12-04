@@ -100,32 +100,19 @@ file(GLOB_RECURSE ENGINE_SRC
     "Engine/**.h"
 )
 
-file(GLOB IMGUI_SRC
-    "Editor/ImGui/*.cpp"
-    "Editor/ImGui/*.h"
-    "Editor/ImGui/examples/*.cpp"
-    "Editor/ImGui/examples/*.h"
-    "Editor/ImGui/misc/*.cpp"
-    "Editor/ImGui/misc/*.h"
-    "Editor/ImGui/misc/cpp/*.cpp"
-    "Editor/ImGui/misc/cpp/*.h"
-)
-
-file(GLOB EDITOR_SRC
-    "Editor/*.cpp"
-    "Editor/*.h"
+file(GLOB_RECURSE EDITOR_SRC
+    "Editor/**.cpp"
+    "Editor/**.h"
 )
 
 if(BUILD_STATIC)
     add_library(Engine STATIC
         ${ENGINE_SRC}
-        ${IMGUI_SRC}
         ${EDITOR_SRC}
     )
 else()
     add_library(Engine SHARED
         ${ENGINE_SRC}
-        ${IMGUI_SRC}
         ${EDITOR_SRC}
     )
 endif()

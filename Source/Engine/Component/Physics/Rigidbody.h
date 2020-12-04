@@ -64,7 +64,7 @@ namespace GameEngine
 		bool IsConstraintRotation (ERigidbodyConstraintAxis axis) const;
 		void SetConstraintRotation (bool bRotationX, bool bRotationY, bool bRotationZ);
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 
 		//virtual void OnSerialize (Json::Json& json) const override;
 		//virtual void OnDeserialize (const Json::Json& json) override;

@@ -4,7 +4,9 @@
 
 namespace GameEngine
 {
-	Collider::Collider ()
+	Collider::Collider (const std::string& name) : Component (name),
+		m_bTrigger (false), m_offset (Vector3::Zero), m_attachedRigidbody (nullptr),
+		m_physxShape (nullptr), m_physxRigidStatic (nullptr)
 	{
 	}
 

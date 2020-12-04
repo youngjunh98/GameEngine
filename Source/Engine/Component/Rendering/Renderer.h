@@ -1,5 +1,4 @@
-#ifndef INCLUDE_RENDERER
-#define INCLUDE_RENDERER
+#pragma once
 
 #include <vector>
 
@@ -11,12 +10,12 @@ namespace GameEngine
 	class Renderer : public Component
 	{
 	public:
-		Renderer () {}
-		virtual ~Renderer () {}
+		Renderer (const std::string& name);
+		virtual ~Renderer () = 0;
 
 		virtual void Render (RenderPass* renderPass) = 0;
 
-		Material* GetMaterial (uint32 index);
+		Material* GetMaterial (uint32 index) const;
 		void SetMaterial (Material* material, uint32 index);
 
 		std::vector<Material*>& GetMaterials ();
@@ -26,5 +25,3 @@ namespace GameEngine
 		std::vector<Material*> m_materials;
 	};
 }
-
-#endif

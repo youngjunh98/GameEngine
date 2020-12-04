@@ -16,9 +16,6 @@ namespace GameEngine
 		SceneManager ();
 		~SceneManager ();
 
-		//void LoadScene ();
-		//void UnloadScene ();
-
 		void FixedUpdateScene ();
 		void UpdateScene ();
 

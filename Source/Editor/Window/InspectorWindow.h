@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Type.h"
-#include "EditorWindow.h"
+#include "Editor/EditorWindow.h"
 
 namespace GameEngine
 {

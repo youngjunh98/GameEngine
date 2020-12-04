@@ -83,4 +83,14 @@ namespace GameEngine
         ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
 #endif
     }
+
+    bool DearImGui::BeginMainMenuBar ()
+    {
+        return ImGui::BeginMainMenuBar ();
+    }
+
+    void DearImGui::EndMainMenuBar ()
+    {
+        ImGui::EndMainMenuBar ();
+    }
 }

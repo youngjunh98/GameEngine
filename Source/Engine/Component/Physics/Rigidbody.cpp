@@ -3,10 +3,11 @@
 #include "SphereCollider.h"
 #include "Engine/GameObject.h"
 #include "Engine/Component/Transform.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
-	Rigidbody::Rigidbody () :
+	Rigidbody::Rigidbody () : Component ("Rigidbody"),
 		m_mass (1.0f),
 		m_linearDamping (0.0f),
 		m_angularDamping (0.0f),
@@ -312,58 +313,28 @@ namespace GameEngine
 		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, bRoll);
 	}
 
-	void Rigidbody::OnRenderEditor (Editor& editor)
+	void Rigidbody::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Rigidbody", this, true);
+		SetMass (EditorGUI::InputFloat ("Mass", GetMass ()));
+		SetLinearDamping (EditorGUI::InputFloat ("Linear Damping", GetLinearDamping ()));
+		SetAngularDamping (EditorGUI::InputFloat ("Angular Damping", GetAngularDamping ()));
 
-		float mass = GetMass ();
+		SetApplyGravity (EditorGUI::InputCheckbox ("Apply Gravity", IsApplyGravity ()));
+		SetKinematic (EditorGUI::InputCheckbox ("Is Kinematic", IsKinematic ()));
 
-		editor.AddPropertyFloat ("Mass", mass);
-
-		SetMass (mass);
-
-		float linearDamping = GetLinearDamping ();
-		float angularDamping = GetAngularDamping ();
-
-		editor.AddPropertyFloat ("Linear Damping", linearDamping);
-		editor.AddPropertyFloat ("Angular Damping", angularDamping);
-
-		SetLinearDamping (linearDamping);
-		SetAngularDamping (angularDamping);
-
-		bool bGravity = IsApplyGravity ();
-		bool bKinematic = IsKinematic ();
-
-		editor.AddCheckbox ("Apply Gravity", bGravity);
-		editor.AddCheckbox ("Is Kinematic", bKinematic);
-
-		SetApplyGravity (bGravity);
-		SetKinematic (bKinematic);
-
-		editor.AddLabel ("Constraints");
-
-		bool bConstraintPositionX = IsConstraintPosition (ERigidbodyConstraintAxis::X);
-		bool bConstraintPositionY = IsConstraintPosition (ERigidbodyConstraintAxis::Y);
-		bool bConstraintPositionZ = IsConstraintPosition (ERigidbodyConstraintAxis::Z);
-
-		editor.AddCheckbox ("Position X", bConstraintPositionX);
-		editor.AddNextItemSameLine ();
-		editor.AddCheckbox ("Position Y", bConstraintPositionY);
-		editor.AddNextItemSameLine ();
-		editor.AddCheckbox ("Position Z", bConstraintPositionZ);
-
+		EditorGUI::Label ("Constraints");
+		bool bConstraintPositionX = EditorGUI::InputCheckbox ("Position X", IsConstraintPosition (ERigidbodyConstraintAxis::X));
+		EditorGUI::SameLine ();
+		bool bConstraintPositionY = EditorGUI::InputCheckbox ("Position Y", IsConstraintPosition (ERigidbodyConstraintAxis::Y));
+		EditorGUI::SameLine ();
+		bool bConstraintPositionZ = EditorGUI::InputCheckbox ("Position Z", IsConstraintPosition (ERigidbodyConstraintAxis::Z));
 		SetConstraintPosition (bConstraintPositionX, bConstraintPositionY, bConstraintPositionZ);
 
-		bool bConstraintRotationX = IsConstraintRotation (ERigidbodyConstraintAxis::X);
-		bool bConstraintRotationY = IsConstraintRotation (ERigidbodyConstraintAxis::Y);
-		bool bConstraintRotationZ = IsConstraintRotation (ERigidbodyConstraintAxis::Z);
-
-		editor.AddCheckbox ("Rotation X", bConstraintRotationX);
-		editor.AddNextItemSameLine ();
-		editor.AddCheckbox ("Rotation Y", bConstraintRotationY);
-		editor.AddNextItemSameLine ();
-		editor.AddCheckbox ("Rotation Z", bConstraintRotationZ);
-
+		bool bConstraintRotationX = EditorGUI::InputCheckbox ("Rotation X", IsConstraintRotation (ERigidbodyConstraintAxis::X));
+		EditorGUI::SameLine ();
+		bool bConstraintRotationY = EditorGUI::InputCheckbox ("Rotation Y", IsConstraintRotation (ERigidbodyConstraintAxis::Y));
+		EditorGUI::SameLine ();
+		bool bConstraintRotationZ = EditorGUI::InputCheckbox ("Rotation Z", IsConstraintRotation (ERigidbodyConstraintAxis::Z));
 		SetConstraintRotation (bConstraintRotationX, bConstraintRotationY, bConstraintRotationZ);
 	}
 

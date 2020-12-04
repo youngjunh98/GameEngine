@@ -1,7 +1,24 @@
 #include "Light.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
+	Light::Light () : Component ("Light"),
+		m_type (ELightType::Directional),
+		m_color (Vector4::One),
+		m_intensity (1.0f),
+		m_range (0.0f),
+		m_spotAngle (0.0f),
+		m_shadowType (EShadowType::Hard),
+		m_shadowIntensity (1.0f),
+		m_shadowDepthBias (0.001f)
+	{
+	}
+
+	Light::~Light ()
+	{
+	}
+
 	ELightType Light::GetType () const
 	{
 		return m_type;
@@ -82,30 +99,28 @@ namespace GameEngine
 		m_shadowDepthBias = shadowDepthBias;
 	}
 
-	void Light::OnRenderEditor (Editor& editor)
+	void Light::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Light", this, true);
-
-		int32 type = static_cast<int32> (m_type);
-		editor.AddCombo ("Type", type, { "Directional", "Point", "Spot" });
+		int32 type = EditorGUI::InputDropDown ("Type", static_cast<int32> (m_type), { "Directional", "Point", "Spot" });
 		m_type = static_cast<ELightType> (type);
 
-		editor.AddColorRGBA ("Color", m_color);
-
-		editor.AddPropertyFloat ("Intensity", m_intensity);
-		m_intensity = Math::Max (0.0f, m_intensity);
+		m_color = EditorGUI::InputColorRGBA ("Color", m_color);
+		m_intensity = Math::Max (0.0f, EditorGUI::InputFloat ("Intensity", m_intensity));
 
 		if (m_type == ELightType::Point || m_type == ELightType::Spot)
 		{
-			editor.AddPropertyFloat ("Range", m_range);
-			m_range = Math::Max (0.0f, m_range);
+			m_range = Math::Max (0.0f, EditorGUI::InputFloat ("Range", m_range));
 		}
 
 		if (m_type == ELightType::Spot)
 		{
-			editor.AddPropertyFloat ("Spot Angle", m_spotAngle);
-			m_spotAngle = Math::Clamp (m_spotAngle, 1.0f, 179.0f);
+			m_spotAngle = Math::Max (0.0f, EditorGUI::InputFloat ("Spot Angle", m_spotAngle));
 		}
+
+		int32 shadowType = static_cast<int32> (m_shadowType);
+		m_shadowType = static_cast<EShadowType> (EditorGUI::InputDropDown ("Shadow Type", shadowType, { "None", "Hard", "Soft" }));
+		m_shadowIntensity = Math::Clamp (EditorGUI::InputFloat ("Shadow Intensity", m_shadowIntensity), 0.0f, 1.0f);
+		m_shadowDepthBias = Math::Max (EditorGUI::InputFloat ("Shadow Depth Bias", m_shadowDepthBias), 0.0f);
 	}
 
 	void Light::OnSerialize (Json::Json& json) const
@@ -139,7 +154,7 @@ namespace GameEngine
 		json.at ("spot angle").get_to (m_spotAngle);
 
 		int32 shadowtype;
-		json.at ("light type").get_to (shadowtype);
+		json.at ("shadow type").get_to (shadowtype);
 		m_shadowType = static_cast<EShadowType> (shadowtype);
 
 		json.at ("shadow intensity").get_to (m_shadowIntensity);

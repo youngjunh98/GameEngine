@@ -2,7 +2,7 @@
 
 namespace GameEngine
 {
-	Component::Component () : m_gameObject (nullptr)
+	Component::Component (const std::string& name) : Object (name), m_gameObject (nullptr)
 	{
 	}
 

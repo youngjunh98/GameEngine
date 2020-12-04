@@ -4,12 +4,12 @@
 #include "Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Component/Transform.h"
 #include "Engine/Asset/AssetManager.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
-	MeshRenderer::MeshRenderer () :
-		m_mesh (nullptr),
-		m_bTessellation (false)
+	MeshRenderer::MeshRenderer () : Renderer ("Mesh Renderer"),
+		m_mesh (nullptr), m_bTessellation (false)
 	{
 	}
 
@@ -65,26 +65,28 @@ namespace GameEngine
 		m_bTessellation = bTessellation;
 	}
 
-	void MeshRenderer::OnRenderEditor (Editor& editor)
+	void MeshRenderer::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Mesh Renderer", this, true);
+		Mesh* mesh = static_cast<Mesh*> (EditorGUI::InputAsset ("Mesh", "Mesh", GetMesh ()));
 
-		std::wstring assetPath = g_assetManager.GetAssetPath (m_mesh);
-		editor.AddPropertyAsset ("Mesh", "Mesh", assetPath);
+		if (mesh != nullptr)
+		{
+			SetMesh (mesh);
+		}
 
-		m_mesh = g_assetManager.FindAsset<Mesh> (assetPath);
-
-		editor.AddCheckbox ("Enable Tessellation", m_bTessellation);
+		m_bTessellation = EditorGUI::InputCheckbox ("Enable Tessellation", m_bTessellation);
 
 		if (m_mesh != nullptr)
 		{
 			for (uint32 i = 0; i < m_mesh->GetSubMeshCount (); i++)
 			{
-				assetPath = g_assetManager.GetAssetPath (GetMaterial (i));
-				editor.AddPropertyAsset ("Material " + std::to_string (i), "Material", assetPath);
+				Material* material = GetMaterial (i);
+				material = static_cast<Material*> (EditorGUI::InputAsset ("Material " + std::to_string (i), "Material", material));
 
-				auto* foundMaterial = g_assetManager.FindAsset<Material> (assetPath);
-				SetMaterial (foundMaterial, i);
+				if (material != nullptr)
+				{
+					SetMaterial (material, i);
+				}
 			}
 		}
 	}
@@ -96,6 +98,14 @@ namespace GameEngine
 		json["type"] = "MeshRenderer";
 		json["mesh"] = g_assetManager.GetAssetPath (m_mesh);
 		json["tessellation"] = m_bTessellation;
+		json["materials"] = Json::Json::array ();
+
+		for (uint32 i = 0; i < m_mesh->GetSubMeshCount (); i++)
+		{
+			Material* material = GetMaterial (i);
+			PathString materialPath = g_assetManager.GetAssetPath (material);
+			json["materials"].push_back (materialPath);
+		}
 	}
 
 	void MeshRenderer::OnDeserialize (const Json::Json& json)
@@ -111,5 +121,21 @@ namespace GameEngine
 		}
 
 		json.at ("tessellation").get_to (m_bTessellation);
+
+		if (json.find ("materials") != json.end ())
+		{
+			uint32 index = 0;
+			for (auto materialInfo : json["materials"].items ())
+			{
+				PathString path = materialInfo.value ();
+				Material* material = g_assetManager.FindAsset<Material> (path);
+
+				if (material != nullptr)
+				{
+					SetMaterial (material, index);
+					++index;
+				}
+			}
+		}
 	}
 }

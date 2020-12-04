@@ -2,17 +2,16 @@
 #include "Engine/GameObject.h"
 #include "Engine/Component/Transform.h"
 #include "Engine/Rendering/GlobalRenderer.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
 	Camera* Camera::Main = nullptr;
 
-	Camera::Camera () :
+	Camera::Camera () : Component ("Camera"),
 		m_mode (ECameraMode::Perspective),
-		m_fieldOfView (60.0f),
-		m_orthographicSize (5.0f),
-		m_near (0.1f),
-		m_far (1000.0f)
+		m_fieldOfView (60.0f), m_orthographicSize (5.0f),
+		m_near (0.1f), m_far (1000.0f)
 	{
 	}
 
@@ -158,30 +157,22 @@ namespace GameEngine
 		return corners;
 	}
 
-	void Camera::OnRenderEditor (Editor& editor)
+	void Camera::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Camera", this, true);
-
 		int32 mode = static_cast<int32> (m_mode);
-		editor.AddCombo ("Mode", mode, { "Perspective", "Orthographic" });
-		m_mode = static_cast<ECameraMode> (mode);
+		m_mode = static_cast<ECameraMode> (EditorGUI::InputDropDown ("Mode", mode, { "Perspective", "Orthographic" }));
 
 		if (m_mode == ECameraMode::Perspective)
 		{
-			editor.AddPropertyFloat ("FOV", m_fieldOfView);
-			m_fieldOfView = Math::Clamp (m_fieldOfView, 1.0f, 179.0f);
+			m_fieldOfView = Math::Clamp (EditorGUI::InputFloat ("FOV", m_fieldOfView), 1.0f, 179.0f);
 		}
 		else
 		{
-			editor.AddPropertyFloat ("Orthographic Size", m_orthographicSize);
-			m_orthographicSize = Math::Max (m_orthographicSize, 0.0001f);
+			m_orthographicSize = Math::Max (EditorGUI::InputFloat ("Orthographic Size", m_orthographicSize), 0.0001f);
 		}
 
-		editor.AddPropertyFloat ("Near", m_near);
-		m_near = Math::Max (m_near, 0.0001f);
-
-		editor.AddPropertyFloat ("Far", m_far);
-		m_far = Math::Max (m_far, m_near + Math::Epsilon);
+		m_near = Math::Max (EditorGUI::InputFloat ("Near", m_near), 0.001f);
+		m_far = Math::Max (EditorGUI::InputFloat ("Near", m_far), m_near + 0.000001f);
 	}
 
 	void Camera::OnSerialize (Json::Json& json) const

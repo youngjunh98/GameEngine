@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Type.h"
-#include "EditorWindow.h"
+#include "Editor/EditorWindow.h"
 
 namespace GameEngine
 {
+    class GameObject;
+
     class SceneWindow final : public EditorWindow
     {
     public:
@@ -12,5 +14,8 @@ namespace GameEngine
         virtual ~SceneWindow ();
 
         virtual void OnRender () override;
+
+    private:
+        GameObject* m_hoveredGameObject;
     };
 }

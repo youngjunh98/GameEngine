@@ -2,7 +2,15 @@
 
 namespace GameEngine
 {
-	Material* Renderer::GetMaterial (uint32 index)
+	Renderer::Renderer (const std::string& name) : Component (name)
+	{
+	}
+
+	Renderer::~Renderer ()
+	{
+	}
+
+	Material* Renderer::GetMaterial (uint32 index) const
 	{
 		return index < m_materials.size () ? m_materials.at (index) : nullptr;
 	}
@@ -20,7 +28,7 @@ namespace GameEngine
 				m_materials.push_back (nullptr);
 			}
 
-			m_materials.at (index) = nullptr;
+			m_materials.at (index) = material;
 		}
 	}
 

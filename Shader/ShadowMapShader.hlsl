@@ -1,6 +1,4 @@
-#include "Common.hlsl"
 #include "ShaderVariables.hlsl"
-#include "PBR.hlsl"
 
 struct VertexInput
 {

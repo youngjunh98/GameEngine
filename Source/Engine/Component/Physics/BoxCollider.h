@@ -1,5 +1,4 @@
-#ifndef INCLUDE_BOX_COLLIDER
-#define INCLUDE_BOX_COLLIDER
+#pragma once
 
 #include "Engine/Component/Physics/Collider.h"
 
@@ -16,11 +15,9 @@ namespace GameEngine
 		void SetSize (Vector3 size);
 		Vector3 GetSize () const;
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 
 	private:
 		Vector3 m_size;
 	};
 }
-
-#endif

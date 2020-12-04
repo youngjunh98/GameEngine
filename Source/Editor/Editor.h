@@ -5,7 +5,9 @@
 #include <utility>
 
 #include "Type.h"
+#include "EditorMenu.h"
 #include "EditorWindow.h"
+#include "EditorModalWindow.h"
 #include "Core/CoreMinimal.h"
 #include "Core/File/FileSystem.h"
 
@@ -18,6 +20,9 @@ namespace GameEngine
 		virtual ~Editor ();
 
 	public:
+		Editor (const Editor&) = delete;
+		Editor& operator= (const Editor&) = delete;
+
 		static Editor& GetInstance ();
 
 		void Initialize ();
@@ -27,20 +32,6 @@ namespace GameEngine
 
 		GameObject* GetEditingGameObject () const;
 		void SetEditingGameObject (GameObject* gameObject);
-
-		void BeginComponent (const std::string& name, Component* component, bool bDeletable);
-		void AddNextItemSameLine ();
-
-		void AddLabel (const std::string& name);
-		void AddCheckbox (const std::string& name, bool& bChecked);
-		void AddCombo (const std::string& name, int32& selectedIndex, const std::vector<std::string>& names);
-		void AddColorRGBA (const std::string& name, Vector4& rgba);
-		void AddPropertyFloat (const std::string& name, float& value);
-		void AddPropertyVector2 (const std::string& name, Vector2& value);
-		void AddPropertyVector3 (const std::string& name, Vector3& value);
-		void AddPropertyVector4 (const std::string& name, Vector4& value);
-		void AddPropertyAsset (const std::string& name, const std::string& type, std::wstring& path);
-		void AddPropertyShaderParameter (const std::string& name, std::string& type, void* value);
 
 		template<typename TEditorWindow>
 		TEditorWindow* CreateWindowInstance ()
@@ -88,32 +79,34 @@ namespace GameEngine
 
 			window->Show ();
 		}
-	
+
+		template<typename TEditorModalWindow>
+		TEditorModalWindow* OpenModalWindow ()
+		{
+			TEditorModalWindow* temp = nullptr;
+			auto modalWindow = std::make_unique<TEditorModalWindow> ();
+
+			if (modalWindow != nullptr)
+			{
+				temp = modalWindow.get ();
+
+				m_modalWindow = std::move (modalWindow);
+				m_modalWindow->Show ();
+			}
+
+			return temp;
+		}
+
+		EditorModalWindow* GetModalWindow () const;
+		
 	private:
-		void RenderMainMenuBar ();
-		void RenderAssetEditWindow ();
-
-		void RenderFileMenu ();
-		void RenderEditMenu ();
-		void RenderAssetMenu ();
-		void RenderWindowMenu ();
-
-		void CreateScene (const std::string& path);
-		void OpenScene (const std::string& path);
-		void SaveScene ();
-
-		void ImportAsset ();
-
-	private:
+		std::vector<std::unique_ptr<EditorMenu>> m_menus;
 		std::vector<std::unique_ptr<EditorWindow>> m_windows;
+		std::unique_ptr<EditorModalWindow> m_modalWindow;
 
 		GameObject* m_editingGameObject;
-        std::string m_editingScenePath;
 
 		bool m_bShowAssetEditWindow;
-
-		bool m_bCreatingScene;
-		bool m_bOpeningScene;
 		bool m_bCreatingAsset;
 
 		std::string m_createAssetPath;

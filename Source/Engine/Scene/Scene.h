@@ -30,22 +30,7 @@ namespace GameEngine
 
 	private:
 		bool m_bLoaded;
-
 		std::vector<std::unique_ptr<GameObject>> m_gameObjects;
-		//std::vector<GameObject*> m_pendingToDestroy;
-
-		////TEMP
-		//Material* containerMaterial1;
-		//Material* containerMaterial2;
-		//Material* groundMaterial;
-		//Material* bulletMaterial;
-		//Material* gunMaterial;
-		//Material* pigMaterial;
-
-		//GameObject* player;
-		//GameObject* pig1;
-		//GameObject* pig2;
-		//GameObject* pig3;
 	};
 }
 

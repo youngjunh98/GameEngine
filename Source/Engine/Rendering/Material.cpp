@@ -4,7 +4,7 @@
 #include "Platform/PlatformRenderingInterface.h"
 #include "Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Asset/AssetManager.h"
-
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
@@ -15,6 +15,11 @@ namespace GameEngine
 
 	void Material::SetShader (Shader* shader)
 	{
+		if (shader == m_shader)
+		{
+			return;
+		}
+
 		m_shader = shader;
 		m_textureMap.clear ();
 		m_parameterTypeMap.clear ();
@@ -165,7 +170,7 @@ namespace GameEngine
 		}
 	}
 
-	int32 Material::GetInteger (const std::string& name)
+	int32 Material::GetInteger (const std::string& name) const
 	{
 		int32 value = 0;
 		const uint8* dataStart = GetParameterDataStart (name);
@@ -186,7 +191,7 @@ namespace GameEngine
 		SetParameterData (name, valueStart, valueEnd);
 	}
 
-	float Material::GetFloat (const std::string& name)
+	float Material::GetFloat (const std::string& name) const
 	{
 		float value = 0.0f;
 		const uint8* dataStart = GetParameterDataStart (name);
@@ -207,7 +212,7 @@ namespace GameEngine
 		SetParameterData (name, valueStart, valueEnd);
 	}
 
-	Vector4 Material::GetVector4 (const std::string& name)
+	Vector4 Material::GetVector4 (const std::string& name) const
 	{
 		Vector4 value = Vector4::Zero;
 		const uint8* dataStart = GetParameterDataStart (name);
@@ -228,7 +233,7 @@ namespace GameEngine
 		SetParameterData (name, valueStart, valueEnd);
 	}
 
-	Matrix4x4 Material::GetMatrix4x4 (const std::string& name)
+	Matrix4x4 Material::GetMatrix4x4 (const std::string& name) const
 	{
 		Matrix4x4 value = Matrix4x4::Zero;
 		const uint8* dataStart = GetParameterDataStart (name);
@@ -249,7 +254,7 @@ namespace GameEngine
 		SetParameterData (name, valueStart, valueEnd);
 	}
 
-	Texture* Material::GetTexture (const std::string& name)
+	Texture* Material::GetTexture (const std::string& name) const
 	{
 		Texture* texture = nullptr;
 		auto textureIter = m_textureMap.find (name);
@@ -272,49 +277,95 @@ namespace GameEngine
 		m_textureMap.at (name) = &texture;
 	}
 
+	uint8* Material::GetVertexShaderParameterData () const
+	{
+		return m_vertexShaderParameterData.get ();
+	}
+
+	uint8* Material::GetPixelShaderParameterData () const
+	{
+		return m_pixelShaderParameterData.get ();
+	}
+
+	uint8* Material::GetHullShaderParameterData () const
+	{
+		return m_hullShaderParameterData.get ();
+	}
+
+	uint8* Material::GetDomainShaderParameterData () const
+	{
+		return m_domainShaderParameterData.get ();
+	}
+
+	uint8* Material::GetGeometryShaderParameterData () const
+	{
+		return m_geometryShaderParameterData.get ();
+	}
+
 	const std::unordered_map<std::string, Texture*>& Material::GetTextureMap () const
 	{
 		return m_textureMap;
 	}
 
-	void Material::OnRenderEditor (Editor& editor)
+	void Material::OnRenderEditor ()
 	{
-		std::wstring assetPath = g_assetManager.GetAssetPath (m_shader);
-		editor.AddPropertyAsset ("Shader", "Shader", assetPath);
-		auto* foundShader = g_assetManager.LoadShader (assetPath);
+		Shader* shader = static_cast<Shader*> (EditorGUI::InputAsset ("Shader", "Shader", m_shader));
 
-		if (foundShader != m_shader)
+		if (shader != nullptr)
 		{
-			SetShader (foundShader);
-		}
+			SetShader (shader);
 
-		if (m_shader != nullptr)
-		{
-			for (auto& texture : m_textureMap)
+			for (auto& textureInfo : m_textureMap)
 			{
-				assetPath = g_assetManager.GetAssetPath (texture.second);
-				editor.AddPropertyAsset (texture.first, "Texture", assetPath);
-				texture.second = g_assetManager.FindAsset<Texture> (assetPath);
+				std::string textureName = textureInfo.first;
+				const bool bGlobal = textureName.rfind ("g_", sizeof ("g_")) == 0;
+
+				if (bGlobal)
+				{
+					continue;
+				}
+
+				Texture* texture = textureInfo.second;
+				texture = static_cast<Texture*> (EditorGUI::InputAsset (textureName, "Texture", texture));
+
+				if (texture != nullptr)
+				{
+					textureInfo.second = texture;
+				}
 			}
 
 			for (auto& parameter : m_parameterTypeMap)
 			{
-				if (m_parameterTypeMap.find (parameter.first) == m_parameterTypeMap.end ())
+				const std::string parameterName = parameter.first;
+				const bool bGlobal = parameterName.rfind ("g_", sizeof ("g_")) == 0;
+
+				if (bGlobal)
 				{
-					m_parameterTypeMap.emplace (parameter.first, "Float");
+					continue;
 				}
 
-				if (m_parameterTypeMap[parameter.first] == "Float")
+				std::string typeName = m_parameterTypeMap[parameterName];
+				int32 typeNumber = 0;
+
+				if (typeName == "Vector4")
 				{
-					float value = GetFloat (parameter.first);
-					editor.AddPropertyShaderParameter (parameter.first, m_parameterTypeMap[parameter.first], &value);
-					SetFloat (parameter.first, value);
+					typeNumber = 1;
 				}
-				else if (m_parameterTypeMap[parameter.first] == "Vector")
+
+				typeNumber = EditorGUI::InputDropDown ("##type-dropdown" + parameterName, typeNumber, { "Float", "Vector4" });
+				EditorGUI::SameLine ();
+
+				if (typeNumber == 0)
 				{
-					Vector4 value = GetVector4 (parameter.first);
-					editor.AddPropertyShaderParameter (parameter.first, m_parameterTypeMap[parameter.first], &value);
-					SetVector4 (parameter.first, value);
+					m_parameterTypeMap[parameterName] = "Float";
+					float value = EditorGUI::InputFloat (parameterName, GetFloat (parameterName));
+					SetFloat (parameterName, value);
+				}
+				else if (typeNumber == 1)
+				{
+					m_parameterTypeMap[parameterName] = "Vector4";
+					Vector4 value = EditorGUI::InputVector4 (parameterName, GetVector4 (parameterName));
+					SetVector4 (parameterName, value);
 				}
 			}
 		}
@@ -329,28 +380,53 @@ namespace GameEngine
 		json["textures"] = Json::Json::array ();
 		json["parameters"] = Json::Json::array ();
 
-		for (auto& texture : m_textureMap)
+		for (auto& pairNameTexture : m_textureMap)
 		{
-			if (texture.second == nullptr)
+			std::string textureName = pairNameTexture.first;
+			Texture* texture = pairNameTexture.second;
+
+			if (texture == nullptr)
 			{
 				continue;
 			}
 
-			auto texturePath = g_assetManager.GetAssetPath (texture.second);
-			std::string asciiTexturePath (texturePath.begin (), texturePath.end ());
+			bool bGlobal = textureName.rfind ("g_", sizeof ("g_")) == 0;
+
+			if (bGlobal)
+			{
+				continue;
+			}
 
 			Json::Json textureInfo;
-			textureInfo["name"] = texture.first;
-			textureInfo["path"] = asciiTexturePath;
+			textureInfo["name"] = textureName;
+			textureInfo["path"] = g_assetManager.GetAssetPath (texture);
 
 			json["textures"].push_back (textureInfo);
 		}
 
-		for (auto& parameter : m_parameterTypeMap)
+		for (auto& pairNameType : m_parameterTypeMap)
 		{
+			std::string parameterName = pairNameType.first;
+			std::string typeName = pairNameType.second;
+			bool bGlobal = parameterName.rfind ("g_", sizeof ("g_")) == 0;
+
+			if (bGlobal)
+			{
+				continue;
+			}
+
 			Json::Json parameterInfo;
-			parameterInfo["name"] = parameter.first;
-			parameterInfo["type"] = parameter.second;
+			parameterInfo["name"] = parameterName;
+			parameterInfo["type"] = typeName;
+
+			if (typeName == "Float")
+			{
+				parameterInfo["value"] = GetFloat (parameterName);
+			}
+			else if (typeName == "Vector4")
+			{
+				parameterInfo["value"] = Json::JsonSerializer::Serialize<Vector4> (GetVector4 (parameterName));
+			}
 
 			json["parameters"].push_back (parameterInfo);
 		}
@@ -375,16 +451,16 @@ namespace GameEngine
 
 		if (json.find ("textures") != json.end ())
 		{
-			for (auto& textureInfo : json["textures"].items ())
+			for (auto& textureJson : json["textures"].items ())
 			{
+				Json::Json textureInfo = textureJson.value ();
 				std::string name;
-				std::string texturePath;
+				PathString texturePath;
 
-				textureInfo.value ().at ("name").get_to (name);
-				textureInfo.value ().at ("path").get_to (texturePath);
+				textureInfo.at ("name").get_to (name);
+				textureInfo.at ("path").get_to (texturePath);
 
-				std::wstring unicodeTexturePath (texturePath.begin (), texturePath.end ());
-				Texture* texture = g_assetManager.FindAsset<Texture> (unicodeTexturePath);
+				Texture* texture = g_assetManager.FindAsset<Texture> (texturePath);
 
 				if (texture == nullptr)
 				{
@@ -402,24 +478,42 @@ namespace GameEngine
 			}
 		}
 
-
 		if (json.find ("parameters") != json.end ())
 		{
-			for (auto& textureInfo : json["parameters"].items ())
+			for (auto& parameterJson : json["parameters"].items ())
 			{
-				std::string name;
-				std::string type;
+				Json::Json parameterInfo = parameterJson.value ();
+				std::string parameterName;
+				std::string typeName;
 
-				textureInfo.value ().at ("name").get_to (name);
-				textureInfo.value ().at ("type").get_to (type);
+				parameterInfo.at ("name").get_to (parameterName);
+				parameterInfo.at ("type").get_to (typeName);
 
-				if (m_parameterTypeMap.find (name) == m_parameterTypeMap.end ())
+				if (m_parameterTypeMap.find (parameterName) == m_parameterTypeMap.end ())
 				{
-					m_parameterTypeMap.emplace (name, type);
+					m_parameterTypeMap.emplace (parameterName, typeName);
 				}
 				else
 				{
-					m_parameterTypeMap[name] = type;
+					m_parameterTypeMap[parameterName] = typeName;
+				}
+
+				if (parameterInfo.find ("value") != parameterInfo.end ())
+				{
+					if (typeName == "Float")
+					{
+						float value = parameterInfo.at ("value");
+						SetFloat (parameterName, value);
+					}
+					else if (typeName == "Vector4")
+					{
+						Vector4 value;
+						value.m_x = parameterInfo.at ("value")[0];
+						value.m_y = parameterInfo.at ("value")[1];
+						value.m_z = parameterInfo.at ("value")[2];
+						value.m_w = parameterInfo.at ("value")[3];
+						SetVector4 (parameterName, value);
+					}
 				}
 			}
 		}
@@ -460,58 +554,42 @@ namespace GameEngine
 
 	void Material::SetParameterData (const std::string& name, const uint8* dataStart, const uint8* dataEnd)
 	{
-		RI_ShaderConstantBuffer* parameterBuffer;
 		uint8* parameterData;
 		uint32 parameterByteOffset;
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Vertex, name))
 		{
-			parameterBuffer = m_shader->GetVertexShaderParameterBuffer ();
 			parameterData = m_vertexShaderParameterData.get ();
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Vertex, name).m_byteOffset;
-
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Pixel, name))
 		{
-			parameterBuffer = m_shader->GetPixelShaderParameterBuffer ();
 			parameterData = m_pixelShaderParameterData.get ();
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Pixel, name).m_byteOffset;
-
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Hull, name))
 		{
-			parameterBuffer = m_shader->GetHullShaderParameterBuffer ();
 			parameterData = m_hullShaderParameterData.get ();
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Hull, name).m_byteOffset;
-
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Domain, name))
 		{
-			parameterBuffer = m_shader->GetDomainShaderParameterBuffer ();
 			parameterData = m_domainShaderParameterData.get ();
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Domain, name).m_byteOffset;
-
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 
 		if (m_shader->IsShaderParameterExist (EShaderStage::Geometry, name))
 		{
-			parameterBuffer = m_shader->GetGeometryShaderParameterBuffer ();
 			parameterData = m_geometryShaderParameterData.get ();
 			parameterByteOffset = m_shader->GetShaderParameter (EShaderStage::Geometry, name).m_byteOffset;
-
 			std::copy (dataStart, dataEnd, parameterData + parameterByteOffset);
-			g_renderer.GetRenderingInterface ().UpdateShaderConstantBuffer (parameterBuffer, parameterData);
 		}
 	}
 }

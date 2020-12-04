@@ -1,5 +1,4 @@
-#ifndef INCLUDE_MATERIAL
-#define INCLUDE_MATERIAL
+#pragma once
 
 #include <string>
 #include <memory>
@@ -21,24 +20,30 @@ namespace GameEngine
 		Shader* GetShader () const;
 		void SetShader (Shader* shader);
 
-		int32 GetInteger (const std::string& name);
+		int32 GetInteger (const std::string& name) const;
 		void SetInteger (const std::string& name, int32 value);
 
-		float GetFloat (const std::string& name);
+		float GetFloat (const std::string& name) const;
 		void SetFloat (const std::string& name, float value);
 
-		Vector4 GetVector4 (const std::string& name);
+		Vector4 GetVector4 (const std::string& name) const;
 		void SetVector4 (const std::string& name, Vector4 value);
 
-		Matrix4x4 GetMatrix4x4 (const std::string& name);
+		Matrix4x4 GetMatrix4x4 (const std::string& name) const;
 		void SetMatrix4x4 (const std::string& name, Matrix4x4 value);
 
-		Texture* GetTexture (const std::string& name);
+		Texture* GetTexture (const std::string& name) const;
 		void SetTexture (const std::string& name, Texture& texture);
+
+		uint8* GetVertexShaderParameterData () const;
+		uint8* GetPixelShaderParameterData () const;
+		uint8* GetHullShaderParameterData () const;
+		uint8* GetDomainShaderParameterData () const;
+		uint8* GetGeometryShaderParameterData () const;
 
 		const std::unordered_map<std::string, Texture*>& GetTextureMap () const;
 
-		virtual void OnRenderEditor (Editor& editor) override;
+		virtual void OnRenderEditor () override;
 		virtual void OnSerialize (Json::Json& json) const override;
 		virtual void OnDeserialize (const Json::Json& json) override;
 
@@ -57,5 +62,3 @@ namespace GameEngine
 		std::unordered_map<std::string, std::string> m_parameterTypeMap;
 	};
 }
-
-#endif

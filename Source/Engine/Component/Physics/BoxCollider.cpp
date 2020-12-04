@@ -1,9 +1,10 @@
 #include "BoxCollider.h"
 #include "Engine/Component/Transform.h"
+#include "Editor/EditorGUI.h"
 
 namespace GameEngine
 {
-	BoxCollider::BoxCollider ()
+	BoxCollider::BoxCollider () : Collider ("Box Collider")
 	{
 	}
 
@@ -38,16 +39,14 @@ namespace GameEngine
 		return m_size;
 	}
 
-	void BoxCollider::OnRenderEditor (Editor& editor)
+	void BoxCollider::OnRenderEditor ()
 	{
-		editor.BeginComponent ("Box Collider", this, true);
-
-		editor.AddPropertyVector3 ("Size", m_size);
+		m_size = EditorGUI::InputVector3 ("Size", m_size);
 		m_size.m_x = Math::Max (0.0f, m_size.m_x);
 		m_size.m_y = Math::Max (0.0f, m_size.m_y);
 		m_size.m_z = Math::Max (0.0f, m_size.m_z);
 
-		editor.AddPropertyVector3 ("Offset", m_offset);
+		m_offset = EditorGUI::InputVector3 ("Offset", m_offset);
 
 		if (m_physxShape != nullptr)
 		{
