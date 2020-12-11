@@ -93,7 +93,7 @@ namespace GameEngine
 		}
 
 		const auto& vertices = m_subMeshList.at (subMeshIndex).m_vertices;
-		auto resource = g_renderer.GetRenderingInterface ().CreateVertexBuffer (vertices.data (), vertices.size (), sizeof (Vertex));
+		auto resource = GlobalRenderer::GetRenderingInterface ().CreateVertexBuffer (vertices.data (), vertices.size (), sizeof (Vertex));
 
 		if (resource == nullptr)
 		{
@@ -125,7 +125,7 @@ namespace GameEngine
 		}
 
 		const auto& indices = m_subMeshList.at (subMeshIndex).m_indices;
-		auto resource = g_renderer.GetRenderingInterface ().CreateIndexBuffer (indices.data (), indices.size (), sizeof (uint32));
+		auto resource = GlobalRenderer::GetRenderingInterface ().CreateIndexBuffer (indices.data (), indices.size (), sizeof (uint32));
 
 		if (resource == nullptr)
 		{

@@ -22,6 +22,6 @@ namespace GameEngine
 
 	void DefaultForwardRenderPipeline::End ()
 	{
-		g_renderer.DrawSkybox ();
+		GlobalRenderer::DrawSkybox ();
 	}
 }

@@ -55,69 +55,75 @@ namespace GameEngine
 		LightData m_data[3];
 	};
 
-	class GlobalRenderer
+	class GlobalRenderer final
 	{
-	public:
+	private:
 		GlobalRenderer ();
-		virtual ~GlobalRenderer ();
+		~GlobalRenderer ();
+		
+		static GlobalRenderer& GetInstance ();
 
-		bool Init (const GlobalRendererSettings settings);
-		void Shutdown ();
+	public:
+		GlobalRenderer (const GlobalRenderer&) = delete;
+		GlobalRenderer& operator= (const GlobalRenderer&) = delete;
 
-		void PresentSwapChain ();
-		bool ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen);
-		bool UpdateSwapChainResource ();
-		RI_RenderTargetView* GetSwapChainRenderTarget () const;
-		uint32 GetSwapChainWidth () const;
-		uint32 GetSwapChainHeight () const;
+		static bool Init (const GlobalRendererSettings settings);
+		static void Shutdown ();
 
-		void ChangeScreenSize (uint32 width, uint32 height, bool bFullscreen);
-		bool UpdateScreenDepthStencilResource ();
-		RI_DepthStencilView* GetScreenDepthStencil () const;
+		static void PresentSwapChain ();
+		static bool ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen);
+		static bool UpdateSwapChainResource ();
+		static RI_RenderTargetView* GetSwapChainRenderTarget ();
+		static uint32 GetSwapChainWidth ();
+		static uint32 GetSwapChainHeight ();
 
-		void BindRenderTargetAndDepthStencil ();
-		void ClearRenderTargetAndDepthStencil (Vector4 color, float depth, uint8 stencil);
-		RI_RenderTargetView* GetRenderTarget () const;
-		RI_DepthStencilView* GetDepthStencil () const;
-		void SetRenderTargetAndDepthStencilAsDefault ();
-		void SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget);
-		void SetDepthStencil (RenderingResourcePtr<RI_DepthStencilView> depthStencil);
+		static void ChangeScreenSize (uint32 width, uint32 height, bool bFullscreen);
+		static bool UpdateScreenDepthStencilResource ();
+		static RI_DepthStencilView* GetScreenDepthStencil ();
 
-		Vector2 GetRenderSize () const;
-		void SetRenderSize (Vector2 size);
+		static void BindRenderTargetAndDepthStencil ();
+		static void ClearRenderTargetAndDepthStencil (Vector4 color, float depth, uint8 stencil);
+		static RI_RenderTargetView* GetRenderTarget ();
+		static RI_DepthStencilView* GetDepthStencil ();
+		static void SetRenderTargetAndDepthStencilAsDefault ();
+		static void SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget);
+		static void SetDepthStencil (RenderingResourcePtr<RI_DepthStencilView> depthStencil);
 
-		Vector2 GetViewportSize () const;
-		Vector2 GetViewportTopLeft () const;
-		void SetViewport (Vector2 size, Vector2 topLeft = Vector2::Zero);
+		static Vector2 GetRenderSize ();
+		static void SetRenderSize (Vector2 size);
 
-		void ActivateShadowMapShader (ELightType lightType);
-		void BindShadowRenderTarget (ELightType lightType, uint32 renderTargetIndex);
+		static Vector2 GetViewportSize ();
+		static Vector2 GetViewportTopLeft ();
+		static void SetViewport (Vector2 size, Vector2 topLeft = Vector2::Zero);
 
-		GlobalRendererSettings GetSettings () const;
+		static void ActivateShadowMapShader (ELightType lightType);
+		static void BindShadowRenderTarget (ELightType lightType, uint32 renderTargetIndex);
 
-		void BindRenderPipeline (RenderPipeline* renedrPipeline);
-		DefaultForwardRenderPipeline* GetDefaultForwardRenderPipeline ();
-		DefaultLineRenderPipeline* GetDefaultLineRenderPipeline ();
+		static GlobalRendererSettings GetSettings ();
 
-		void BindMaterial (Material* material);
-		void BindGlobalShaderConstantBuffer (Shader* shader, const std::string& name);
-		void SetGlobalShaderConstantBuffer (const std::string& name, const void* bufferData);
+		static void BindRenderPipeline (RenderPipeline* renedrPipeline);
+		static DefaultForwardRenderPipeline* GetDefaultForwardRenderPipeline ();
+		static DefaultLineRenderPipeline* GetDefaultLineRenderPipeline ();
 
-		void DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer);
+		static void BindMaterial (Material* material);
+		static void BindGlobalShaderConstantBuffer (Shader* shader, const std::string& name);
+		static void SetGlobalShaderConstantBuffer (const std::string& name, const void* bufferData);
 
-		void RenderScene (Scene* scene);
-		CullData Cull (Camera* camera, const std::vector<Renderer*>& renderers);
-		void DrawSkybox ();
+		static void DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer);
 
-		LightData GetLightData (uint32 index);
-		void AddLightData (LightData data);
-		void ResetLightData ();
-		void UpdateLightDataBuffer ();
+		static void RenderScene (Scene* scene);
+		static CullData Cull (Camera* camera, const std::vector<Renderer*>& renderers);
+		static void DrawSkybox ();
 
-		int32 GetLightCount () const;
-		int32 GetMaxLightCount () const;
+		static LightData GetLightData (uint32 index);
+		static void AddLightData (LightData data);
+		static void ResetLightData ();
+		static void UpdateLightDataBuffer ();
 
-		RenderingInterface& GetRenderingInterface ();
+		static int32 GetLightCount ();
+		static int32 GetMaxLightCount ();
+
+		static RenderingInterface& GetRenderingInterface ();
 
 	private:
 		GlobalRendererSettings m_settings;
@@ -177,6 +183,4 @@ namespace GameEngine
 
 		Material* m_skyboxMaterial;
 	};
-
-	extern GlobalRenderer g_renderer;
 }

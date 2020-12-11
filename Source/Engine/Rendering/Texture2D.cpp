@@ -42,14 +42,14 @@ namespace GameEngine
 		}
 
 		m_mipMapCount = resourceData.size ();
-		m_texture2D = g_renderer.GetRenderingInterface ().CreateTexture2D (m_width, m_height, m_mipMapCount, 1, m_format, pixels.data (), pitches.data (), false, true, false, false);
+		m_texture2D = GlobalRenderer::GetRenderingInterface ().CreateTexture2D (m_width, m_height, m_mipMapCount, 1, m_format, pixels.data (), pitches.data (), false, true, false, false);
 
 		if (m_texture2D == nullptr)
 		{
 			return false;
 		}
 
-		m_srv = g_renderer.GetRenderingInterface ().CreateShaderResourceView (m_texture2D.get (), m_format, 0, 1, 0);
+		m_srv = GlobalRenderer::GetRenderingInterface ().CreateShaderResourceView (m_texture2D.get (), m_format, 0, 1, 0);
 
 		if (m_srv == nullptr)
 		{

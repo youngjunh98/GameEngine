@@ -32,7 +32,7 @@ namespace GameEngine
 		auto& windowsApplication = static_cast<Platform::WindowsApplication&> (Platform::GetGenericApplication ());
         HWND hWnd = static_cast<HWND> (windowsApplication.GetNativeWindowHandle ());
 
-        RenderingInterface& renderingInterface = g_renderer.GetRenderingInterface ();
+        RenderingInterface& renderingInterface = GlobalRenderer::GetRenderingInterface ();
 		auto* d3d11Device = reinterpret_cast<ID3D11Device*> (renderingInterface.GetNativeDevice ());
 		auto* d3d11Context = reinterpret_cast<ID3D11DeviceContext*> (renderingInterface.GetNativeContext ());
 

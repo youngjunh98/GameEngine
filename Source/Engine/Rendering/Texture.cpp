@@ -99,7 +99,7 @@ namespace GameEngine
 	bool Texture::UpdateSamplerResource ()
 	{
 		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_sampler = g_renderer.GetRenderingInterface ().CreateSampler (m_addressMode, m_filterMode, m_anisotropicLevel, borderColor);
+		m_sampler = GlobalRenderer::GetRenderingInterface ().CreateSampler (m_addressMode, m_filterMode, m_anisotropicLevel, borderColor);
 
 		if (m_sampler == nullptr)
 		{

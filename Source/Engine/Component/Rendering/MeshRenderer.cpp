@@ -35,7 +35,7 @@ namespace GameEngine
 		objectConstantBuffer.m_localToWorld = Matrix4x4::ScaleRotateTranslate (position, rotation, scale).Transposed ();
 		objectConstantBuffer.m_worldToLocal = objectConstantBuffer.m_localToWorld.Inversed ();
 
-		g_renderer.SetGlobalShaderConstantBuffer ("CBObject", &objectConstantBuffer);
+		GlobalRenderer::SetGlobalShaderConstantBuffer ("CBObject", &objectConstantBuffer);
 
 		renderPass->SetTessellation (m_bTessellation);
 
@@ -46,7 +46,7 @@ namespace GameEngine
 		for (int32 i = 0; i < renderMeshCount; i++)
 		{
 			renderPass->BindMaterial (GetMaterials ().at (i));
-			g_renderer.DrawVertices (m_mesh->GetVertexBufferResource (i), m_mesh->GetIndexBufferResource (i));
+			GlobalRenderer::DrawVertices (m_mesh->GetVertexBufferResource (i), m_mesh->GetIndexBufferResource (i));
 		}
 	}
 

@@ -74,9 +74,9 @@ namespace GameEngine
 			}
 		}
 
-		RenderingInterface& renderingInterface = g_renderer.GetRenderingInterface ();
-		RI_RenderTargetView* swapChainRenderTarget = g_renderer.GetSwapChainRenderTarget ();
-		RI_DepthStencilView* screenDepthStencil = g_renderer.GetScreenDepthStencil ();
+		RenderingInterface& renderingInterface = GlobalRenderer::GetRenderingInterface ();
+		RI_RenderTargetView* swapChainRenderTarget = GlobalRenderer::GetSwapChainRenderTarget ();
+		RI_DepthStencilView* screenDepthStencil = GlobalRenderer::GetScreenDepthStencil ();
 		
 		renderingInterface.BindRenderTargetViewAndDepthStencilView (swapChainRenderTarget, screenDepthStencil);
 		renderingInterface.ClearRenderTarget (swapChainRenderTarget, 0.0f, 0.0f, 0.0f, 1.0f);

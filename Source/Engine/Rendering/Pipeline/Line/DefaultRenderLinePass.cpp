@@ -20,22 +20,22 @@ namespace GameEngine
 	{
 		if (m_rsLineCullNone.get () == nullptr)
 		{
-			m_rsLineCullNone = g_renderer.GetRenderingInterface ().CreateRasterizerState (EFillMode::Wireframe, EFaceCulling::None, EWindingOrder::CW);
+			m_rsLineCullNone = GlobalRenderer::GetRenderingInterface ().CreateRasterizerState (EFillMode::Wireframe, EFaceCulling::None, EWindingOrder::CW);
 		}
 
 		if (m_depthLessStencilAlways.get () == nullptr)
 		{
-			m_depthLessStencilAlways = g_renderer.GetRenderingInterface ().CreateDepthStencilState (EComparisonFunction::Always, EComparisonFunction::Always);
+			m_depthLessStencilAlways = GlobalRenderer::GetRenderingInterface ().CreateDepthStencilState (EComparisonFunction::Always, EComparisonFunction::Always);
 		}
 
-		g_renderer.GetRenderingInterface ().SetRasterizerState (m_rsLineCullNone.get ());
-		g_renderer.GetRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
+		GlobalRenderer::GetRenderingInterface ().SetRasterizerState (m_rsLineCullNone.get ());
+		GlobalRenderer::GetRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
 
-		Vector2 renderSize = g_renderer.GetRenderSize ();
-		g_renderer.SetViewport (renderSize);
+		Vector2 renderSize = GlobalRenderer::GetRenderSize ();
+		GlobalRenderer::SetViewport (renderSize);
 
-		g_renderer.BindRenderTargetAndDepthStencil ();
-		g_renderer.ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
+		GlobalRenderer::BindRenderTargetAndDepthStencil ();
+		GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 	}
 
 	void DefaultRenderLinePass::Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
@@ -53,7 +53,7 @@ namespace GameEngine
 		cameraConstantBuffer.m_cameraWorldPosition = camera->GetGameObject ().GetTransform ().GetPosition ();
 		cameraConstantBuffer.m_cameraFar = camera->GetFar ();
 
-		g_renderer.SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
+		GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
 
 		for (auto* renderer : renderers)
 		{
@@ -73,11 +73,11 @@ namespace GameEngine
 			m_whiteMaterial->SetShader (g_assetManager.LoadShader (L"Assets/Shader/WhiteShader.hlsl"));
 		}
 
-		g_renderer.BindMaterial (m_whiteMaterial.get ());
+		GlobalRenderer::BindMaterial (m_whiteMaterial.get ());
 	}
 
 	void DefaultRenderLinePass::SetTessellation (bool bTessellation)
 	{
-		g_renderer.GetRenderingInterface ().SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
+		GlobalRenderer::GetRenderingInterface ().SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
 	}
 }

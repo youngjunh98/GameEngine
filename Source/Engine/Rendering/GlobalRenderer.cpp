@@ -10,11 +10,9 @@
 
 namespace GameEngine
 {
-	GlobalRenderer g_renderer;
-
 	void ChangeResolution (uint32 width, uint32 height)
 	{
-		g_renderer.ChangeScreenSize (width, height, false);
+		GlobalRenderer::ChangeScreenSize (width, height, false);
 	}
 
 	GlobalRenderer::GlobalRenderer () :
@@ -26,23 +24,33 @@ namespace GameEngine
 	{
 	}
 
+	GlobalRenderer& GlobalRenderer::GetInstance ()
+	{
+		static GlobalRenderer instance;
+		return instance;
+	}
+
 	bool GlobalRenderer::Init (const GlobalRendererSettings settings)
 	{
-		m_settings = settings;
+		GlobalRenderer& instance = GetInstance ();
+		instance.m_settings = settings;
 
 		// Create and initialize rendering interface module
-		m_riModulePath = Modular::ModuleManager::GetModulePath ("D3D11RI");
-		m_ri = static_cast<RenderingInterface*> (Modular::ModuleManager::CreateModuleInstance (m_riModulePath));
+		PathString riModulePath = Modular::ModuleManager::GetModulePath ("D3D11RI");
+		auto riModule = static_cast<RenderingInterface*> (Modular::ModuleManager::CreateModuleInstance (riModulePath));
 
-		if (m_ri == nullptr)
+		if (riModule == nullptr)
 		{
 			return false;
 		}
 
-		if (m_ri->Initialize (settings.m_renderWidth, settings.m_renderHeight, settings.m_bFullScreenEnabled, settings.m_bVSyncEnabled, settings.m_refreshRate, settings.m_msaaCount) == false)
+		if (riModule->Initialize (settings.m_renderWidth, settings.m_renderHeight, settings.m_bFullScreenEnabled, settings.m_bVSyncEnabled, settings.m_refreshRate, settings.m_msaaCount) == false)
 		{
 			return false;
 		}
+
+		instance.m_riModulePath = riModulePath;
+		instance.m_ri = riModule;
 
 		// Set swap chain as render target
 		if (UpdateSwapChainResource () == false)
@@ -64,51 +72,51 @@ namespace GameEngine
 
 		SetViewport (swapChainSize);
 
-		m_rsCullBack = m_ri->CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
+		instance.m_rsCullBack = riModule->CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
 
-		if (m_rsCullBack == nullptr)
+		if (instance.m_rsCullBack == nullptr)
 		{
 			return false;
 		}
 
-		m_rsCullNone = m_ri->CreateRasterizerState (EFillMode::Solid, EFaceCulling::None, EWindingOrder::CW);
+		instance.m_rsCullNone = riModule->CreateRasterizerState (EFillMode::Solid, EFaceCulling::None, EWindingOrder::CW);
 
-		if (m_rsCullNone == nullptr)
+		if (instance.m_rsCullNone == nullptr)
 		{
 			return false;
 		}
 
-		m_depthLessStencilAlways = m_ri->CreateDepthStencilState (EComparisonFunction::Less, EComparisonFunction::Always);
+		instance.m_depthLessStencilAlways = riModule->CreateDepthStencilState (EComparisonFunction::Less, EComparisonFunction::Always);
 
-		if (m_depthLessStencilAlways == nullptr)
+		if (instance.m_depthLessStencilAlways == nullptr)
 		{
 			return false;
 		}
 
-		m_dssLessEqualStencilAlways = m_ri->CreateDepthStencilState (EComparisonFunction::LessEqual, EComparisonFunction::Always);
+		instance.m_dssLessEqualStencilAlways = riModule->CreateDepthStencilState (EComparisonFunction::LessEqual, EComparisonFunction::Always);
 
-		if (m_dssLessEqualStencilAlways == nullptr)
+		if (instance.m_dssLessEqualStencilAlways == nullptr)
 		{
 			return false;
 		}
 
-		m_constantBufferPerObject = m_ri->CreateShaderConstantBuffer (sizeof (ObjectConstantBuffer), nullptr);
+		instance.m_constantBufferPerObject = riModule->CreateShaderConstantBuffer (sizeof (ObjectConstantBuffer), nullptr);
 
-		if (m_constantBufferPerObject == nullptr)
+		if (instance.m_constantBufferPerObject == nullptr)
 		{
 			return false;
 		}
 
-		m_constantBufferPerCamera = m_ri->CreateShaderConstantBuffer (sizeof (CameraConstantBuffer), nullptr);
+		instance.m_constantBufferPerCamera = riModule->CreateShaderConstantBuffer (sizeof (CameraConstantBuffer), nullptr);
 
-		if (m_constantBufferPerCamera == nullptr)
+		if (instance.m_constantBufferPerCamera == nullptr)
 		{
 			return false;
 		}
 
-		m_lightingConstantBuffer = m_ri->CreateShaderConstantBuffer (sizeof (LightingConstantBuffer), nullptr);
+		instance.m_lightingConstantBuffer = riModule->CreateShaderConstantBuffer (sizeof (LightingConstantBuffer), nullptr);
 
-		if (m_lightingConstantBuffer == nullptr)
+		if (instance.m_lightingConstantBuffer == nullptr)
 		{
 			return false;
 		}
@@ -116,101 +124,101 @@ namespace GameEngine
 		Shader* skyboxShader = g_assetManager.LoadShader (L"Assets/Shader/Skybox.hlsl");
 		TextureCube* textureCube = g_assetManager.FindTextureCubeAsset (L"Assets/skyRight.hdr", L"Assets/skyLeft.hdr",
 			L"Assets/skyTop.hdr", L"Assets/skyBottom.hdr", L"Assets/skyFront.hdr", L"Assets/skyBack.hdr");
-		m_skyboxMaterial = new Material ();
-		m_skyboxMaterial->SetShader (skyboxShader);
-		m_skyboxMaterial->SetTexture ("Skybox", *textureCube);
+		instance.m_skyboxMaterial = new Material ();
+		instance.m_skyboxMaterial->SetShader (skyboxShader);
+		instance.m_skyboxMaterial->SetTexture ("Skybox", *textureCube);
 
-		m_shadowMapShader = g_assetManager.LoadShader (L"Assets/Shader/ShadowMapShader.hlsl");
-		m_omnidirectionalShadowMapShader = g_assetManager.LoadShader (L"Assets/Shader/OmnidirectionalShadowMapShader.hlsl");
+		instance.m_shadowMapShader = g_assetManager.LoadShader (L"Assets/Shader/ShadowMapShader.hlsl");
+		instance.m_omnidirectionalShadowMapShader = g_assetManager.LoadShader (L"Assets/Shader/OmnidirectionalShadowMapShader.hlsl");
 
 		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_shadowMapSampler = m_ri->CreateSampler (EAddressMode::Border, EFilterMode::Linear, 1, borderColor);
+		instance.m_shadowMapSampler = riModule->CreateSampler (EAddressMode::Border, EFilterMode::Linear, 1, borderColor);
 
-		if (m_shadowMapSampler == nullptr)
+		if (instance.m_shadowMapSampler == nullptr)
 		{
 			return false;
 		}
 
-		m_directionalLightShadowMap = m_ri->CreateTexture2D (2048, 2048, 1, 3, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
-		if (m_directionalLightShadowMap == nullptr)
+		instance.m_directionalLightShadowMap = riModule->CreateTexture2D (2048, 2048, 1, 3, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
+		if (instance.m_directionalLightShadowMap == nullptr)
 		{
 			return false;
 		}
 
-		m_directionalLightShadowMapSRV = m_ri->CreateShaderResourceView (m_directionalLightShadowMap.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 3, 0);
-		if (m_directionalLightShadowMapSRV == nullptr)
+		instance.m_directionalLightShadowMapSRV = riModule->CreateShaderResourceView (instance.m_directionalLightShadowMap.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 3, 0);
+		if (instance.m_directionalLightShadowMapSRV == nullptr)
 		{
 			return false;
 		}
 
 		for (int32 i = 0; i < 3; i++)
 		{
-			auto directionalShadowMapDSV = m_ri->CreateDepthStencilView (m_directionalLightShadowMap.get (), 0, 1, i);
+			auto directionalShadowMapDSV = riModule->CreateDepthStencilView (instance.m_directionalLightShadowMap.get (), 0, 1, i);
 			if (directionalShadowMapDSV == nullptr)
 			{
 				return false;
 			}
 
-			m_directionalLightShadowMapDSV.push_back (directionalShadowMapDSV);
+			instance.m_directionalLightShadowMapDSV.push_back (directionalShadowMapDSV);
 		}
 
-		m_pointLightShadowMap = m_ri->CreateTexture2D (1024, 1024, 1, 6 * 3, ERenderingResourceFormat::R32_Float, nullptr, nullptr, true, true, true, false);
-		if (m_pointLightShadowMap == nullptr)
+		instance.m_pointLightShadowMap = riModule->CreateTexture2D (1024, 1024, 1, 6 * 3, ERenderingResourceFormat::R32_Float, nullptr, nullptr, true, true, true, false);
+		if (instance.m_pointLightShadowMap == nullptr)
 		{
 			return false;
 		}
 
-		m_pointLightShadowMapSRV = m_ri->CreateShaderResourceView (m_pointLightShadowMap.get (), ERenderingResourceFormat::R32_Float, 0, 3, 0);
-		if (m_pointLightShadowMapSRV == nullptr)
+		instance.m_pointLightShadowMapSRV = riModule->CreateShaderResourceView (instance.m_pointLightShadowMap.get (), ERenderingResourceFormat::R32_Float, 0, 3, 0);
+		if (instance.m_pointLightShadowMapSRV == nullptr)
 		{
 			return false;
 		}
 
-		auto pointLightShadowMapDepthStencil = m_ri->CreateTexture2D (1024, 1024, 1, 6 * 3, ERenderingResourceFormat::D24_UNorm_S8_UInt, nullptr, nullptr, false, false, false, true);
+		auto pointLightShadowMapDepthStencil = riModule->CreateTexture2D (1024, 1024, 1, 6 * 3, ERenderingResourceFormat::D24_UNorm_S8_UInt, nullptr, nullptr, false, false, false, true);
 
-		m_pointLightShadowMapDSV = m_ri->CreateDepthStencilView (pointLightShadowMapDepthStencil.get (), 0, 1, 1);
-		if (m_pointLightShadowMapDSV == nullptr)
+		instance.m_pointLightShadowMapDSV = riModule->CreateDepthStencilView (pointLightShadowMapDepthStencil.get (), 0, 1, 1);
+		if (instance.m_pointLightShadowMapDSV == nullptr)
 		{
 			return false;
 		}
 
 		for (int32 i = 0; i < 6 * 3; i++)
 		{
-			auto pointShadowMapRTV = m_ri->CreateRenderTargetView (m_pointLightShadowMap.get (), 0, 1, i);
+			auto pointShadowMapRTV = riModule->CreateRenderTargetView (instance.m_pointLightShadowMap.get (), 0, 1, i);
 			if (pointShadowMapRTV == nullptr)
 			{
 				return false;
 			}
 
-			m_pointLightShadowMapRTV.push_back (pointShadowMapRTV);
+			instance.m_pointLightShadowMapRTV.push_back (pointShadowMapRTV);
 		}
 
-		m_spotLightShadowMap = m_ri->CreateTexture2D (1024, 1024, 1, 3, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
-		if (m_spotLightShadowMap == nullptr)
+		instance.m_spotLightShadowMap = riModule->CreateTexture2D (1024, 1024, 1, 3, ERenderingResourceFormat::R24G8_Typeless, nullptr, nullptr, false, true, false, true);
+		if (instance.m_spotLightShadowMap == nullptr)
 		{
 			return false;
 		}
 
-		m_spotLightShadowMapSRV = m_ri->CreateShaderResourceView (m_spotLightShadowMap.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 3, 0);
-		if (m_spotLightShadowMapSRV == nullptr)
+		instance.m_spotLightShadowMapSRV = riModule->CreateShaderResourceView (instance.m_spotLightShadowMap.get (), ERenderingResourceFormat::R24_UNorm_X8_Typeless, 0, 3, 0);
+		if (instance.m_spotLightShadowMapSRV == nullptr)
 		{
 			return false;
 		}
 
 		for (int32 i = 0; i < 3; i++)
 		{
-			auto spotLightShadowMapDSV = m_ri->CreateDepthStencilView (m_spotLightShadowMap.get (), 0, 1, i);
+			auto spotLightShadowMapDSV = riModule->CreateDepthStencilView (instance.m_spotLightShadowMap.get (), 0, 1, i);
 			if (spotLightShadowMapDSV == nullptr)
 			{
 				return false;
 			}
 
-			m_spotLightShadowMapDSV.push_back (spotLightShadowMapDSV);
+			instance.m_spotLightShadowMapDSV.push_back (spotLightShadowMapDSV);
 		}
 
 		BindRenderPipeline (GetDefaultForwardRenderPipeline ());
 
-		m_ri->SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
+		riModule->SetPrimitiveTopology (EPrimitiveTopology::TriangleList);
 
 		Platform::GetGenericApplication ().AddResizeListener (ChangeResolution);
 
@@ -220,124 +228,130 @@ namespace GameEngine
 	void GlobalRenderer::Shutdown ()
 	{
 		Platform::GetGenericApplication ().RemoveResizeListener (ChangeResolution);
+		GlobalRenderer& instance = GetInstance ();
 
-		if (m_skyboxMaterial != nullptr)
+		if (instance.m_skyboxMaterial != nullptr)
 		{
-			m_skyboxMaterial->Destroy ();
-			delete m_skyboxMaterial;
-			m_skyboxMaterial = nullptr;
+			instance.m_skyboxMaterial->Destroy ();
+			delete instance.m_skyboxMaterial;
+			instance.m_skyboxMaterial = nullptr;
 		}
 
-		m_shadowMapShader = nullptr;
-		m_omnidirectionalShadowMapShader = nullptr;
+		instance.m_shadowMapShader = nullptr;
+		instance.m_omnidirectionalShadowMapShader = nullptr;
 
-		m_defaultForwardPipeline.Release ();
-		m_defaultLinePipeline.Release ();
+		instance.m_defaultForwardPipeline.Release ();
+		instance.m_defaultLinePipeline.Release ();
 
-		m_swapChainBuffer = nullptr;
-		m_swapChainRenderTarget = nullptr;
-		m_screenDepthStencilBuffer = nullptr;
-		m_screenDepthStencil = nullptr;
+		instance.m_swapChainBuffer = nullptr;
+		instance.m_swapChainRenderTarget = nullptr;
+		instance.m_screenDepthStencilBuffer = nullptr;
+		instance.m_screenDepthStencil = nullptr;
 
-		m_usingRenderTarget = nullptr;
-		m_usingDepthStencil = nullptr;
+		instance.m_usingRenderTarget = nullptr;
+		instance.m_usingDepthStencil = nullptr;
 
-		m_rsCullBack = nullptr;
-		m_rsCullNone = nullptr;
+		instance.m_rsCullBack = nullptr;
+		instance.m_rsCullNone = nullptr;
 
-		m_depthLessStencilAlways = nullptr;
-		m_dssLessEqualStencilAlways = nullptr;
+		instance.m_depthLessStencilAlways = nullptr;
+		instance.m_dssLessEqualStencilAlways = nullptr;
 
-		m_constantBufferPerObject = nullptr;
-		m_constantBufferPerCamera = nullptr;
-		m_lightingConstantBuffer = nullptr;
+		instance.m_constantBufferPerObject = nullptr;
+		instance.m_constantBufferPerCamera = nullptr;
+		instance.m_lightingConstantBuffer = nullptr;
 
-		m_shadowMapSampler = nullptr;
+		instance.m_shadowMapSampler = nullptr;
 
-		m_directionalLightShadowMap = nullptr;
-		m_directionalLightShadowMapSRV = nullptr;
-		m_directionalLightShadowMapDSV.clear ();
+		instance.m_directionalLightShadowMap = nullptr;
+		instance.m_directionalLightShadowMapSRV = nullptr;
+		instance.m_directionalLightShadowMapDSV.clear ();
 
-		m_pointLightShadowMap = nullptr;
-		m_pointLightShadowMapSRV = nullptr;
-		m_pointLightShadowMapDSV = nullptr;
-		m_pointLightShadowMapRTV.clear ();
+		instance.m_pointLightShadowMap = nullptr;
+		instance.m_pointLightShadowMapSRV = nullptr;
+		instance.m_pointLightShadowMapDSV = nullptr;
+		instance.m_pointLightShadowMapRTV.clear ();
 
-		m_spotLightShadowMap = nullptr;
-		m_spotLightShadowMapSRV = nullptr;
-		m_spotLightShadowMapDSV.clear ();
+		instance.m_spotLightShadowMap = nullptr;
+		instance.m_spotLightShadowMapSRV = nullptr;
+		instance.m_spotLightShadowMapDSV.clear ();
 
-		m_ri->Shutdown ();
-		m_ri = nullptr;
+		instance.m_ri->Shutdown ();
+		instance.m_ri = nullptr;
 
-		Modular::ModuleManager::UnloadModule (m_riModulePath);
+		Modular::ModuleManager::UnloadModule (instance.m_riModulePath);
 	}
 
 	void GlobalRenderer::PresentSwapChain ()
 	{
-		m_ri->Present (m_settings.m_bVSyncEnabled);
+		GlobalRenderer& instance = GetInstance ();
+		instance.m_ri->Present (instance.m_settings.m_bVSyncEnabled);
 	}
 
 	bool GlobalRenderer::ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen)
 	{
+		GlobalRenderer& instance = GetInstance ();
 		uint32 oldWidth = GetSwapChainWidth ();
 		uint32 oldHeight = GetSwapChainHeight ();
 		bool bUpdateSwapChain = (width >= 0 && height >= 0) && (width != oldWidth || height != oldHeight);
 
 		if (bUpdateSwapChain)
 		{
-			bool bUsingSwapChainRenderTarget = m_usingRenderTarget == m_swapChainRenderTarget;
+			bool bUsingSwapChainRenderTarget = instance.m_usingRenderTarget == instance.m_swapChainRenderTarget;
 
 			if (bUsingSwapChainRenderTarget)
 			{
-				m_usingRenderTarget = nullptr;
+				instance.m_usingRenderTarget = nullptr;
 			}
 
-			m_swapChainRenderTarget = nullptr;
-			m_swapChainBuffer = nullptr;
+			instance.m_swapChainRenderTarget = nullptr;
+			instance.m_swapChainBuffer = nullptr;
 
-			if (m_ri->ResizeSwapChainBuffer (width, height, bFullscreen))
+			if (instance.m_ri->ResizeSwapChainBuffer (width, height, bFullscreen))
 			{
 				bool bUpdateResource = UpdateSwapChainResource ();
 
 				if (bUsingSwapChainRenderTarget && bUpdateResource)
 				{
-					m_usingRenderTarget = m_swapChainRenderTarget;
+					instance.m_usingRenderTarget = instance.m_swapChainRenderTarget;
 				}
 			}
 		}
 
-		return m_swapChainBuffer != nullptr && m_swapChainRenderTarget != nullptr;
+		return instance.m_swapChainBuffer != nullptr && instance.m_swapChainRenderTarget != nullptr;
 	}
 
 	bool GlobalRenderer::UpdateSwapChainResource ()
 	{
-		m_swapChainBuffer = m_ri->GetSwapChainBuffer ();
+		GlobalRenderer& instance = GetInstance ();
+		instance.m_swapChainBuffer = instance.m_ri->GetSwapChainBuffer ();
 
-		if (m_swapChainBuffer != nullptr)
+		if (instance.m_swapChainBuffer != nullptr)
 		{
-			RI_Texture2D* swapChain = m_swapChainBuffer.get ();
-			uint32 arraySize = m_swapChainBuffer->m_arraySize;
+			RI_Texture2D* swapChain = instance.m_swapChainBuffer.get ();
+			uint32 arraySize = instance.m_swapChainBuffer->m_arraySize;
 
-			m_swapChainRenderTarget = m_ri->CreateRenderTargetView (swapChain, 0, arraySize, 0);
+			instance.m_swapChainRenderTarget = instance.m_ri->CreateRenderTargetView (swapChain, 0, arraySize, 0);
 		}
 
-		return m_swapChainBuffer != nullptr && m_swapChainRenderTarget != nullptr;
+		return instance.m_swapChainBuffer != nullptr && instance.m_swapChainRenderTarget != nullptr;
 	}
 
-	RI_RenderTargetView* GlobalRenderer::GetSwapChainRenderTarget () const
+	RI_RenderTargetView* GlobalRenderer::GetSwapChainRenderTarget ()
 	{
-		return m_swapChainRenderTarget.get ();
+		return GetInstance ().m_swapChainRenderTarget.get ();
 	}
 
-	uint32 GlobalRenderer::GetSwapChainWidth () const
+	uint32 GlobalRenderer::GetSwapChainWidth ()
 	{
-		return m_swapChainBuffer != nullptr ? m_swapChainBuffer->m_width : 0;
+		GlobalRenderer& instance = GetInstance ();
+		return instance.m_swapChainBuffer != nullptr ? instance.m_swapChainBuffer->m_width : 0;
 	}
 
-	uint32 GlobalRenderer::GetSwapChainHeight () const
+	uint32 GlobalRenderer::GetSwapChainHeight ()
 	{
-		return m_swapChainBuffer != nullptr ? m_swapChainBuffer->m_height : 0;
+		GlobalRenderer& instance = GetInstance ();
+		return instance.m_swapChainBuffer != nullptr ? instance.m_swapChainBuffer->m_height : 0;
 	}
 
 	void GlobalRenderer::ChangeScreenSize (uint32 width, uint32 height, bool bFullscreen)
@@ -352,13 +366,15 @@ namespace GameEngine
 			{
 				if (UpdateScreenDepthStencilResource ())
 				{
-					if (m_swapChainRenderTarget == m_usingRenderTarget)
+					GlobalRenderer& instance = GetInstance ();
+
+					if (instance.m_swapChainRenderTarget == instance.m_usingRenderTarget)
 					{
-						m_settings.m_renderWidth = width;
-						m_settings.m_renderHeight = height;
+						instance.m_settings.m_renderWidth = width;
+						instance.m_settings.m_renderHeight = height;
 					}
 
-					m_settings.m_bFullScreenEnabled = bFullscreen;
+					instance.m_settings.m_bFullScreenEnabled = bFullscreen;
 				}
 			}
 		}
@@ -366,131 +382,140 @@ namespace GameEngine
 
 	bool GlobalRenderer::UpdateScreenDepthStencilResource ()
 	{
-		uint32 width = m_swapChainBuffer->m_width;
-		uint32 height = m_swapChainBuffer->m_height;
-		uint32 mipmapCount = m_swapChainBuffer->m_mipmapCount;
-		uint32 arraySize = m_swapChainBuffer->m_arraySize;
+		GlobalRenderer& instance = GetInstance ();
+		uint32 width = instance.m_swapChainBuffer->m_width;
+		uint32 height = instance.m_swapChainBuffer->m_height;
+		uint32 mipmapCount = instance.m_swapChainBuffer->m_mipmapCount;
+		uint32 arraySize = instance.m_swapChainBuffer->m_arraySize;
 
-		bool bUsingScreenDepthStencil = m_usingDepthStencil == m_screenDepthStencil;
+		bool bUsingScreenDepthStencil = instance.m_usingDepthStencil == instance.m_screenDepthStencil;
 
 		if (bUsingScreenDepthStencil)
 		{
-			m_usingDepthStencil = nullptr;
+			instance.m_usingDepthStencil = nullptr;
 		}
 
-		m_screenDepthStencilBuffer = m_ri->CreateTexture2D (width, height, mipmapCount, arraySize, ERenderingResourceFormat::D24_UNorm_S8_UInt, nullptr, nullptr, false, false, false, true);
-		m_screenDepthStencil = m_ri->CreateDepthStencilView (m_screenDepthStencilBuffer.get (), 0, arraySize, 0);
+		instance.m_screenDepthStencilBuffer = instance.m_ri->CreateTexture2D (width, height, mipmapCount, arraySize, ERenderingResourceFormat::D24_UNorm_S8_UInt, nullptr, nullptr, false, false, false, true);
+		instance.m_screenDepthStencil = instance.m_ri->CreateDepthStencilView (instance.m_screenDepthStencilBuffer.get (), 0, arraySize, 0);
 
-		if (bUsingScreenDepthStencil && m_screenDepthStencil != nullptr)
+		if (bUsingScreenDepthStencil && instance.m_screenDepthStencil != nullptr)
 		{
-			m_usingDepthStencil = m_screenDepthStencil;
+			instance.m_usingDepthStencil = instance.m_screenDepthStencil;
 		}
 
-		return m_screenDepthStencilBuffer != nullptr && m_screenDepthStencil != nullptr;
+		return instance.m_screenDepthStencilBuffer != nullptr && instance.m_screenDepthStencil != nullptr;
 	}
 
-	RI_DepthStencilView* GlobalRenderer::GetScreenDepthStencil () const
+	RI_DepthStencilView* GlobalRenderer::GetScreenDepthStencil ()
 	{
-		return m_screenDepthStencil.get ();
+		return GetInstance ().m_screenDepthStencil.get ();
 	}
 
 	void GlobalRenderer::BindRenderTargetAndDepthStencil ()
 	{
-		RI_RenderTargetView* renderTarget = m_usingRenderTarget.get ();
-		RI_DepthStencilView* depthStencil = m_usingDepthStencil.get ();
+		GlobalRenderer& instance = GetInstance ();
+		RI_RenderTargetView* renderTarget = instance.m_usingRenderTarget.get ();
+		RI_DepthStencilView* depthStencil = instance.m_usingDepthStencil.get ();
 
-		m_ri->BindRenderTargetViewAndDepthStencilView (renderTarget, depthStencil);
+		instance.m_ri->BindRenderTargetViewAndDepthStencilView (renderTarget, depthStencil);
 	}
 
 	void GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 color, float depth, uint8 stencil)
 	{
-		RI_RenderTargetView* renderTarget = m_usingRenderTarget.get ();
-		RI_DepthStencilView* depthStencil = m_usingDepthStencil.get ();
+		GlobalRenderer& instance = GetInstance ();
+		RI_RenderTargetView* renderTarget = instance.m_usingRenderTarget.get ();
+		RI_DepthStencilView* depthStencil = instance.m_usingDepthStencil.get ();
 
-		m_ri->ClearRenderTarget (renderTarget, color.m_x, color.m_y, color.m_z, color.m_w);
-		m_ri->ClearDepthStencil (depthStencil, depth, stencil);
+		instance.m_ri->ClearRenderTarget (renderTarget, color.m_x, color.m_y, color.m_z, color.m_w);
+		instance.m_ri->ClearDepthStencil (depthStencil, depth, stencil);
 	}
 
-	RI_RenderTargetView* GlobalRenderer::GetRenderTarget () const
+	RI_RenderTargetView* GlobalRenderer::GetRenderTarget ()
 	{
-		return m_usingRenderTarget.get ();
+		return GetInstance ().m_usingRenderTarget.get ();
 	}
 
-	RI_DepthStencilView* GlobalRenderer::GetDepthStencil () const
+	RI_DepthStencilView* GlobalRenderer::GetDepthStencil ()
 	{
-		return m_usingDepthStencil.get ();
+		return GetInstance ().m_usingDepthStencil.get ();
 	}
 
 	void GlobalRenderer::SetRenderTargetAndDepthStencilAsDefault ()
 	{
-		SetRenderTarget (m_swapChainRenderTarget);
-		SetDepthStencil (m_screenDepthStencil);
+		GlobalRenderer& instance = GetInstance ();
+		SetRenderTarget (instance.m_swapChainRenderTarget);
+		SetDepthStencil (instance.m_screenDepthStencil);
 	}
 
 	void GlobalRenderer::SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget)
 	{
-		m_usingRenderTarget = renderTarget;
+		GetInstance ().m_usingRenderTarget = renderTarget;
 	}
 
 	void GlobalRenderer::SetDepthStencil (RenderingResourcePtr<RI_DepthStencilView> depthStencil)
 	{
-		m_usingDepthStencil = depthStencil;
+		GetInstance ().m_usingDepthStencil = depthStencil;
 	}
 
-	Vector2 GlobalRenderer::GetRenderSize () const
+	Vector2 GlobalRenderer::GetRenderSize ()
 	{
-		float width = static_cast<float> (m_settings.m_renderWidth);
-		float height = static_cast<float> (m_settings.m_renderHeight);
+		GlobalRenderer& instance = GetInstance ();
+		float width = static_cast<float> (instance.m_settings.m_renderWidth);
+		float height = static_cast<float> (instance.m_settings.m_renderHeight);
 
 		return Vector2 (width, height);
 	}
 
 	void GlobalRenderer::SetRenderSize (Vector2 size)
 	{
-		m_settings.m_renderWidth = static_cast<uint32> (size.m_x);
-		m_settings.m_renderHeight = static_cast<uint32> (size.m_y);
+		GlobalRenderer& instance = GetInstance ();
+		instance.m_settings.m_renderWidth = static_cast<uint32> (size.m_x);
+		instance.m_settings.m_renderHeight = static_cast<uint32> (size.m_y);
 	}
 
-	Vector2 GlobalRenderer::GetViewportSize () const
+	Vector2 GlobalRenderer::GetViewportSize ()
 	{
-		return m_viewportSize;
+		return GetInstance ().m_viewportSize;
 	}
 
-	Vector2 GlobalRenderer::GetViewportTopLeft () const
+	Vector2 GlobalRenderer::GetViewportTopLeft ()
 	{
-		return m_viewportTopLeft;
+		return GetInstance ().m_viewportTopLeft;
 	}
 
 	void GlobalRenderer::SetViewport (Vector2 size, Vector2 topLeft)
 	{
-		if (m_ri->SetViewport (size.m_x, size.m_y, topLeft.m_x, topLeft.m_y))
+		GlobalRenderer& instance = GetInstance ();
+
+		if (instance.m_ri->SetViewport (size.m_x, size.m_y, topLeft.m_x, topLeft.m_y))
 		{
-			m_viewportSize = size;
-			m_viewportTopLeft = topLeft;
+			instance.m_viewportSize = size;
+			instance.m_viewportTopLeft = topLeft;
 		}
 	}
 
 	void GlobalRenderer::ActivateShadowMapShader (ELightType lightType)
 	{
+		GlobalRenderer& instance = GetInstance ();
 		Shader* shader = nullptr;
 
 		if (lightType == ELightType::Directional || lightType == ELightType::Spot)
 		{
-			shader = m_shadowMapShader;
+			shader = instance.m_shadowMapShader;
 		}
 		else if (lightType == ELightType::Point)
 		{
-			shader = m_omnidirectionalShadowMapShader;
+			shader = instance.m_omnidirectionalShadowMapShader;
 		}
 
 		if (shader != nullptr)
 		{
-			m_ri->SetInputLayout (shader->GetInputLayout ());
-			m_ri->ActivateVertexShader (shader->GetVertexShader ());
-			m_ri->ActivatePixelShader (shader->GetPixelShader ());
-			m_ri->ActivateHullShader (shader->GetHullShader ());
-			m_ri->ActivateDomainShader (shader->GetDomainShader ());
-			m_ri->ActivateGeometryShader (shader->GetGeometryShader ());
+			instance.m_ri->SetInputLayout (shader->GetInputLayout ());
+			instance.m_ri->ActivateVertexShader (shader->GetVertexShader ());
+			instance.m_ri->ActivatePixelShader (shader->GetPixelShader ());
+			instance.m_ri->ActivateHullShader (shader->GetHullShader ());
+			instance.m_ri->ActivateDomainShader (shader->GetDomainShader ());
+			instance.m_ri->ActivateGeometryShader (shader->GetGeometryShader ());
 
 			BindGlobalShaderConstantBuffer (shader, "CBObject");
 			BindGlobalShaderConstantBuffer (shader, "CBCamera");
@@ -500,69 +525,69 @@ namespace GameEngine
 
 	void GlobalRenderer::BindShadowRenderTarget (ELightType lightType, uint32 renderTargetIndex)
 	{
+		GlobalRenderer& instance = GetInstance ();
+		
 		if (lightType == ELightType::Directional)
 		{
-			if (renderTargetIndex >= m_directionalLightShadowMapDSV.size ())
+			if (renderTargetIndex >= instance.m_directionalLightShadowMapDSV.size ())
 			{
 				return;
 			}
 
-			m_ri->BindPixelShaderResource (nullptr, m_directionalLightShadowMapLastSlot);
+			instance.m_ri->BindPixelShaderResource (nullptr, instance.m_directionalLightShadowMapLastSlot);
 
-			auto* shadowDepthStencil = m_directionalLightShadowMapDSV.at (renderTargetIndex).get ();
+			RI_DepthStencilView* shadowDepthStencil = instance.m_directionalLightShadowMapDSV.at (renderTargetIndex).get ();
+			instance.m_ri->BindRenderTargetViewAndDepthStencilView (nullptr, shadowDepthStencil);
+			instance.m_ri->ClearDepthStencil (shadowDepthStencil, 1.0f, 0);
 
-			m_ri->BindRenderTargetViewAndDepthStencilView (nullptr, shadowDepthStencil);
-			m_ri->ClearDepthStencil (shadowDepthStencil, 1.0f, 0);
-
-			m_ri->SetViewport (2048, 2048, 0, 0);
+			instance.m_ri->SetViewport (2048, 2048, 0, 0);
 		}
 		else if (lightType == ELightType::Point)
 		{
-			if (renderTargetIndex >= m_pointLightShadowMapRTV.size ())
+			if (renderTargetIndex >= instance.m_pointLightShadowMapRTV.size ())
 			{
 				return;
 			}
 
-			m_ri->BindPixelShaderResource (nullptr, m_pointLightShadowMapLastSlot);
-			auto* renderTarget = m_pointLightShadowMapRTV.at (renderTargetIndex).get ();
+			instance.m_ri->BindPixelShaderResource (nullptr, instance.m_pointLightShadowMapLastSlot);
 
-			m_ri->BindRenderTargetViewAndDepthStencilView (renderTarget, m_pointLightShadowMapDSV.get ());
-			m_ri->ClearRenderTarget (renderTarget, 0.0f, 0.0f, 0.0f, 0.0f);
-			m_ri->ClearDepthStencil (m_pointLightShadowMapDSV.get (), 1.0f, 0);
+			RI_RenderTargetView* renderTarget = instance.m_pointLightShadowMapRTV.at (renderTargetIndex).get ();
+			instance.m_ri->BindRenderTargetViewAndDepthStencilView (renderTarget, instance.m_pointLightShadowMapDSV.get ());
+			instance.m_ri->ClearRenderTarget (renderTarget, 0.0f, 0.0f, 0.0f, 0.0f);
+			instance.m_ri->ClearDepthStencil (instance.m_pointLightShadowMapDSV.get (), 1.0f, 0);
 
-			m_ri->SetViewport (1024, 1024, 0, 0);
+			instance.m_ri->SetViewport (1024, 1024, 0, 0);
 		}
 		else if (lightType == ELightType::Spot)
 		{
-			if (renderTargetIndex >= m_spotLightShadowMapDSV.size ())
+			if (renderTargetIndex >= instance.m_spotLightShadowMapDSV.size ())
 			{
 				return;
 			}
 
-			m_ri->BindPixelShaderResource (nullptr, m_spotLightShadowMapLastSlot);
+			instance.m_ri->BindPixelShaderResource (nullptr, instance.m_spotLightShadowMapLastSlot);
 
-			auto* shadowDepthStencil = m_spotLightShadowMapDSV.at (renderTargetIndex).get ();
+			RI_DepthStencilView* shadowDepthStencil = instance.m_spotLightShadowMapDSV.at (renderTargetIndex).get ();
+			instance.m_ri->BindRenderTargetViewAndDepthStencilView (nullptr, shadowDepthStencil);
+			instance.m_ri->ClearDepthStencil (shadowDepthStencil, 1.0f, 0);
 
-			m_ri->BindRenderTargetViewAndDepthStencilView (nullptr, shadowDepthStencil);
-			m_ri->ClearDepthStencil (shadowDepthStencil, 1.0f, 0);
-
-			m_ri->SetViewport (1024, 1024, 0, 0);
+			instance.m_ri->SetViewport (1024, 1024, 0, 0);
 		}
 	}
 
 	void GlobalRenderer::BindRenderPipeline (RenderPipeline* renedrPipeline)
 	{
-		m_renderPipeline = renedrPipeline;
+		GetInstance ().m_renderPipeline = renedrPipeline;
 	}
 
 	DefaultForwardRenderPipeline* GlobalRenderer::GetDefaultForwardRenderPipeline ()
 	{
-		return &m_defaultForwardPipeline;
+		return &GetInstance ().m_defaultForwardPipeline;
 	}
 
 	DefaultLineRenderPipeline* GlobalRenderer::GetDefaultLineRenderPipeline ()
 	{
-		return &m_defaultLinePipeline;
+		return &GetInstance ().m_defaultLinePipeline;
 	}
 
 	void GlobalRenderer::BindMaterial (Material* material)
@@ -579,12 +604,13 @@ namespace GameEngine
 			return;
 		}
 
-		m_ri->SetInputLayout (shader->GetInputLayout ());
-		m_ri->ActivateVertexShader (shader->GetVertexShader ());
-		m_ri->ActivatePixelShader (shader->GetPixelShader ());
-		m_ri->ActivateHullShader (shader->GetHullShader ());
-		m_ri->ActivateDomainShader (shader->GetDomainShader ());
-		m_ri->ActivateGeometryShader (shader->GetGeometryShader ());
+		GlobalRenderer& instance = GetInstance ();
+		instance.m_ri->SetInputLayout (shader->GetInputLayout ());
+		instance.m_ri->ActivateVertexShader (shader->GetVertexShader ());
+		instance.m_ri->ActivatePixelShader (shader->GetPixelShader ());
+		instance.m_ri->ActivateHullShader (shader->GetHullShader ());
+		instance.m_ri->ActivateDomainShader (shader->GetDomainShader ());
+		instance.m_ri->ActivateGeometryShader (shader->GetGeometryShader ());
 
 		BindGlobalShaderConstantBuffer (shader, "CBObject");
 		BindGlobalShaderConstantBuffer (shader, "CBCamera");
@@ -593,36 +619,36 @@ namespace GameEngine
 		// Vertex bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Vertex, "$Globals"))
 		{
-			m_ri->UpdateShaderConstantBuffer (shader->GetVertexShaderParameterBuffer (), material->GetVertexShaderParameterData ());
-			m_ri->BindVertexShaderConstantBuffer (shader->GetVertexShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Vertex, "$Globals").m_bindIndex);
+			instance.m_ri->UpdateShaderConstantBuffer (shader->GetVertexShaderParameterBuffer (), material->GetVertexShaderParameterData ());
+			instance.m_ri->BindVertexShaderConstantBuffer (shader->GetVertexShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Vertex, "$Globals").m_bindIndex);
 		}
 
 		// Pixel bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "$Globals"))
 		{
-			m_ri->UpdateShaderConstantBuffer (shader->GetPixelShaderParameterBuffer (), material->GetPixelShaderParameterData ());
-			m_ri->BindPixelShaderConstantBuffer (shader->GetPixelShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "$Globals").m_bindIndex);
+			instance.m_ri->UpdateShaderConstantBuffer (shader->GetPixelShaderParameterBuffer (), material->GetPixelShaderParameterData ());
+			instance.m_ri->BindPixelShaderConstantBuffer (shader->GetPixelShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "$Globals").m_bindIndex);
 		}
 
 		// Hull bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Hull, "$Globals"))
 		{
-			m_ri->UpdateShaderConstantBuffer (shader->GetHullShaderParameterBuffer (), material->GetHullShaderParameterData ());
-			m_ri->BindHullShaderConstantBuffer (shader->GetHullShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Hull, "$Globals").m_bindIndex);
+			instance.m_ri->UpdateShaderConstantBuffer (shader->GetHullShaderParameterBuffer (), material->GetHullShaderParameterData ());
+			instance.m_ri->BindHullShaderConstantBuffer (shader->GetHullShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Hull, "$Globals").m_bindIndex);
 		}
 
 		// Domain bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Domain, "$Globals"))
 		{
-			m_ri->UpdateShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), material->GetDomainShaderParameterData ());
-			m_ri->BindDomainShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Domain, "$Globals").m_bindIndex);
+			instance.m_ri->UpdateShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), material->GetDomainShaderParameterData ());
+			instance.m_ri->BindDomainShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Domain, "$Globals").m_bindIndex);
 		}
 
 		// Geometry bindings
 		if (shader->IsShaderResourceExist (EShaderStage::Geometry, "$Globals"))
 		{
-			m_ri->UpdateShaderConstantBuffer (shader->GetGeometryShaderParameterBuffer (), material->GetGeometryShaderParameterData ());
-			m_ri->BindGeometryShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Geometry, "$Globals").m_bindIndex);
+			instance.m_ri->UpdateShaderConstantBuffer (shader->GetGeometryShaderParameterBuffer (), material->GetGeometryShaderParameterData ());
+			instance.m_ri->BindGeometryShaderConstantBuffer (shader->GetDomainShaderParameterBuffer (), shader->GetShaderResourceBinding (EShaderStage::Geometry, "$Globals").m_bindIndex);
 		}
 
 		for (const auto& textureBinding : material->GetTextureMap ())
@@ -634,67 +660,67 @@ namespace GameEngine
 			{
 				if (shader->IsShaderResourceExist (EShaderStage::Vertex, name))
 				{
-					m_ri->BindVertexShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name).m_bindIndex);
-					m_ri->BindVertexShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name + "Sampler").m_bindIndex);
+					instance.m_ri->BindVertexShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name).m_bindIndex);
+					instance.m_ri->BindVertexShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Pixel, name))
 				{
-					m_ri->BindPixelShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name).m_bindIndex);
-					m_ri->BindPixelShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name + "Sampler").m_bindIndex);
+					instance.m_ri->BindPixelShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name).m_bindIndex);
+					instance.m_ri->BindPixelShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Hull, name))
 				{
-					m_ri->BindHullShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Hull, name).m_bindIndex);
-					m_ri->BindHullShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Hull, name + "Sampler").m_bindIndex);
+					instance.m_ri->BindHullShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Hull, name).m_bindIndex);
+					instance.m_ri->BindHullShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Hull, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Domain, name))
 				{
-					m_ri->BindDomainShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Domain, name).m_bindIndex);
-					m_ri->BindDomainShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Domain, name + "Sampler").m_bindIndex);
+					instance.m_ri->BindDomainShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Domain, name).m_bindIndex);
+					instance.m_ri->BindDomainShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Domain, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Geometry, name))
 				{
-					m_ri->BindGeometryShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name).m_bindIndex);
-					m_ri->BindGeometryShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name + "Sampler").m_bindIndex);
+					instance.m_ri->BindGeometryShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name).m_bindIndex);
+					instance.m_ri->BindGeometryShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name + "Sampler").m_bindIndex);
 				}
 			}
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_DirectionalLightShadowMap"))
 		{
-			m_directionalLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_DirectionalLightShadowMap").m_bindIndex;
-			m_ri->BindPixelShaderResource (m_directionalLightShadowMapSRV.get (), m_directionalLightShadowMapLastSlot);
+			instance.m_directionalLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_DirectionalLightShadowMap").m_bindIndex;
+			instance.m_ri->BindPixelShaderResource (instance.m_directionalLightShadowMapSRV.get (), instance.m_directionalLightShadowMapLastSlot);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_PointLightShadowMap"))
 		{
-			m_pointLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_PointLightShadowMap").m_bindIndex;
-			m_ri->BindPixelShaderResource (m_pointLightShadowMapSRV.get (), m_pointLightShadowMapLastSlot);
+			instance.m_pointLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_PointLightShadowMap").m_bindIndex;
+			instance.m_ri->BindPixelShaderResource (instance.m_pointLightShadowMapSRV.get (), instance.m_pointLightShadowMapLastSlot);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_SpotLightShadowMap"))
 		{
-			m_spotLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_SpotLightShadowMap").m_bindIndex;
-			m_ri->BindPixelShaderResource (m_spotLightShadowMapSRV.get (), m_spotLightShadowMapLastSlot);
+			instance.m_spotLightShadowMapLastSlot = shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_SpotLightShadowMap").m_bindIndex;
+			instance.m_ri->BindPixelShaderResource (instance.m_spotLightShadowMapSRV.get (), instance.m_spotLightShadowMapLastSlot);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_ShadowMapSampler"))
 		{
-			m_ri->BindPixelShaderSampler (m_shadowMapSampler.get (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_ShadowMapSampler").m_bindIndex);
+			instance.m_ri->BindPixelShaderSampler (instance.m_shadowMapSampler.get (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_ShadowMapSampler").m_bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTexture"))
 		{
-			m_ri->BindPixelShaderResource (m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
+			instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTextureSampler"))
 		{
-			m_ri->BindPixelShaderSampler (m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTextureSampler").m_bindIndex);
+			instance.m_ri->BindPixelShaderSampler (instance.m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTextureSampler").m_bindIndex);
 		}
 	}
 
@@ -705,20 +731,21 @@ namespace GameEngine
 			return;
 		}
 
+		GlobalRenderer& instance = GetInstance ();
 		RI_ShaderConstantBuffer* buffer = nullptr;
 		uint32 bindIndex = 0;
 
 		if (name == "CBObject")
 		{
-			buffer = m_constantBufferPerObject.get ();
+			buffer = instance.m_constantBufferPerObject.get ();
 		}
 		else if (name == "CBCamera")
 		{
-			buffer = m_constantBufferPerCamera.get ();
+			buffer = instance.m_constantBufferPerCamera.get ();
 		}
 		else if (name == "CBLighting")
 		{
-			buffer = m_lightingConstantBuffer.get ();
+			buffer = instance.m_lightingConstantBuffer.get ();
 		}
 
 		if (buffer == nullptr)
@@ -729,59 +756,63 @@ namespace GameEngine
 		if (shader->IsShaderResourceExist (EShaderStage::Vertex, name))
 		{
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Vertex, name).m_bindIndex;
-			m_ri->BindVertexShaderConstantBuffer (buffer, bindIndex);
+			instance.m_ri->BindVertexShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, name))
 		{
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Pixel, name).m_bindIndex;
-			m_ri->BindPixelShaderConstantBuffer (buffer, bindIndex);
+			instance.m_ri->BindPixelShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Hull, name))
 		{
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Hull, name).m_bindIndex;
-			m_ri->BindHullShaderConstantBuffer (buffer, bindIndex);
+			instance.m_ri->BindHullShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Domain, name))
 		{
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Domain, name).m_bindIndex;
-			m_ri->BindDomainShaderConstantBuffer (buffer, bindIndex);
+			instance.m_ri->BindDomainShaderConstantBuffer (buffer, bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Geometry, name))
 		{
 			bindIndex = shader->GetShaderResourceBinding (EShaderStage::Geometry, name).m_bindIndex;
-			m_ri->BindGeometryShaderConstantBuffer (buffer, bindIndex);
+			instance.m_ri->BindGeometryShaderConstantBuffer (buffer, bindIndex);
 		}
 	}
 
 	void GlobalRenderer::SetGlobalShaderConstantBuffer (const std::string& name, const void* bufferData)
 	{
+		GlobalRenderer& instance = GetInstance ();
+
 		if (name == "CBObject")
 		{
-			m_ri->UpdateShaderConstantBuffer (m_constantBufferPerObject.get (), bufferData);
+			instance.m_ri->UpdateShaderConstantBuffer (instance.m_constantBufferPerObject.get (), bufferData);
 		}
 		else if (name == "CBCamera")
 		{
-			m_ri->UpdateShaderConstantBuffer (m_constantBufferPerCamera.get (), bufferData);
+			instance.m_ri->UpdateShaderConstantBuffer (instance.m_constantBufferPerCamera.get (), bufferData);
 		}
 		else if (name == "CBLighting")
 		{
-			m_ri->UpdateShaderConstantBuffer (m_lightingConstantBuffer.get (), bufferData);
+			instance.m_ri->UpdateShaderConstantBuffer (instance.m_lightingConstantBuffer.get (), bufferData);
 		};
 	}
 
 	void GlobalRenderer::DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer)
 	{
+		GlobalRenderer& instance = GetInstance ();
+
 		if (indexBuffer == nullptr)
 		{
-			m_ri->Draw (vertexBuffer);
+			instance.m_ri->Draw (vertexBuffer);
 		}
 		else
 		{
-			m_ri->DrawIndexed (vertexBuffer, indexBuffer);
+			instance.m_ri->DrawIndexed (vertexBuffer, indexBuffer);
 		}
 	}
 
@@ -814,8 +845,9 @@ namespace GameEngine
 			lights.insert (lights.end (), lightComponents.begin (), lightComponents.end ());
 		}
 
-		m_renderPipeline->Start (cameras, renderers, lights);
-		m_renderPipeline->End ();
+		GlobalRenderer& instance = GetInstance ();
+		instance.m_renderPipeline->Start (cameras, renderers, lights);
+		instance.m_renderPipeline->End ();
 	}
 
 	CullData GlobalRenderer::Cull (Camera* camera, const std::vector<Renderer*>& renderers)
@@ -834,11 +866,13 @@ namespace GameEngine
 			return;
 		}
 
-		m_ri->SetRasterizerState (m_rsCullNone.get ());
-		m_ri->SetDepthStencilState (m_dssLessEqualStencilAlways.get ());
+		GlobalRenderer& instance = GetInstance ();
 
-		m_ri->ActivateVertexShader (m_skyboxMaterial->GetShader ()->GetVertexShader ());
-		m_ri->ActivatePixelShader (m_skyboxMaterial->GetShader ()->GetPixelShader ());
+		instance.m_ri->SetRasterizerState (instance.m_rsCullNone.get ());
+		instance.m_ri->SetDepthStencilState (instance.m_dssLessEqualStencilAlways.get ());
+
+		instance.m_ri->ActivateVertexShader (instance.m_skyboxMaterial->GetShader ()->GetVertexShader ());
+		instance.m_ri->ActivatePixelShader (instance.m_skyboxMaterial->GetShader ()->GetPixelShader ());
 
 		float cameraNear = Camera::Main->GetNear ();
 		float cameraFar = Camera::Main->GetFar ();
@@ -857,28 +891,29 @@ namespace GameEngine
 		cameraConstantBuffer.m_cameraWorldPosition = cameraPosition;
 		cameraConstantBuffer.m_cameraFar = cameraFar;
 
-		g_renderer.SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
+		GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
 
 		auto* skyMesh = g_assetManager.FindAsset<Mesh> (L"Assets/sphere.obj");
 
-		m_ri->SetInputLayout (m_skyboxMaterial->GetShader ()->GetInputLayout ());
-		m_ri->BindVertexShaderConstantBuffer (m_constantBufferPerCamera.get (), m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
-		m_ri->BindPixelShaderResource (m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSRV (), m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "Skybox").m_bindIndex);
-		m_ri->BindPixelShaderSampler (m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSampler (), m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "SkyboxSampler").m_bindIndex);
+		instance.m_ri->SetInputLayout (instance.m_skyboxMaterial->GetShader ()->GetInputLayout ());
+		instance.m_ri->BindVertexShaderConstantBuffer (instance.m_constantBufferPerCamera.get (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
+		instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSRV (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "Skybox").m_bindIndex);
+		instance.m_ri->BindPixelShaderSampler (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSampler (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "SkyboxSampler").m_bindIndex);
 
 		DrawVertices (skyMesh->GetVertexBufferResource (0), skyMesh->GetIndexBufferResource (0));
 
-		m_ri->SetRasterizerState (m_rsCullBack.get ());
-		m_ri->SetDepthStencilState (m_depthLessStencilAlways.get ());
+		instance.m_ri->SetRasterizerState (instance.m_rsCullBack.get ());
+		instance.m_ri->SetDepthStencilState (instance.m_depthLessStencilAlways.get ());
 	}
 
 	LightData GlobalRenderer::GetLightData (uint32 index)
 	{
+		GlobalRenderer& instance = GetInstance ();
 		LightData data;
 
-		if (index < m_maxLightCount)
+		if (index < instance.m_maxLightCount)
 		{
-			data = m_lightData.at (index);
+			data = instance.m_lightData.at (index);
 		}
 
 		return data;
@@ -886,50 +921,53 @@ namespace GameEngine
 
 	void GlobalRenderer::AddLightData (LightData data)
 	{
-		if (m_lightData.size () >= m_maxLightCount)
+		GlobalRenderer& instance = GetInstance ();
+
+		if (instance.m_lightData.size () >= instance.m_maxLightCount)
 		{
 			return;
 		}
 
-		m_lightData.push_back (data);
+		instance.m_lightData.push_back (data);
 	}
 
 	void GlobalRenderer::ResetLightData ()
 	{
-		m_lightData.clear ();
+		GetInstance ().m_lightData.clear ();
 	}
 
 	void GlobalRenderer::UpdateLightDataBuffer ()
 	{
+		GlobalRenderer& instance = GetInstance ();
 		LightingConstantBuffer lightingConstantBuffer;
-		lightingConstantBuffer.m_lightCount = Math::Min (static_cast<int32> (m_lightData.size ()), m_maxLightCount);
+		lightingConstantBuffer.m_lightCount = Math::Min (static_cast<int32> (instance.m_lightData.size ()), instance.m_maxLightCount);
 		lightingConstantBuffer.m_shadowDistance = 0.0f;
 
 		for (int32 i = 0; i < lightingConstantBuffer.m_lightCount; i++)
 		{
-			lightingConstantBuffer.m_data[i] = m_lightData.at (i);
+			lightingConstantBuffer.m_data[i] = instance.m_lightData.at (i);
 		}
 
 		SetGlobalShaderConstantBuffer ("CBLighting", &lightingConstantBuffer);
 	}
 
-	int32 GlobalRenderer::GetLightCount () const
+	int32 GlobalRenderer::GetLightCount ()
 	{
-		return m_lightData.size ();
+		return GetInstance ().m_lightData.size ();
 	}
 
-	int32 GlobalRenderer::GetMaxLightCount () const
+	int32 GlobalRenderer::GetMaxLightCount ()
 	{
-		return m_maxLightCount;
+		return GetInstance ().m_maxLightCount;
 	}
 
 	RenderingInterface& GlobalRenderer::GetRenderingInterface ()
 	{
-		return *m_ri;
+		return *GetInstance ().m_ri;
 	}
 
-	GlobalRendererSettings GlobalRenderer::GetSettings () const
+	GlobalRendererSettings GlobalRenderer::GetSettings ()
 	{
-		return m_settings;
+		return GetInstance ().m_settings;
 	}
 }

@@ -30,7 +30,7 @@ namespace GameEngine
 			return false;
 		}
 
-		if (g_renderer.Init (rendererSettings) == false)
+		if (GlobalRenderer::Init (rendererSettings) == false)
 		{
 			return false;
 		}
@@ -60,7 +60,7 @@ namespace GameEngine
 		g_assetManager.Shutdown ();
 		
 		g_physics.Shutdown ();
-		g_renderer.Shutdown ();
+		GlobalRenderer::Shutdown ();
 
 		Platform::GetGenericInput ().Shutdown ();
 		Platform::GetGenericApplication ().Shutdown ();
@@ -98,9 +98,9 @@ namespace GameEngine
 			}
 
 			g_sceneManager.UpdateScene ();
-			g_renderer.RenderScene (g_sceneManager.GetScene ());
+			GlobalRenderer::RenderScene (g_sceneManager.GetScene ());
 			g_editor.RenderGUI ();
-			g_renderer.PresentSwapChain ();
+			GlobalRenderer::PresentSwapChain ();
 
 			platformInput.Update ();
 		}	

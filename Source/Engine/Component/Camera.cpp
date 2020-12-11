@@ -40,7 +40,7 @@ namespace GameEngine
 	float Camera::GetAspectRatio () const
 	{
 		float aspectRatio = 1.0f;
-		Vector2 size = g_renderer.GetRenderSize ();
+		Vector2 size = GlobalRenderer::GetRenderSize ();
 
 		if (size.m_y > 0.0f)
 		{

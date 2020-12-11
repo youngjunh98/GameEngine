@@ -10,17 +10,17 @@ namespace GameEngine
 {
 	void RenderPass::BindMaterial (Material* material)
 	{
-		g_renderer.BindMaterial (material);
+		GlobalRenderer::BindMaterial (material);
 	}
 
 	void RenderPass::SetTessellation (bool bTessellation)
 	{
-		g_renderer.GetRenderingInterface ().SetPrimitiveTopology (bTessellation ? EPrimitiveTopology::TrianglePatchList : EPrimitiveTopology::TriangleList);
+		GlobalRenderer::GetRenderingInterface ().SetPrimitiveTopology (bTessellation ? EPrimitiveTopology::TrianglePatchList : EPrimitiveTopology::TriangleList);
 	}
 
 	void RenderPass::UpdateLightData (const std::vector<Light*>& lights)
 	{
-		g_renderer.ResetLightData ();
+		GlobalRenderer::ResetLightData ();
 
 		for (auto* light : lights)
 		{
@@ -86,17 +86,17 @@ namespace GameEngine
 				data.m_viewProjection = (viewMatrix * projectionMatrix).Transposed ();
 			}
 
-			g_renderer.AddLightData (data);
+			GlobalRenderer::AddLightData (data);
 		}
 
-		g_renderer.UpdateLightDataBuffer ();
+		GlobalRenderer::UpdateLightDataBuffer ();
 	}
 
 	void RenderPass::RenderShadowMap (const std::vector<Renderer*>& renderers)
 	{
-		for (int32 i = 0; i < g_renderer.GetLightCount (); i++)
+		for (int32 i = 0; i < GlobalRenderer::GetLightCount (); i++)
 		{
-			LightData lightData = g_renderer.GetLightData (i);
+			LightData lightData = GlobalRenderer::GetLightData (i);
 			Vector3 lightPosition (lightData.m_worldPosition.m_x, lightData.m_worldPosition.m_y, lightData.m_worldPosition.m_z);
 			ELightType lightType = static_cast<ELightType> (lightData.m_type);
 
@@ -151,12 +151,12 @@ namespace GameEngine
 				}
 			}
 
-			g_renderer.ActivateShadowMapShader (lightType);
+			GlobalRenderer::ActivateShadowMapShader (lightType);
 
 			for (uint32 i = 0; i < renderCount; i++)
 			{
-				g_renderer.BindShadowRenderTarget (lightType, renderTargetOffset + i);
-				g_renderer.SetGlobalShaderConstantBuffer ("CBCamera", &cameraBuffers.at (i));
+				GlobalRenderer::BindShadowRenderTarget (lightType, renderTargetOffset + i);
+				GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraBuffers.at (i));
 
 				for (auto* renderer : renderers)
 				{

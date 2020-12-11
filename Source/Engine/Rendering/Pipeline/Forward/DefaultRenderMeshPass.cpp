@@ -17,22 +17,22 @@ namespace GameEngine
 	{
 		if (m_rasterizerCullBack.get () == nullptr)
 		{
-			m_rasterizerCullBack = g_renderer.GetRenderingInterface ().CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
+			m_rasterizerCullBack = GlobalRenderer::GetRenderingInterface ().CreateRasterizerState (EFillMode::Solid, EFaceCulling::Back, EWindingOrder::CW);
 		}
 
 		if (m_depthLessStencilAlways.get () == nullptr)
 		{
-			m_depthLessStencilAlways = g_renderer.GetRenderingInterface ().CreateDepthStencilState (EComparisonFunction::LessEqual, EComparisonFunction::Always);
+			m_depthLessStencilAlways = GlobalRenderer::GetRenderingInterface ().CreateDepthStencilState (EComparisonFunction::LessEqual, EComparisonFunction::Always);
 		}
 
-		g_renderer.GetRenderingInterface ().SetRasterizerState (m_rasterizerCullBack.get ());
-		g_renderer.GetRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
+		GlobalRenderer::GetRenderingInterface ().SetRasterizerState (m_rasterizerCullBack.get ());
+		GlobalRenderer::GetRenderingInterface ().SetDepthStencilState (m_depthLessStencilAlways.get ());
 
-		Vector2 renderSize = g_renderer.GetRenderSize ();
-		g_renderer.SetViewport (renderSize);
+		Vector2 renderSize = GlobalRenderer::GetRenderSize ();
+		GlobalRenderer::SetViewport (renderSize);
 
-		g_renderer.BindRenderTargetAndDepthStencil ();
-		g_renderer.ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
+		GlobalRenderer::BindRenderTargetAndDepthStencil ();
+		GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 	}
 
 	void DefaultRenderMeshPass::Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
@@ -50,7 +50,7 @@ namespace GameEngine
 		cameraConstantBuffer.m_cameraWorldPosition = camera->GetGameObject ().GetTransform ().GetPosition ();
 		cameraConstantBuffer.m_cameraFar = camera->GetFar ();
 
-		g_renderer.SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
+		GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
 
 		for (auto* renderer : renderers)
 		{

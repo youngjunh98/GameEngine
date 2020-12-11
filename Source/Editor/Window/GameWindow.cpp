@@ -24,11 +24,11 @@ namespace GameEngine
 
         if (m_renderPipeline == 0)
         {
-            g_renderer.BindRenderPipeline (g_renderer.GetDefaultForwardRenderPipeline ());
+            GlobalRenderer::BindRenderPipeline (GlobalRenderer::GetDefaultForwardRenderPipeline ());
         }
         else if (m_renderPipeline == 1)
         {
-            g_renderer.BindRenderPipeline (g_renderer.GetDefaultLineRenderPipeline ());
+            GlobalRenderer::BindRenderPipeline (GlobalRenderer::GetDefaultLineRenderPipeline ());
         }
 
         Vector2 desiredSize = EditorGUI::GetWindowAvailableContentRegionSize ();
@@ -37,7 +37,7 @@ namespace GameEngine
         if (renderSize.m_x >= 1.0f && renderSize.m_y >= 1.0f)
         {
             bool bSizeChanged = m_renderSize != renderSize;
-            RenderingInterface& renderingInterface = g_renderer.GetRenderingInterface ();
+            RenderingInterface& renderingInterface = GlobalRenderer::GetRenderingInterface ();
             bool bUpdateRenderTarget = bSizeChanged || m_gameRenderTexture == nullptr;
             bool bUpdateDepthStencil = bSizeChanged || m_gameDepthStencilTexture == nullptr;
 
@@ -61,9 +61,9 @@ namespace GameEngine
                 }
 
                 m_renderSize = renderSize;
-                g_renderer.SetRenderSize (renderSize);
-                g_renderer.SetRenderTarget (m_gameRenderTarget);
-                g_renderer.SetDepthStencil (m_gameDepthStencil);
+                GlobalRenderer::SetRenderSize (renderSize);
+                GlobalRenderer::SetRenderTarget (m_gameRenderTarget);
+                GlobalRenderer::SetDepthStencil (m_gameDepthStencil);
             }
         }
 
