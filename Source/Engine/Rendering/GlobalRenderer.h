@@ -12,6 +12,7 @@
 #include "Engine/Rendering/Pipeline/Line/DefaultLineRenderPipeline.h"
 #include "Engine/Rendering/GlobalRendererSettings.h"
 #include "Engine/Rendering/TextureCube.h"
+#include "Engine/Component/Rendering/Light.h"
 
 namespace GameEngine
 {
@@ -89,8 +90,8 @@ namespace GameEngine
 		Vector2 GetViewportTopLeft () const;
 		void SetViewport (Vector2 size, Vector2 topLeft = Vector2::Zero);
 
-		void ActivateShadowMapShader (int32 lightType);
-		void BindShadowRenderTarget (int32 lightType, uint32 renderTargetIndex);
+		void ActivateShadowMapShader (ELightType lightType);
+		void BindShadowRenderTarget (ELightType lightType, uint32 renderTargetIndex);
 
 		GlobalRendererSettings GetSettings () const;
 

@@ -21,6 +21,9 @@ namespace GameEngine
 
 		virtual void BindMaterial (Material* material);
 		virtual void SetTessellation (bool bTessellation);
+
+		void UpdateLightData (const std::vector<Light*>& lights);
+		void RenderShadowMap (const std::vector<Renderer*>& renderers);
 	};
 }
 

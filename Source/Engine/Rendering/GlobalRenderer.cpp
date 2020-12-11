@@ -470,16 +470,15 @@ namespace GameEngine
 		}
 	}
 
-	void GlobalRenderer::ActivateShadowMapShader (int32 lightType)
+	void GlobalRenderer::ActivateShadowMapShader (ELightType lightType)
 	{
-		ELightType type = static_cast<ELightType> (lightType);
 		Shader* shader = nullptr;
 
-		if (type == ELightType::Directional || type == ELightType::Spot)
+		if (lightType == ELightType::Directional || lightType == ELightType::Spot)
 		{
 			shader = m_shadowMapShader;
 		}
-		else if (type == ELightType::Point)
+		else if (lightType == ELightType::Point)
 		{
 			shader = m_omnidirectionalShadowMapShader;
 		}
@@ -499,9 +498,9 @@ namespace GameEngine
 		}
 	}
 
-	void GlobalRenderer::BindShadowRenderTarget (int32 lightType, uint32 renderTargetIndex)
+	void GlobalRenderer::BindShadowRenderTarget (ELightType lightType, uint32 renderTargetIndex)
 	{
-		if (static_cast<ELightType> (lightType) == ELightType::Directional)
+		if (lightType == ELightType::Directional)
 		{
 			if (renderTargetIndex >= m_directionalLightShadowMapDSV.size ())
 			{
@@ -517,7 +516,7 @@ namespace GameEngine
 
 			m_ri->SetViewport (2048, 2048, 0, 0);
 		}
-		else if (static_cast<ELightType> (lightType) == ELightType::Point)
+		else if (lightType == ELightType::Point)
 		{
 			if (renderTargetIndex >= m_pointLightShadowMapRTV.size ())
 			{
@@ -533,7 +532,7 @@ namespace GameEngine
 
 			m_ri->SetViewport (1024, 1024, 0, 0);
 		}
-		else if (static_cast<ELightType> (lightType) == ELightType::Spot)
+		else if (lightType == ELightType::Spot)
 		{
 			if (renderTargetIndex >= m_spotLightShadowMapDSV.size ())
 			{
