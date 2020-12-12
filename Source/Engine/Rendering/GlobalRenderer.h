@@ -70,6 +70,9 @@ namespace GameEngine
 		static bool Init (const GlobalRendererSettings settings);
 		static void Shutdown ();
 
+		static void RenderScene (Scene* scene);
+		static void RenderScene (RenderPipeline& pipeline, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Vector3 cameraPosition, float cameraNear, float cameraFar, Scene* scene);
+
 		static void PresentSwapChain ();
 		static bool ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen);
 		static bool UpdateSwapChainResource ();
@@ -83,8 +86,8 @@ namespace GameEngine
 
 		static void BindRenderTargetAndDepthStencil ();
 		static void ClearRenderTargetAndDepthStencil (Vector4 color, float depth, uint8 stencil);
-		static RI_RenderTargetView* GetRenderTarget ();
-		static RI_DepthStencilView* GetDepthStencil ();
+		static RenderingResourcePtr<RI_RenderTargetView> GetRenderTarget ();
+		static RenderingResourcePtr<RI_DepthStencilView> GetDepthStencil ();
 		static void SetRenderTargetAndDepthStencilAsDefault ();
 		static void SetRenderTarget (RenderingResourcePtr<RI_RenderTargetView> renderTarget);
 		static void SetDepthStencil (RenderingResourcePtr<RI_DepthStencilView> depthStencil);
@@ -111,8 +114,6 @@ namespace GameEngine
 
 		static void DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer);
 
-		static void RenderScene (Scene* scene);
-		static CullData Cull (Camera* camera, const std::vector<Renderer*>& renderers);
 		static void DrawSkybox ();
 
 		static LightData GetLightData (uint32 index);

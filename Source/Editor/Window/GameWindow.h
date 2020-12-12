@@ -16,7 +16,6 @@ namespace GameEngine
         virtual void OnRender () override;
 
     private:
-        int32 m_renderPipeline;
         Vector2 m_renderSize;
         RenderingResourcePtr<RI_Texture2D> m_gameRenderBuffer;
 		RenderingResourcePtr<RI_Texture2D> m_gameDepthStencilBuffer;

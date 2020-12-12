@@ -4,6 +4,7 @@
 #include "Editor/Window/InspectorWindow.h"
 #include "Editor/Window/ProjectWindow.h"
 #include "Editor/Window/SceneWindow.h"
+#include "Editor/Window/ViewportWindow.h"
 
 namespace GameEngine
 {
@@ -35,6 +36,11 @@ namespace GameEngine
         if (MenuItem ("Scene"))
         {
             Editor::GetInstance ().OpenWindow<SceneWindow> ();
+        }
+
+        if (MenuItem ("Viewport"))
+        {
+            Editor::GetInstance ().OpenWindow<ViewportWindow> ();
         }
 	}
 }

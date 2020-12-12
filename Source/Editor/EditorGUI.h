@@ -23,7 +23,11 @@ namespace GameEngine
         static void PushID (const std::string& id);
         static void PopID ();
 
+        static bool IsWindowFocused ();
+        static bool IsWindowHovered ();
+
         static bool IsLastItemClicked ();
+        static bool IsLastItemFocused ();
         static bool IsLastItemHovered ();
 
         static Vector2 GetWindowSize ();

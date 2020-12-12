@@ -2,8 +2,11 @@
 
 namespace GameEngine
 {
-	void RenderPipeline::AddPass (RenderPass* renderPass)
+	RenderPipeline::RenderPipeline ()
 	{
-		m_renderPasses.push_back (renderPass);
+	}
+
+	RenderPipeline::~RenderPipeline ()
+	{
 	}
 }

@@ -1,9 +1,10 @@
-#ifndef INCLUDE_TIMER
-#define INCLUDE_TIMER
+#pragma once
+
+#include "Core/CoreMacro.h"
 
 namespace GameEngine
 {
-	class Timer
+	class CORE_API Timer
 	{
 	public:
 		static float Time ();
@@ -11,5 +12,3 @@ namespace GameEngine
 		static float FixedDeltaTime ();
 	};
 }
-
-#endif

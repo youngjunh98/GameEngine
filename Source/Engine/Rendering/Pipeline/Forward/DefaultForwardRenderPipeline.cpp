@@ -3,25 +3,30 @@
 
 namespace GameEngine
 {
+	DefaultForwardRenderPipeline::DefaultForwardRenderPipeline ()
+	{
+	}
+
+	DefaultForwardRenderPipeline::~DefaultForwardRenderPipeline()
+	{
+	}
+
 	void DefaultForwardRenderPipeline::Release ()
 	{
 		m_shadowPass.Release ();
 		m_meshRenderPass.Release ();
 	}
 
-	void DefaultForwardRenderPipeline::Start (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*>& lights)
+	void DefaultForwardRenderPipeline::Execute (const RenderPipelineData& pipelineData)
 	{
-		m_shadowPass.PreRender (cameras, renderers, lights);
-		m_shadowPass.Render (cameras, renderers, lights);
-		m_shadowPass.PostRender ();
+		m_shadowPass.PreRender (pipelineData);
+		m_shadowPass.Render (pipelineData);
+		m_shadowPass.PostRender (pipelineData);
 
-		m_meshRenderPass.PreRender (cameras, renderers, lights);
-		m_meshRenderPass.Render (cameras, renderers, lights);
-		m_meshRenderPass.PostRender ();
-	}
+		m_meshRenderPass.PreRender (pipelineData);
+		m_meshRenderPass.Render (pipelineData);
+		m_meshRenderPass.PostRender (pipelineData);
 
-	void DefaultForwardRenderPipeline::End ()
-	{
 		GlobalRenderer::DrawSkybox ();
 	}
 }

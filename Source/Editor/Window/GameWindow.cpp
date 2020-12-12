@@ -1,6 +1,3 @@
-#include <string>
-#include <vector>
-
 #include "GameWindow.h"
 #include "Editor/EditorGUI.h"
 #include "Engine/Rendering/GlobalRenderer.h"
@@ -8,9 +5,7 @@
 
 namespace GameEngine
 {
-    static const std::vector<std::string> g_renderPipelineNames = { "Default", "Wireframe" };
-
-    GameWindow::GameWindow () : EditorWindow ("Game"), m_renderPipeline (0), m_renderSize (Vector2::Zero)
+    GameWindow::GameWindow () : EditorWindow ("Game"), m_renderSize (Vector2::Zero)
     {
     }
 
@@ -20,17 +15,6 @@ namespace GameEngine
 
     void GameWindow::OnRender ()
     {
-        m_renderPipeline = EditorGUI::InputDropDown ("##RenderMode", m_renderPipeline, g_renderPipelineNames);
-
-        if (m_renderPipeline == 0)
-        {
-            GlobalRenderer::BindRenderPipeline (GlobalRenderer::GetDefaultForwardRenderPipeline ());
-        }
-        else if (m_renderPipeline == 1)
-        {
-            GlobalRenderer::BindRenderPipeline (GlobalRenderer::GetDefaultLineRenderPipeline ());
-        }
-
         Vector2 desiredSize = EditorGUI::GetWindowAvailableContentRegionSize ();
         Vector2 renderSize = Vector2 (Math::Floor (desiredSize.m_x), Math::Floor (desiredSize.m_y));
 

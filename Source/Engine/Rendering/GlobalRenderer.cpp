@@ -282,6 +282,74 @@ namespace GameEngine
 		Modular::ModuleManager::UnloadModule (instance.m_riModulePath);
 	}
 
+	void GlobalRenderer::RenderScene (Scene* scene)
+	{
+		if (scene == nullptr)
+		{
+			return;
+		}
+
+		GlobalRenderer& instance = GetInstance ();
+		RenderPipeline& pipeline = *instance.m_renderPipeline;
+
+		const auto& gameObjects = scene->GetGameObjects ();
+		std::vector<Camera*> cameras;
+
+		for (auto& gameObject : gameObjects)
+		{
+			if (gameObject->IsActive () == false)
+			{
+				continue;
+			}
+
+			auto cameraComponents = gameObject->GetComponents<Camera> ();
+			cameras.insert (cameras.end (), cameraComponents.begin (), cameraComponents.end ());
+		}
+
+		for (auto* camera : cameras)
+		{
+			Vector3 cameraPosition = camera->GetGameObject ().GetComponent<Transform> ()->GetPosition ();
+			Matrix4x4 view = camera->GetViewMatrix ();
+			Matrix4x4 projection = camera->GetProjectionMatrix ();
+			float cameraNear = camera->GetNear ();
+			float cameraFar = camera->GetFar ();
+
+			RenderScene (pipeline, view, projection, cameraPosition, cameraNear, cameraFar, scene);
+		}
+	}
+
+	void GlobalRenderer::RenderScene (RenderPipeline& pipeline, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Vector3 cameraPosition, float cameraNear, float cameraFar, Scene* scene)
+	{
+		const auto& gameObjects = scene->GetGameObjects ();
+		std::vector<Renderer*> renderers;
+		std::vector<Light*> lights;
+
+		for (auto& gameObject : gameObjects)
+		{
+			if (gameObject->IsActive () == false)
+			{
+				continue;
+			}
+
+			auto rendererComponents = gameObject->GetComponents<Renderer> ();
+			renderers.insert (renderers.end (), rendererComponents.begin (), rendererComponents.end ());
+
+			auto lightComponents = gameObject->GetComponents<Light> ();
+			lights.insert (lights.end (), lightComponents.begin (), lightComponents.end ());
+		}
+
+		RenderPipelineData pipelineData;
+		pipelineData.m_camera.m_viewMatrix = viewMatrix;
+		pipelineData.m_camera.m_projectionMatrix = projectionMatrix;
+		pipelineData.m_camera.m_position = cameraPosition;
+		pipelineData.m_camera.m_near = cameraNear;
+		pipelineData.m_camera.m_far = cameraFar;
+		pipelineData.m_renderers = renderers;
+		pipelineData.m_lights = lights;
+
+		pipeline.Execute (pipelineData);
+	}
+
 	void GlobalRenderer::PresentSwapChain ()
 	{
 		GlobalRenderer& instance = GetInstance ();
@@ -430,14 +498,14 @@ namespace GameEngine
 		instance.m_ri->ClearDepthStencil (depthStencil, depth, stencil);
 	}
 
-	RI_RenderTargetView* GlobalRenderer::GetRenderTarget ()
+	RenderingResourcePtr<RI_RenderTargetView> GlobalRenderer::GetRenderTarget ()
 	{
-		return GetInstance ().m_usingRenderTarget.get ();
+		return GetInstance ().m_usingRenderTarget;
 	}
 
-	RI_DepthStencilView* GlobalRenderer::GetDepthStencil ()
+	RenderingResourcePtr<RI_DepthStencilView> GlobalRenderer::GetDepthStencil ()
 	{
-		return GetInstance ().m_usingDepthStencil.get ();
+		return GetInstance ().m_usingDepthStencil;
 	}
 
 	void GlobalRenderer::SetRenderTargetAndDepthStencilAsDefault ()
@@ -814,49 +882,6 @@ namespace GameEngine
 		{
 			instance.m_ri->DrawIndexed (vertexBuffer, indexBuffer);
 		}
-	}
-
-	void GlobalRenderer::RenderScene (Scene* scene)
-	{
-		if (scene == nullptr)
-		{
-			return;
-		}
-
-		auto& gameObjects = scene->GetGameObjects ();
-		std::vector<Camera*> cameras;
-		std::vector<Renderer*> renderers;
-		std::vector<Light*> lights;
-
-		for (auto& gameObject : gameObjects)
-		{
-			if (gameObject->IsActive () == false)
-			{
-				continue;
-			}
-
-			auto cameraComponents = gameObject->GetComponents<Camera> ();
-			cameras.insert (cameras.end (), cameraComponents.begin (), cameraComponents.end ());
-
-			auto rendererComponents = gameObject->GetComponents<Renderer> ();
-			renderers.insert (renderers.end (), rendererComponents.begin (), rendererComponents.end ());
-
-			auto lightComponents = gameObject->GetComponents<Light> ();
-			lights.insert (lights.end (), lightComponents.begin (), lightComponents.end ());
-		}
-
-		GlobalRenderer& instance = GetInstance ();
-		instance.m_renderPipeline->Start (cameras, renderers, lights);
-		instance.m_renderPipeline->End ();
-	}
-
-	CullData GlobalRenderer::Cull (Camera* camera, const std::vector<Renderer*>& renderers)
-	{
-		CullData cullData;
-		cullData.m_camera = camera;
-		cullData.m_visibleRenderers = renderers;
-
-		return cullData;
 	}
 
 	void GlobalRenderer::DrawSkybox ()

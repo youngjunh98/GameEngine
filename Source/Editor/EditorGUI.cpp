@@ -24,9 +24,24 @@ namespace GameEngine
 		ImGui::PopID ();
 	}
 
+	bool EditorGUI::IsWindowFocused ()
+	{
+		return ImGui::IsWindowFocused ();
+	}
+
+	bool EditorGUI::IsWindowHovered ()
+	{
+		return ImGui::IsWindowHovered ();
+	}
+	
 	bool EditorGUI::IsLastItemClicked ()
 	{
 		return ImGui::IsItemClicked ();
+	}
+
+	bool EditorGUI::IsLastItemFocused ()
+	{
+		return ImGui::IsItemFocused ();
 	}
 
 	bool EditorGUI::IsLastItemHovered ()

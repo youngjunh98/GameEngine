@@ -4,21 +4,29 @@
 
 namespace GameEngine
 {
+	DefaultShadowPass::DefaultShadowPass ()
+	{
+	}
+
+	DefaultShadowPass::~DefaultShadowPass ()
+	{
+	}
+
 	void DefaultShadowPass::Release ()
 	{
 	}
 
-	void DefaultShadowPass::PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
+	void DefaultShadowPass::PreRender (const RenderPipelineData& pipelineData)
 	{
-		UpdateLightData (lights);
+		UpdateLightData (pipelineData);
 	}
 
-	void DefaultShadowPass::Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
+	void DefaultShadowPass::Render (const RenderPipelineData& pipelineData)
 	{
-		RenderShadowMap (renderers);
+		RenderShadowMap (pipelineData);
 	}
 
-	void DefaultShadowPass::PostRender ()
+	void DefaultShadowPass::PostRender (const RenderPipelineData& pipelineData)
 	{
 	}
 

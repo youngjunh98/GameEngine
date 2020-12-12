@@ -8,6 +8,14 @@
 
 namespace GameEngine
 {
+	RenderPass::RenderPass ()
+	{
+	}
+
+	RenderPass::~RenderPass()
+	{
+	}
+
 	void RenderPass::BindMaterial (Material* material)
 	{
 		GlobalRenderer::BindMaterial (material);
@@ -18,11 +26,11 @@ namespace GameEngine
 		GlobalRenderer::GetRenderingInterface ().SetPrimitiveTopology (bTessellation ? EPrimitiveTopology::TrianglePatchList : EPrimitiveTopology::TriangleList);
 	}
 
-	void RenderPass::UpdateLightData (const std::vector<Light*>& lights)
+	void RenderPass::UpdateLightData (const RenderPipelineData& pipelineData)
 	{
 		GlobalRenderer::ResetLightData ();
 
-		for (auto* light : lights)
+		for (auto* light : pipelineData.m_lights)
 		{
 			ELightType lightType = light->GetType ();
 			float range = light->GetRange ();
@@ -92,7 +100,7 @@ namespace GameEngine
 		GlobalRenderer::UpdateLightDataBuffer ();
 	}
 
-	void RenderPass::RenderShadowMap (const std::vector<Renderer*>& renderers)
+	void RenderPass::RenderShadowMap (const RenderPipelineData& pipelineData)
 	{
 		for (int32 i = 0; i < GlobalRenderer::GetLightCount (); i++)
 		{
@@ -158,7 +166,7 @@ namespace GameEngine
 				GlobalRenderer::BindShadowRenderTarget (lightType, renderTargetOffset + i);
 				GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraBuffers.at (i));
 
-				for (auto* renderer : renderers)
+				for (auto* renderer : pipelineData.m_renderers)
 				{
 					renderer->Render (this);
 				}

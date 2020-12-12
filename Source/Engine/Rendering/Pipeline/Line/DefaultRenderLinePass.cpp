@@ -9,6 +9,14 @@
 
 namespace GameEngine
 {
+	DefaultRenderLinePass::DefaultRenderLinePass ()
+	{
+	}
+
+	DefaultRenderLinePass::~DefaultRenderLinePass()
+	{
+	}
+
 	void DefaultRenderLinePass::Release ()
 	{
 		m_rsLineCullNone = nullptr;
@@ -16,7 +24,7 @@ namespace GameEngine
 		m_whiteMaterial = nullptr;
 	}
 
-	void DefaultRenderLinePass::PreRender (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
+	void DefaultRenderLinePass::PreRender (const RenderPipelineData& pipelineData)
 	{
 		if (m_rsLineCullNone.get () == nullptr)
 		{
@@ -38,30 +46,24 @@ namespace GameEngine
 		GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 	}
 
-	void DefaultRenderLinePass::Render (const std::vector<Camera*>& cameras, const std::vector<Renderer*>& renderers, const std::vector<Light*> lights)
+	void DefaultRenderLinePass::Render (const RenderPipelineData& pipelineData)
 	{
-		if (cameras.size () <= 0)
-		{
-			return;
-		}
-
-		auto* camera = cameras.at (0);
 		CameraConstantBuffer cameraConstantBuffer;
-		cameraConstantBuffer.m_view = camera->GetViewMatrix ().Transposed ();
-		cameraConstantBuffer.m_projection = camera->GetProjectionMatrix ().Transposed ();
+		cameraConstantBuffer.m_view = pipelineData.m_camera.m_viewMatrix.Transposed ();
+		cameraConstantBuffer.m_projection = pipelineData.m_camera.m_projectionMatrix.Transposed ();
 		cameraConstantBuffer.m_viewProjection = cameraConstantBuffer.m_projection * cameraConstantBuffer.m_view;
-		cameraConstantBuffer.m_cameraWorldPosition = camera->GetGameObject ().GetTransform ().GetPosition ();
-		cameraConstantBuffer.m_cameraFar = camera->GetFar ();
+		cameraConstantBuffer.m_cameraWorldPosition = pipelineData.m_camera.m_position;
+		cameraConstantBuffer.m_cameraFar = pipelineData.m_camera.m_far;
 
 		GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
 
-		for (auto* renderer : renderers)
+		for (auto* renderer : pipelineData.m_renderers)
 		{
 			renderer->Render (this);
 		}
 	}
 
-	void DefaultRenderLinePass::PostRender ()
+	void DefaultRenderLinePass::PostRender (const RenderPipelineData& pipelineData)
 	{
 	}
 
