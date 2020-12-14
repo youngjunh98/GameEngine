@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <type_traits>
 
+#include "Type.h"
 #include "Core/CoreMinimal.h"
 #include "Object.h"
 #include "Scene/Scene.h"
@@ -29,7 +29,7 @@ namespace GameEngine
 		template<typename T>
 		void AddComponent ()
 		{
-			static_assert (std::is_base_of<Component, T>::value, "Game object can only add component.");
+			static_assert (IsBaseOf<Component, T>::Result, "Game object can only add component.");
 
 			auto component = std::make_unique<T> ();
 			component->SetGameObject (*this);
@@ -46,7 +46,7 @@ namespace GameEngine
 		template<typename T>
 		T* GetComponent () const
 		{
-			static_assert (std::is_base_of<Component, T>::value, "Game object can only get component");
+			static_assert (IsBaseOf<Component, T>::Result, "Game object can only get component");
 
 			for (const auto& component : m_components)
 			{
@@ -64,7 +64,7 @@ namespace GameEngine
 		template<typename T>
 		std::vector<T*> GetComponents () const
 		{
-			static_assert (std::is_base_of<Component, T>::value, "Game object can only get component");
+			static_assert (IsBaseOf<Component, T>::Result, "Game object can only get component");
 
 			std::vector<T*> foundComponents;
 

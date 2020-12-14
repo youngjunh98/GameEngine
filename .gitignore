@@ -1,5 +1,7 @@
 Library/
-Builds/
+[Bb]uilds/
+[Bb]uild/
+.vscode/
 
 ##############################
 # GitHub gitignore templates #
