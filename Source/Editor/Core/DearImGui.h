@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Platform/PlatformMacro.h"
+#include "Engine/Platform/PlatformMacro.h"
+#include "Editor/Core/EditorCoreMacro.h"
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(ENGINE_PLATFORM_WINDOWS)
     #include <Windows.h>
     #include <imgui_impl_win32.h>
     #include <imgui_impl_dx11.h>
@@ -16,7 +17,7 @@
 
 namespace GameEngine
 {
-    class DearImGui final
+    class EDITOR_CORE_API DearImGui final
     {
     public:
         static bool Initialize ();

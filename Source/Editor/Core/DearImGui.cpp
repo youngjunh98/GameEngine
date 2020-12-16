@@ -5,13 +5,13 @@
 #include <imgui_widgets.cpp>
 #include <misc/cpp/imgui_stdlib.cpp>
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(ENGINE_PLATFORM_WINDOWS)
     #include <imgui_impl_win32.cpp>
     #include <imgui_impl_dx11.cpp>
 #endif
 
-#include "Platform/Platform.h"
-#include "Engine/Rendering/GlobalRenderer.h"
+#include "Engine/Platform/Platform.h"
+#include "Engine/RI/RenderingInterface.h"
 
 namespace GameEngine
 {
@@ -28,11 +28,11 @@ namespace GameEngine
 		style.WindowRounding = 1.0f;
 
         // Setup Platform/Renderer bindings
-#if defined(PLATFORM_WINDOWS)
+#if defined(ENGINE_PLATFORM_WINDOWS)
 		auto& windowsApplication = static_cast<Platform::WindowsApplication&> (Platform::GetGenericApplication ());
         HWND hWnd = static_cast<HWND> (windowsApplication.GetNativeWindowHandle ());
 
-        RenderingInterface& renderingInterface = GlobalRenderer::GetRenderingInterface ();
+        RenderingInterface& renderingInterface = RenderingInterface::GetModule ();
 		auto* d3d11Device = reinterpret_cast<ID3D11Device*> (renderingInterface.GetNativeDevice ());
 		auto* d3d11Context = reinterpret_cast<ID3D11DeviceContext*> (renderingInterface.GetNativeContext ());
 
@@ -54,7 +54,7 @@ namespace GameEngine
 
     void DearImGui::CleanUp ()
     {
-#if defined(PLATFORM_WINDOWS)
+#if defined(ENGINE_PLATFORM_WINDOWS)
         auto& winApp = static_cast<Platform::WindowsApplication&> (Platform::GetGenericApplication ());
         winApp.RemoveWindowProcedureListener (ImGui_ImplWin32_WndProcHandler);
 
@@ -67,7 +67,7 @@ namespace GameEngine
 
     void DearImGui::StartRender ()
     {
-#if defined(PLATFORM_WINDOWS)
+#if defined(ENGINE_PLATFORM_WINDOWS)
         ImGui_ImplDX11_NewFrame ();
         ImGui_ImplWin32_NewFrame ();
 #endif
@@ -79,7 +79,7 @@ namespace GameEngine
     {
         ImGui::Render ();
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(ENGINE_PLATFORM_WINDOWS)
         ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
 #endif
     }

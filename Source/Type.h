@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Platform/PlatformType.h"
+#include "Engine/Platform/PlatformType.h"
 #include "TypeCheck.h"
 
 namespace GameEngine

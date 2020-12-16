@@ -1,0 +1,4 @@
+#include "Engine/Platform/PlatformMacro.h"
+
+#define EXPORT_MODULE ENGINE_PLATFORM_EXPORT
+#define IMPORT_MODULE ENGINE_PLATFORM_IMPORT

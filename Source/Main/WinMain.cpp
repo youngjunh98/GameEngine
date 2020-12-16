@@ -1,15 +1,15 @@
 ﻿#include <Windows.h>
 
-#include "Engine/Engine.h"
+#include "Editor/Editor/Editor.h"
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nShowCmd)
 {
-	if (GameEngine::g_engine.Init () == true)
+	if (GameEngine::Editor::GetInstance ().Initialize () == true)
 	{
-		GameEngine::g_engine.Run ();
+		GameEngine::Editor::GetInstance ().Run ();
 	}
 
-	GameEngine::g_engine.Shutdown ();
+	GameEngine::Editor::GetInstance ().Shutdown ();
 
 	return 0;
 }

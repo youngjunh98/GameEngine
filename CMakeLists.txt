@@ -3,7 +3,7 @@ project(GameEngine)
 
 # Build options
 option(BUILD_STATIC "Build Static Library")
-option(BUILD_RI_D3D11 "Build D3D11 RI")
+option(BUILD_D3D11 "Build D3D11 RI")
 
 # Output directory settings
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Builds/Binaries/${CMAKE_GENERATOR_PLATFORM}/)
@@ -14,8 +14,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/Builds/Binaries/${CMAKE_G
 add_compile_definitions(UNICODE _UNICODE)
 
 # Game engine macros
-if(BUILD_RI_D3D11)
-    add_compile_definitions(RI_D3D11)
+if(BUILD_D3D11)
+    add_compile_definitions(ENGINE_RI_D3D11)
 endif()
 
 # Include directories
@@ -89,7 +89,7 @@ if(WIN32)
 endif()
 
 set_target_properties(Executable PROPERTIES OUTPUT_NAME "GameEngine")
-add_dependencies(Executable Engine)
+add_dependencies(Executable Engine Editor)
 
-target_compile_definitions(Executable PRIVATE IMPORT_ENGINE)
-target_link_libraries(Executable PRIVATE Engine)
+target_compile_definitions(Executable PRIVATE IMPORT_ENGINE IMPORT_EDITOR)
+target_link_libraries(Executable PRIVATE Engine Editor)
