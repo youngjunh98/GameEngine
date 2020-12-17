@@ -19,114 +19,79 @@ namespace GameEngine
 {
 	void AssetImporter::ImportAllAssets ()
 	{
-		FBXImporter::Start ();
-
-		PathString currentDirectory;
-		std::stack<PathString> directoryStack;
-
-		directoryStack.push (PATH ("Assets"));
-
-		while (directoryStack.size () > 0)
-		{
-			auto topDirectory = directoryStack.top ();
-			bool topDirectoryIterated = currentDirectory.rfind (topDirectory + PATH ("/")) != std::string::npos;
-
-			if (topDirectoryIterated == false)
-			{
-				currentDirectory += topDirectory + PATH ("/");
-
-				for (auto& file : FileSystem::GetFileList (currentDirectory))
-				{
-					auto path = currentDirectory + file;
-
-					if (AssetManager::GetInstance ().FindAsset<Object> (path) == nullptr)
-					{
-						ImportAsset (path);
-					}
-				}
-
-				for (auto& directory : FileSystem::GetDirectoryList (currentDirectory))
-				{
-					directoryStack.push (directory);
-				}
-			}
-
-			if (topDirectory == directoryStack.top ())
-			{
-				auto topDirectoryFind = currentDirectory.rfind (topDirectory + PATH ("/"));
-				currentDirectory.erase (currentDirectory.begin () + topDirectoryFind, currentDirectory.end ());
-
-				directoryStack.pop ();
-			}
-		}
-
-		FBXImporter::Shutdown ();
+		ImportAllAssetsRecursive (PATH ("Assets"));
 	}
 
 	bool AssetImporter::ImportAsset (const PathString& path)
 	{
-		AssetInfo asset;
-		auto extension = FileSystem::GetFileExtension (path);
-
-		if (extension == PATH ("obj") || extension == PATH ("fbx"))
-		{
-			asset.m_type = EAssetType::Mesh;
-			asset.m_asset = ImportMesh (path);
-		}
-		else if (extension == PATH ("jpg") || extension == PATH ("jpeg") || extension == PATH ("png") || extension == PATH ("tga"))
-		{
-			asset.m_type = EAssetType::Texture;
-			asset.m_asset = ImportTexture2D (path, true);
-		}
-		else if (extension == PATH ("wav"))
-		{
-			asset.m_type = EAssetType::Audio;
-			asset.m_asset = ImportAudioClip (path);
-		}
-		else if (extension == PATH ("hlsl"))
-		{
-			asset.m_type = EAssetType::Shader;
-			asset.m_asset = LoadShader (path);
-		}
-		else if (extension == PATH ("scene"))
-		{
-			File file (path, EFileAccessMode::Read);
-			int64 fileSize = file.GetSize ();
-
-			std::string jsonString (fileSize + 1, L'\0');
-			auto* first = const_cast<char*> (jsonString.data ());
-
-			file.ReadAll (first);
-			Json::Json sceneData = Json::Json::parse (jsonString);
-
-			SceneManager::GetInstance ().RegisterScene (path, sceneData);
-
-			return true;
-		}
-		else if (extension == PATH ("material"))
-		{
-			File file (path, EFileAccessMode::Read);
-			int64 fileSize = file.GetSize ();
-
-			std::string jsonString (fileSize + 1, '\0');
-			auto* first = const_cast<char*> (jsonString.data ());
-
-			file.ReadAll (first);
-			Json::Json materialData = Json::Json::parse (jsonString, nullptr, false);
-
-			auto material = std::make_shared<Material> ();
-			material->OnDeserialize (materialData);
-
-			asset.m_type = EAssetType::Material;
-			asset.m_asset = material;
-		}
+		AssetManager& assetManager = AssetManager::GetInstance ();
 
 		bool bSucceed = false;
+		bool bNoAssetFound = assetManager.FindAsset<Object> (path) == nullptr;
 
-		if (asset.m_asset != nullptr)
+		if (bNoAssetFound)
 		{
-			bSucceed = true;
-			AssetManager::GetInstance ().AddAsset (asset, path);
+			AssetInfo asset;
+			auto extension = FileSystem::GetFileExtension (path);
+
+			if (IsSupported3D (extension))
+			{
+				asset.m_type = EAssetType::Mesh;
+				asset.m_asset = Import3D (path);
+			}
+			else if (IsSupported2D (extension))
+			{
+				asset.m_type = EAssetType::Texture;
+				asset.m_asset = Import2D (path, true);
+			}
+			else if (IsSupportedAudio (extension))
+			{
+				asset.m_type = EAssetType::Audio;
+				asset.m_asset = ImportAudio (path);
+			}
+			else if (extension == PATH ("hlsl"))
+			{
+				asset.m_type = EAssetType::Shader;
+				asset.m_asset = LoadShader (path);
+			}
+			else if (extension == PATH ("scene"))
+			{
+				File file (path, EFileAccessMode::Read);
+				int64 fileSize = file.GetSize ();
+
+				std::string jsonString (fileSize + 1, L'\0');
+				auto* first = const_cast<char*> (jsonString.data ());
+
+				file.ReadAll (first);
+				Json::Json sceneData = Json::Json::parse (jsonString);
+
+				SceneManager::GetInstance ().RegisterScene (path, sceneData);
+
+				return true;
+			}
+			else if (extension == PATH ("material"))
+			{
+				File file (path, EFileAccessMode::Read);
+				int64 fileSize = file.GetSize ();
+
+				std::string jsonString (fileSize + 1, '\0');
+				auto* first = const_cast<char*> (jsonString.data ());
+
+				file.ReadAll (first);
+				Json::Json materialData = Json::Json::parse (jsonString, nullptr, false);
+
+				auto material = std::make_shared<Material> ();
+				material->OnDeserialize (materialData);
+
+				asset.m_type = EAssetType::Material;
+				asset.m_asset = material;
+			}
+
+			if (asset.m_asset != nullptr)
+			{
+				bSucceed = true;
+				assetManager.AddAsset (asset, path);
+			}
 		}
 
 		return bSucceed;
@@ -238,6 +203,37 @@ namespace GameEngine
 		return textureCube;
 	}
 
+	void AssetImporter::ImportAllAssetsRecursive (const PathString& path)
+	{
+		for (const PathString& fileName : FileSystem::GetFileList (path))
+		{
+			PathString filePath = path + PATH ("/") + fileName;
+			ImportAsset (filePath);
+		}
+
+		for (const PathString& directoryName : FileSystem::GetDirectoryList (path))
+		{
+			PathString directoryPath = path + PATH ("/") + directoryName;
+			ImportAllAssetsRecursive (directoryPath);
+		}
+	}
+
+	bool AssetImporter::IsSupported3D (const PathString& extension)
+	{
+		return extension == PATH ("obj") || extension == PATH ("fbx");
+	}
+
+	bool AssetImporter::IsSupported2D (const PathString& extension)
+	{
+		return extension == PATH ("jpg") || extension == PATH ("jpeg") ||
+			extension == PATH ("png") || extension == PATH ("tga") || extension == PATH ("hdr");
+	}
+
+	bool AssetImporter::IsSupportedAudio (const PathString& extension)
+	{
+		return extension == PATH ("wav");
+	}
+
 	std::shared_ptr<Shader> AssetImporter::LoadShader (const PathString& path)
 	{
 		auto shader = std::make_shared<Shader> ();
@@ -253,7 +249,7 @@ namespace GameEngine
 		return shader;
 	}
 
-	std::shared_ptr<Mesh> AssetImporter::ImportMesh (const PathString& path)
+	std::shared_ptr<Mesh> AssetImporter::Import3D (const PathString& path)
 	{
 		std::unique_ptr<int8[]> fileData;
 		int64 fileSize;
@@ -272,7 +268,9 @@ namespace GameEngine
 		}
 		else if (extension == PATH ("fbx"))
 		{
+			FBXImporter::Start ();
 			meshData = FBXImporter::Import (fileData.get (), fileSize);
+			FBXImporter::Shutdown ();
 		}
 
 		auto mesh = std::make_shared<Mesh> ();
@@ -296,7 +294,7 @@ namespace GameEngine
 		return mesh;
 	}
 
-	std::shared_ptr<Texture2D> AssetImporter::ImportTexture2D (const PathString& path, bool bGenerateMipMaps)
+	std::shared_ptr<Texture2D> AssetImporter::Import2D (const PathString& path, bool bGenerateMipMaps)
 	{
 		std::unique_ptr<int8[]> fileData;
 		int64 fileSize;
@@ -362,7 +360,7 @@ namespace GameEngine
 		return texture2D;
 	}
 
-	std::shared_ptr<AudioClip> AssetImporter::ImportAudioClip (const PathString& path)
+	std::shared_ptr<AudioClip> AssetImporter::ImportAudio (const PathString& path)
 	{
 		std::unique_ptr<int8[]> fileData;
 		int64 fileSize;
