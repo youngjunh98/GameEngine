@@ -1,12 +1,17 @@
 ﻿#include "Editor.h"
 #include "Menu/FileMenu.h"
 #include "Menu/WindowMenu.h"
-#include "Editor/Core/DearImGui.h"
-#include "Editor/Core/EditorGUI.h"
+#include "Window/GameWindow.h"
+#include "Window/InspectorWindow.h"
+#include "Window/ProjectWindow.h"
+#include "Window/SceneWindow.h"
+#include "Window/ViewportWindow.h"
 #include "Engine/RI/RenderingInterface.h"
 #include "Engine/Engine/Engine.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Rendering/GlobalRenderer.h"
+#include "Editor/Core/DearImGui.h"
+#include "Editor/Core/EditorGUI.h"
 
 namespace GameEngine
 {
@@ -45,6 +50,12 @@ namespace GameEngine
 
 		m_menus.push_back (std::make_unique<FileMenu> ());
 		m_menus.push_back (std::make_unique<WindowMenu> ());
+
+		OpenWindow<GameWindow> ();
+		OpenWindow<InspectorWindow> ();
+		OpenWindow<ProjectWindow> ();
+		OpenWindow<SceneWindow> ();
+		OpenWindow<ViewportWindow> ();
 
 		return true;
 	}
