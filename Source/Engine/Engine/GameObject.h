@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "Type.h"
-#include "Engine/Core/Object.h"
+#include "Engine/Core/Object/Object.h"
 #include "Engine/Engine/EngineMacro.h"
 
 namespace GameEngine

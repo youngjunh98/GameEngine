@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Engine/Core/CoreMinimal.h"
-#include "Engine/Core/Object.h"
+#include "Engine/Core/Object/Object.h"
 
 namespace GameEngine
 {

@@ -1,10 +1,9 @@
-#ifndef INCLUDE_SHADER_PROGRAM
-#define INCLUDE_SHADER_PROGRAM
+#pragma once
 
 #include "Engine/Core/CoreForward.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
-#include "Engine/Core/Object.h"
+#include "Engine/Core/Object/Object.h"
 
 namespace GameEngine
 {
@@ -67,5 +66,3 @@ namespace GameEngine
 		RenderingResourcePtr<RI_ShaderConstantBuffer> m_geometryShaderParameterBuffer;
 	};
 }
-
-#endif

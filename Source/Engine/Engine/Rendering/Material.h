@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "Type.h"
-#include "Engine/Core/Object.h"
+#include "Engine/Core/Object/Object.h"
 #include "Engine/Engine/EngineMacro.h"
 #include "Engine/Engine/Rendering/Shader.h"
 #include "Engine/Engine/Rendering/Texture2D.h"

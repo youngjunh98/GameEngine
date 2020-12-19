@@ -6,7 +6,7 @@
 #include "Engine/Core/CoreMinimal.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
-#include "Engine/Core/Object.h"
+#include "Engine/Core/Object/Object.h"
 
 namespace GameEngine
 {

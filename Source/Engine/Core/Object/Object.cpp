@@ -32,6 +32,13 @@ namespace GameEngine
 		return m_bAlive;
 	}
 
+	std::shared_ptr<Object> Object::InstantiateByTypeName (const std::string& typeName)
+	{
+		ObjectFactoryFunction factoryFunction = ObjectFactory::GetFunction (typeName);
+		std::shared_ptr<Object> instance = factoryFunction ();
+		return instance;
+	}
+
 	void Object::OnSerialize (Json::Json& json) const
 	{
 		json["type"] = "object";

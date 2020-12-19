@@ -4,7 +4,7 @@
 
 #include "Type.h"
 #include "Vertex.h"
-#include "Engine/Core/Object.h"
+#include "Engine/Core/Object/Object.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
 
 namespace GameEngine
