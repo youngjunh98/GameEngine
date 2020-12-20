@@ -60,7 +60,6 @@ width="30%" height="30%" title="PBR Metal" alt="PBR Metal"></img>
 ## Roadmap
 
 ### Working
-- Engine과 Editor 완전 분리하기.
 - Thread Job
 - Particle effect
 - Asset Manager 개선하기.
