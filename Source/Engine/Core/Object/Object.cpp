@@ -41,12 +41,11 @@ namespace GameEngine
 
 	void Object::OnSerialize (Json::Json& json) const
 	{
-		json["type"] = "object";
-		json["name"] = m_name;
+		Json::JsonSerializer::Serialize (json, "name", m_name);
 	}
 
 	void Object::OnDeserialize (const Json::Json& json)
 	{
-		json.at ("name").get_to (m_name);
+		m_name = Json::JsonSerializer::Deserialize<std::string> (json, "name");
 	}
 }

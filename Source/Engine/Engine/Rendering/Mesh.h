@@ -12,6 +12,8 @@ namespace GameEngine
 	class Mesh : public Object
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Mesh)
+
 		Mesh () : m_subMeshList () {}
 		virtual ~Mesh () {}
 

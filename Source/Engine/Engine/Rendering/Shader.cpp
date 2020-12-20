@@ -5,6 +5,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (Shader)
+
 	bool Shader::Initialize (const std::wstring& sourcePath)
 	{
 		RenderingInterface& renderingInterface = RenderingInterface::GetModule ();

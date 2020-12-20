@@ -6,7 +6,9 @@
 
 namespace GameEngine
 {
-	Camera* Camera::Main = nullptr;
+	REGISTER_OBJECT_CPP (Camera)
+
+		Camera* Camera::Main = nullptr;
 
 	Camera::Camera () : Component ("Camera"),
 		m_mode (ECameraMode::Perspective),
@@ -134,7 +136,7 @@ namespace GameEngine
 		Vector4 nearTopRight = Vector4 (nearHalfWidth, nearHalfHeight, nearDistance, 1.0f) * inverseView;
 		Vector4 nearBottomLeft = Vector4 (-nearHalfWidth, -nearHalfHeight, nearDistance, 1.0f) * inverseView;
 		Vector4 nearBottomRight = Vector4 (nearHalfWidth, -nearHalfHeight, nearDistance, 1.0f) * inverseView;
-		
+
 		corners.m_nearTopLeft = Vector3 (nearTopLeft.m_x, nearTopLeft.m_y, nearTopLeft.m_z);
 		corners.m_nearTopRight = Vector3 (nearTopRight.m_x, nearTopRight.m_y, nearTopRight.m_z);
 		corners.m_nearBottomLeft = Vector3 (nearBottomLeft.m_x, nearBottomLeft.m_y, nearBottomLeft.m_z);
@@ -178,25 +180,21 @@ namespace GameEngine
 	{
 		Component::OnSerialize (json);
 
-		json["type"] = "Camera";
-		json["mode"] = static_cast<int32> (m_mode);
-		json["fov"] = m_fieldOfView;
-		json["ortho size"] = m_orthographicSize;
-		json["near"] = m_near;
-		json["far"] = m_far;
+		Json::JsonSerializer::Serialize (json, "mode", static_cast<int32> (m_mode));
+		Json::JsonSerializer::Serialize (json, "fov", m_fieldOfView);
+		Json::JsonSerializer::Serialize (json, "ortho size", m_orthographicSize);
+		Json::JsonSerializer::Serialize (json, "near", m_near);
+		Json::JsonSerializer::Serialize (json, "far", m_far);
 	}
 
 	void Camera::OnDeserialize (const Json::Json& json)
 	{
 		Component::OnDeserialize (json);
 
-		int32 mode;
-		json.at ("mode").get_to (mode);
-		m_mode = static_cast<ECameraMode> (mode);
-
-		json.at ("fov").get_to (m_fieldOfView);
-		json.at ("ortho size").get_to (m_orthographicSize);
-		json.at ("near").get_to (m_near);
-		json.at ("far").get_to (m_far);
+		m_mode = static_cast<ECameraMode> (Json::JsonSerializer::Deserialize<int32> (json, "mode"));
+		m_fieldOfView = Json::JsonSerializer::Deserialize<float> (json, "fov");
+		m_orthographicSize = Json::JsonSerializer::Deserialize<float> (json, "ortho size");
+		m_near = Json::JsonSerializer::Deserialize<float> (json, "near");
+		m_far = Json::JsonSerializer::Deserialize<float> (json, "far");
 	}
 }

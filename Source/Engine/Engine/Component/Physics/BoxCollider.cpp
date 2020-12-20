@@ -4,6 +4,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (BoxCollider)
+
 	BoxCollider::BoxCollider () : Collider ("Box Collider")
 	{
 	}

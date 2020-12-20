@@ -8,6 +8,8 @@ namespace GameEngine
 	class ENGINE_API SphereCollider : public Collider
 	{
 	public:
+		REGISTER_OBJECT_HEADER (SphereCollider)
+
 		SphereCollider ();
 		virtual ~SphereCollider ();
 

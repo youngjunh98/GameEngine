@@ -10,6 +10,8 @@ namespace GameEngine
 	class AudioClip : public Object
 	{
 	public:
+		REGISTER_OBJECT_HEADER (AudioClip)
+
 		AudioClip ();
 		virtual ~AudioClip ();
 

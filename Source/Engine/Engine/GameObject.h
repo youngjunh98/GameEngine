@@ -17,7 +17,9 @@ namespace GameEngine
 	class ENGINE_API GameObject : public Object
 	{
 	public:
-		GameObject (const std::string& name);
+		REGISTER_OBJECT_HEADER (GameObject)
+
+		GameObject (const std::string& name = "Game Object");
 		virtual ~GameObject ();
 
 		void Init ();

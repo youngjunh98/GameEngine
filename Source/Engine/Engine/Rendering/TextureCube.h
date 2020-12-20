@@ -7,6 +7,8 @@ namespace GameEngine
 	class TextureCube : public Texture
 	{
 	public:
+		REGISTER_OBJECT_HEADER (TextureCube)
+
 		TextureCube ();
 		virtual ~TextureCube ();
 

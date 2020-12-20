@@ -17,6 +17,8 @@ namespace GameEngine
 	class ENGINE_API Rigidbody : public Component
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Rigidbody)
+
 		friend Physics;
 
 		Rigidbody ();

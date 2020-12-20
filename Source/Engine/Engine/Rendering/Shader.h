@@ -10,6 +10,8 @@ namespace GameEngine
 	class Shader : public Object
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Shader)
+
 		Shader () {}
 		virtual ~Shader () {}
 

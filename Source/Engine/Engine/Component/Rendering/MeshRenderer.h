@@ -9,6 +9,8 @@ namespace GameEngine
 	class ENGINE_API MeshRenderer : public Renderer
 	{
 	public:
+		REGISTER_OBJECT_HEADER (MeshRenderer)
+
 		MeshRenderer ();
 		virtual ~MeshRenderer ();
 

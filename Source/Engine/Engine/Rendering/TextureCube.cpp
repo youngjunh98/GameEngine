@@ -3,6 +3,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (TextureCube)
+
 	TextureCube::TextureCube ()
 	{
 	}

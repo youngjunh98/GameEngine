@@ -23,6 +23,8 @@ namespace GameEngine
 	class ENGINE_API Light : public Component
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Light)
+
 		Light ();
 		virtual ~Light ();
 

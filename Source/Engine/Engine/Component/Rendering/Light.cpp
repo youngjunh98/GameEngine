@@ -3,7 +3,9 @@
 
 namespace GameEngine
 {
-	Light::Light () : Component ("Light"),
+	REGISTER_OBJECT_CPP (Light)
+
+		Light::Light () : Component ("Light"),
 		m_type (ELightType::Directional),
 		m_color (Vector4::One),
 		m_intensity (1.0f),
@@ -127,37 +129,25 @@ namespace GameEngine
 	{
 		Component::OnSerialize (json);
 
-		json["type"] = "Light";
-		json["light type"] = static_cast<int32> (m_type);
-		json["color"] = Json::JsonSerializer::Serialize<Vector4> (m_color);
-		json["intensity"] = m_intensity;
-		json["range"] = m_range;
-		json["spot angle"] = m_spotAngle;
-		json["shadow type"] = static_cast<int32> (m_shadowType);
-		json["shadow intensity"] = m_shadowIntensity;
-		json["shadow depth bias"] = m_shadowDepthBias;
+		Json::JsonSerializer::Serialize (json, "light type", static_cast<int32> (m_type));
+		Json::JsonSerializer::Serialize (json, "color", m_color);
+		Json::JsonSerializer::Serialize (json, "intensity", m_intensity);
+		Json::JsonSerializer::Serialize (json, "range", m_range);
+		Json::JsonSerializer::Serialize (json, "spot angle", m_spotAngle);
+		Json::JsonSerializer::Serialize (json, "shadow type", static_cast<int32> (m_shadowType));
+		Json::JsonSerializer::Serialize (json, "shadow intensity", m_shadowIntensity);
+		Json::JsonSerializer::Serialize (json, "shadow depth bias", m_shadowDepthBias);
 	}
 
 	void Light::OnDeserialize (const Json::Json& json)
 	{
-		int32 type;
-		json.at ("light type").get_to (type);
-		m_type = static_cast<ELightType> (type);
-
-		m_color.m_x = json.at ("color")[0];
-		m_color.m_y = json.at ("color")[1];
-		m_color.m_z = json.at ("color")[2];
-		m_color.m_w = json.at ("color")[3];
-
-		json.at ("intensity").get_to (m_intensity);
-		json.at ("range").get_to (m_range);
-		json.at ("spot angle").get_to (m_spotAngle);
-
-		int32 shadowtype;
-		json.at ("shadow type").get_to (shadowtype);
-		m_shadowType = static_cast<EShadowType> (shadowtype);
-
-		json.at ("shadow intensity").get_to (m_shadowIntensity);
-		json.at ("shadow depth bias").get_to (m_shadowDepthBias);
+		m_type = static_cast<ELightType> (Json::JsonSerializer::Deserialize<int32> (json, "light type"));
+		m_color = Json::JsonSerializer::Deserialize<Vector4> (json, "color");
+		m_intensity = Json::JsonSerializer::Deserialize<float> (json, "intensity");
+		m_range = Json::JsonSerializer::Deserialize<float> (json, "range");
+		m_spotAngle = Json::JsonSerializer::Deserialize<float> (json, "spot angle");
+		m_shadowType = static_cast<EShadowType> (Json::JsonSerializer::Deserialize<int32> (json, "shadow type"));
+		m_shadowIntensity = Json::JsonSerializer::Deserialize<float> (json, "shadow intensity");
+		m_shadowDepthBias = Json::JsonSerializer::Deserialize<float> (json, "shadow depth bias");
 	}
 }

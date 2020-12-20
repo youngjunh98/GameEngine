@@ -7,6 +7,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (Rigidbody)
+
 	Rigidbody::Rigidbody () : Component ("Rigidbody"),
 		m_mass (1.0f),
 		m_linearDamping (0.0f),

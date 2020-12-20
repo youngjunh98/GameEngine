@@ -35,7 +35,7 @@ namespace GameEngine
                 auto material = std::make_shared<Material> ();
                 material->SetShader (AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/StandardShader.hlsl")));
 
-                std::string json = Json::JsonSerializer::Serialize (*material).dump ();
+                std::string json = Json::JsonSerializer::SerializeObject (*material).dump ();
                 int64 jsonSize = json.size ();
                 file.Write (json.data (), jsonSize);
 

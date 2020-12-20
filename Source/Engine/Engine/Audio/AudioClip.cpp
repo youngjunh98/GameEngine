@@ -2,6 +2,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (AudioClip)
+
 	AudioClip::AudioClip () : m_channelCount (0), m_sampleFrameCount (0), m_sampleRate(0.0f)
 	{
 	}

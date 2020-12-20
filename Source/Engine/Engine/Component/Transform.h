@@ -9,6 +9,8 @@ namespace GameEngine
 	class ENGINE_API Transform : public Component
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Transform)
+		
 		Transform ();
 		virtual ~Transform ();
 

@@ -7,6 +7,8 @@ namespace GameEngine
 	class Texture2D : public Texture
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Texture2D)
+
 		Texture2D ();
 		virtual ~Texture2D ();
 

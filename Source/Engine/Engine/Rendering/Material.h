@@ -15,6 +15,8 @@ namespace GameEngine
 	class ENGINE_API Material : public Object
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Material)
+
 		Material () : Object (), m_shader (nullptr) {}
 		virtual ~Material () {}
 

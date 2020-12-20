@@ -8,7 +8,7 @@
 #include "Engine/Core/JSON/JsonSerializer.h"
 
 #define REGISTER_OBJECT_HEADER(OBJECT_CLASS_NAME)\
-static ::std::string GetTypeName () { return #OBJECT_CLASS_NAME; }
+virtual ::std::string GetTypeName () const override { return #OBJECT_CLASS_NAME; }
 
 #define REGISTER_OBJECT_CPP(OBJECT_CLASS_NAME)\
 REGISTER_OBJECT_FACTORY (OBJECT_CLASS_NAME)\
@@ -28,15 +28,9 @@ namespace GameEngine
 
 		bool IsAlive () const;
 
-		static std::shared_ptr<Object> InstantiateByTypeName (const std::string& typeName);
+		virtual std::string GetTypeName () const = 0;
 
-		template<typename TObject>
-		static std::shared_ptr<TObject> Instantiate ()
-		{
-			std::string typeName = TObject::GetTypeName ();
-			std::shared_ptr<Object> instance = InstantiateByTypeName (typeName);
-			return std::dynamic_pointer_cast<TObject> (instance);
-		}
+		static std::shared_ptr<Object> InstantiateByTypeName (const std::string& typeName);
 
 		virtual void OnRenderEditor () {}
 		virtual void OnSerialize (Json::Json& json) const;

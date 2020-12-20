@@ -77,13 +77,8 @@ namespace GameEngine
 
 		for (auto& gameObject : m_gameObjects)
 		{
-			auto serialized = Json::JsonSerializer::Serialize<GameObject> (*gameObject);
+			auto serialized = Json::JsonSerializer::SerializeObject<GameObject> (*gameObject);
 			sceneData["gameObjects"].push_back (serialized);
-		}
-
-		for (auto& gameObjectData : sceneData["gameObjects"])
-		{
-			std::string string = gameObjectData.dump ();
 		}
 	}
 

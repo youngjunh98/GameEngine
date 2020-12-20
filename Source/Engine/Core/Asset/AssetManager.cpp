@@ -41,7 +41,7 @@ namespace GameEngine
 
 		if (file.IsOpen ())
 		{
-			std::string assetData = Json::JsonSerializer::Serialize (*asset).dump ();
+			std::string assetData = Json::JsonSerializer::SerializeObject (*asset).dump ();
 			file.Write (assetData.data (), assetData.size ());
 		}
 	}

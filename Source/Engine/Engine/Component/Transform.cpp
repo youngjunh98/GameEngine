@@ -3,6 +3,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (Transform)
+
 	Transform::Transform () : Component ("Transform"),
 		m_position (Vector3::Zero), m_rotation (Quaternion::Identity), m_scale (Vector3::One)
 	{
@@ -106,27 +108,17 @@ namespace GameEngine
 	{
 		Component::OnSerialize (json);
 
-		json["type"] = "Transform";
-		json["position"] = Json::JsonSerializer::Serialize<Vector3> (m_position);
-		json["rotation"] = Json::JsonSerializer::Serialize<Quaternion> (m_rotation);
-		json["scale"] = Json::JsonSerializer::Serialize<Vector3> (m_scale);
+		Json::JsonSerializer::Serialize<Vector3> (json, "position", m_position);
+		Json::JsonSerializer::Serialize<Quaternion> (json, "rotation", m_rotation);
+		Json::JsonSerializer::Serialize<Vector3> (json, "scale", m_scale);
 	}
 
 	void Transform::OnDeserialize (const Json::Json& json)
 	{
 		Component::OnDeserialize (json);
 
-		m_position.m_x = json.at ("position")[0];
-		m_position.m_y = json.at ("position")[1];
-		m_position.m_z = json.at ("position")[2];
-
-		m_rotation.m_x = json.at ("rotation")[0];
-		m_rotation.m_y = json.at ("rotation")[1];
-		m_rotation.m_z = json.at ("rotation")[2];
-		m_rotation.m_w = json.at ("rotation")[3];
-
-		m_scale.m_x = json.at ("scale")[0];
-		m_scale.m_y = json.at ("scale")[1];
-		m_scale.m_z = json.at ("scale")[2];
+		m_position = Json::JsonSerializer::Deserialize<Vector3> (json, "position");
+		m_rotation = Json::JsonSerializer::Deserialize<Quaternion> (json, "rotation");
+		m_scale = Json::JsonSerializer::Deserialize<Vector3> (json, "scale");
 	}
 }

@@ -3,6 +3,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (SphereCollider)
+
 	SphereCollider::SphereCollider () : Collider ("Sphere Collider"),
 		m_radius (1.0f)
 	{

@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/Scene/Scene.h"
 #include "Component/Component.h"
 #include "Component/Transform.h"
@@ -11,6 +12,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (GameObject)
+
 	GameObject::GameObject (const std::string& name) : Object (name),
 		m_bActive (true), m_tag ("Untagged"), m_components (), m_transform (nullptr), m_scene (nullptr)
 	{
@@ -120,14 +123,13 @@ namespace GameEngine
 	void GameObject::OnSerialize (Json::Json& json) const
 	{
 		Object::OnSerialize (json);
-		
-		json["type"] = "GameObject";
-		json["tag"] = m_tag;
+
+		Json::JsonSerializer::Serialize (json, "tag", m_tag);
 		json["components"] = Json::Json::array ();
 
-		for (auto& component : m_components)
+		for (const std::shared_ptr<Component>& component : m_components)
 		{
-			auto serialized = Json::JsonSerializer::Serialize<Component> (*component);
+			Json::Json serialized = Json::JsonSerializer::SerializeObject<Component> (*component);
 			json["components"].push_back (serialized);
 		}
 	}
@@ -136,49 +138,30 @@ namespace GameEngine
 	{
 		Object::OnDeserialize (json);
 
-		json.at ("tag").get_to (m_tag);
+		m_tag = Json::JsonSerializer::Deserialize<std::string> (json, "tag");
 
-		if (json.find ("components") != json.end ())
+		if (json.contains ("components"))
 		{
-			for (auto& component : json.at ("components"))
+			for (auto& componentJson : json["components"].items ())
 			{
-				if (component["type"] == "Transform")
+				if (componentJson.value ()["type"] == "Transform")
 				{
-					m_components.at (0)->OnDeserialize (component);
+					m_components.at (0)->OnDeserialize (componentJson.value ());
 					continue;
 				}
-				else if (component["type"] == "Camera")
-				{
-					AddComponent<Camera> ();
-				}
-				else if (component["type"] == "MeshRenderer")
-				{
-					AddComponent<MeshRenderer> ();
-				}
-				else if (component["type"] == "Light")
-				{
-					AddComponent<Light> ();
-				}
-				else if (component["type"] == "Rigidbody")
-				{
-					AddComponent<Rigidbody> ();
-				}
-				else if (component["type"] == "Box Collider")
-				{
-					AddComponent<BoxCollider> ();
-				}
-				else if (component["type"] == "Sphere Collider")
-				{
-					AddComponent<SphereCollider> ();
-				}
 
-				m_components.at (m_components.size () - 1)->OnDeserialize (component);
+				std::shared_ptr<Component> component = Json::JsonSerializer::DeserializeObject<Component> (componentJson.value ());
+				AddComponentInternal (component);
 			}
 		}
 	}
 
 	void GameObject::AddComponentInternal (std::shared_ptr<Component> component)
 	{
+		if (component == nullptr)
+		{
+			return;
+		}
 		component->SetGameObject (*this);
 		component->OnInit ();
 

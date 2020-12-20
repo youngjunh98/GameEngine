@@ -3,6 +3,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (Mesh)
+
 	void Mesh::Destroy ()
 	{
 		Object::Destroy ();

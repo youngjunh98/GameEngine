@@ -7,6 +7,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (Material)
+
 	Shader* Material::GetShader () const
 	{
 		return m_shader;
@@ -424,7 +426,7 @@ namespace GameEngine
 			}
 			else if (typeName == "Vector4")
 			{
-				parameterInfo["value"] = Json::JsonSerializer::Serialize<Vector4> (GetVector4 (parameterName));
+				Json::JsonSerializer::Serialize<Vector4> (parameterInfo, "value", GetVector4 (parameterName));
 			}
 
 			json["parameters"].push_back (parameterInfo);

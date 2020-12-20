@@ -28,6 +28,8 @@ namespace GameEngine
 	class ENGINE_API Camera : public Component
 	{
 	public:
+		REGISTER_OBJECT_HEADER (Camera)
+
 		Camera ();
 		virtual ~Camera ();
 

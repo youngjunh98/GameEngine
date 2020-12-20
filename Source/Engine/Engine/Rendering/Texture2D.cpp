@@ -5,6 +5,8 @@
 
 namespace GameEngine
 {
+	REGISTER_OBJECT_CPP (Texture2D)
+
 	Texture2D::Texture2D ()
 	{
 	}

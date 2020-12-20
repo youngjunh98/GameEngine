@@ -8,6 +8,8 @@ namespace GameEngine
 	class ENGINE_API BoxCollider : public Collider
 	{
 	public:
+		REGISTER_OBJECT_HEADER (BoxCollider)
+
 		BoxCollider ();
 		virtual ~BoxCollider ();
 
