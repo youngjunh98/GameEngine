@@ -3,7 +3,6 @@
 #include "Engine/Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Component/Transform.h"
-#include "Engine/Engine/Component/Camera.h"
 #include "Engine/Engine/Component/Rendering/Light.h"
 #include "Engine/Engine/Component/Rendering/Renderer.h"
 
@@ -60,7 +59,7 @@ namespace GameEngine
 				Matrix4x4 toLightSpace = Matrix4x4::LookAt (position, position + forward, up);
 				Matrix4x4 toWorldSpace = toLightSpace.Inversed ();
 
-				FrustumCorners frustum = Camera::Main->CalculateFrustumCorners ();
+				FrustumCorners frustum = pipelineData.m_camera.m_frustum;
 				AABB frustumBound;
 
 				frustumBound.Include (toLightSpace.TransformPosition (frustum.m_nearTopLeft));

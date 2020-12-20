@@ -5,6 +5,7 @@
 #include "Type.h"
 #include "Engine/Core/Math/Matrix4x4.h"
 #include "Engine/Core/Math/Vector3.h"
+#include "Engine/Engine/Component/Camera.h"
 
 namespace GameEngine
 {
@@ -20,6 +21,7 @@ namespace GameEngine
             Vector3 m_position;
 			float m_near;
 			float m_far;
+			FrustumCorners m_frustum;
 		};
 
 		CameraData m_camera;

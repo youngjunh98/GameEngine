@@ -97,6 +97,7 @@ namespace GameEngine
                 GlobalRenderer::SetRenderTarget (m_renderTarget);
                 GlobalRenderer::SetDepthStencil (m_depthStencil);
 
+                float aspectRatio = m_renderSize.m_x / m_renderSize.m_y;
                 float fov = 60.0f;
                 float aspect = renderSize.m_x / renderSize.m_y;
                 float cameraNear = 0.001f;
@@ -104,7 +105,7 @@ namespace GameEngine
                 Matrix4x4 view = Matrix4x4::LookAt (m_cameraPosition, m_cameraPosition + cameraForward, cameraUp);
                 Matrix4x4 projection = Matrix4x4::Perspective (fov, aspect, cameraNear, cameraFar);
 
-                GlobalRenderer::RenderScene (scene , *renderPipeline, view, projection, m_cameraPosition, cameraNear, cameraFar);
+                GlobalRenderer::RenderScene (scene, *renderPipeline, view, projection, aspectRatio, m_cameraPosition, fov, cameraNear, cameraFar);
 
                 GlobalRenderer::SetRenderSize (oldSize);
                 GlobalRenderer::SetRenderTarget (oldRenderTarget);

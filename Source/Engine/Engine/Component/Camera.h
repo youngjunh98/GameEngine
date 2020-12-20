@@ -51,7 +51,7 @@ namespace GameEngine
 		float GetFar () const;
 		void SetFar (float zFar);
 
-		FrustumCorners CalculateFrustumCorners () const;
+		static FrustumCorners CalculateFrustumCorners (Matrix4x4 viewMatrix, float aspectRatio, float fieldOfView, float nearDistance, float farDistance);
 
 		virtual void OnRenderEditor () override;
 

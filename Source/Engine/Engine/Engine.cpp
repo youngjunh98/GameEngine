@@ -106,6 +106,7 @@ namespace GameEngine
 			}
 
 			SceneManager::GetInstance ().UpdateScene ();
+			GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 			GlobalRenderer::RenderScene (SceneManager::GetInstance ().GetScene ());
 			
 			for (auto postRenderEvent : m_postRenderEvents)

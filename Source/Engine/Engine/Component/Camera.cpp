@@ -120,34 +120,33 @@ namespace GameEngine
 		m_far = zFar;
 	}
 
-	FrustumCorners Camera::CalculateFrustumCorners () const
+	FrustumCorners Camera::CalculateFrustumCorners (Matrix4x4 viewMatrix, float aspectRatio, float fieldOfView, float nearDistance, float farDistance)
 	{
 		FrustumCorners corners;
 
-		Matrix4x4 inverseView = GetViewMatrix ().Inversed ();
-		float tangentHalfFOV = Math::Tan (0.5f * m_fieldOfView * Math::Deg2Rad);
-		float aspectRatio = GetAspectRatio ();
+		Matrix4x4 inverseView = viewMatrix.Inversed ();
+		float tangentHalfFOV = Math::Tan (0.5f * fieldOfView * Math::Deg2Rad);
 
-		float nearHalfHeight = tangentHalfFOV * m_near;
+		float nearHalfHeight = tangentHalfFOV * nearDistance;
 		float nearHalfWidth = nearHalfHeight * aspectRatio;
 
-		Vector4 nearTopLeft = Vector4 (-nearHalfWidth, nearHalfHeight, m_near, 1.0f) * inverseView;
-		Vector4 nearTopRight = Vector4 (nearHalfWidth, nearHalfHeight, m_near, 1.0f) * inverseView;
-		Vector4 nearBottomLeft = Vector4 (-nearHalfWidth, -nearHalfHeight, m_near, 1.0f) * inverseView;
-		Vector4 nearBottomRight = Vector4 (nearHalfWidth, -nearHalfHeight, m_near, 1.0f) * inverseView;
+		Vector4 nearTopLeft = Vector4 (-nearHalfWidth, nearHalfHeight, nearDistance, 1.0f) * inverseView;
+		Vector4 nearTopRight = Vector4 (nearHalfWidth, nearHalfHeight, nearDistance, 1.0f) * inverseView;
+		Vector4 nearBottomLeft = Vector4 (-nearHalfWidth, -nearHalfHeight, nearDistance, 1.0f) * inverseView;
+		Vector4 nearBottomRight = Vector4 (nearHalfWidth, -nearHalfHeight, nearDistance, 1.0f) * inverseView;
 		
 		corners.m_nearTopLeft = Vector3 (nearTopLeft.m_x, nearTopLeft.m_y, nearTopLeft.m_z);
 		corners.m_nearTopRight = Vector3 (nearTopRight.m_x, nearTopRight.m_y, nearTopRight.m_z);
 		corners.m_nearBottomLeft = Vector3 (nearBottomLeft.m_x, nearBottomLeft.m_y, nearBottomLeft.m_z);
 		corners.m_nearBottomRight = Vector3 (nearBottomRight.m_x, nearBottomRight.m_y, nearBottomRight.m_z);
 
-		float farHalfHeight = tangentHalfFOV * m_far;
+		float farHalfHeight = tangentHalfFOV * farDistance;
 		float farHalfWidth = farHalfHeight * aspectRatio;
 
-		Vector4 farTopLeft = Vector4 (-farHalfWidth, farHalfHeight, m_far, 1.0f) * inverseView;
-		Vector4 farTopRight = Vector4 (farHalfWidth, farHalfHeight, m_far, 1.0f) * inverseView;
-		Vector4 farBottomLeft = Vector4 (-farHalfWidth, -farHalfHeight, m_far, 1.0f) * inverseView;
-		Vector4 farBottomRight = Vector4 (farHalfWidth, -farHalfHeight, m_far, 1.0f) * inverseView;
+		Vector4 farTopLeft = Vector4 (-farHalfWidth, farHalfHeight, farDistance, 1.0f) * inverseView;
+		Vector4 farTopRight = Vector4 (farHalfWidth, farHalfHeight, farDistance, 1.0f) * inverseView;
+		Vector4 farBottomLeft = Vector4 (-farHalfWidth, -farHalfHeight, farDistance, 1.0f) * inverseView;
+		Vector4 farBottomRight = Vector4 (farHalfWidth, -farHalfHeight, farDistance, 1.0f) * inverseView;
 
 		corners.m_farTopLeft = Vector3 (farTopLeft.m_x, farTopLeft.m_y, farTopLeft.m_z);
 		corners.m_farTopRight = Vector3 (farTopRight.m_x, farTopRight.m_y, farTopRight.m_z);

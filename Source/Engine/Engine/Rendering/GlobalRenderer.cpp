@@ -321,14 +321,17 @@ namespace GameEngine
 			Vector3 cameraPosition = camera->GetGameObject ().GetComponent<Transform> ()->GetPosition ();
 			Matrix4x4 view = camera->GetViewMatrix ();
 			Matrix4x4 projection = camera->GetProjectionMatrix ();
+			float cameraAspect = camera->GetAspectRatio ();
+			float cameraFov = camera->GetFieldOfView ();
 			float cameraNear = camera->GetNear ();
 			float cameraFar = camera->GetFar ();
 
-			RenderScene (scene, pipeline, view, projection, cameraPosition, cameraNear, cameraFar);
+			RenderScene (scene, pipeline, view, projection, cameraAspect, cameraPosition, cameraFov, cameraNear, cameraFar);
 		}
 	}
 
-	void GlobalRenderer::RenderScene (Scene* scene, RenderPipeline& pipeline, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Vector3 cameraPosition, float cameraNear, float cameraFar)
+	void GlobalRenderer::RenderScene (Scene* scene, RenderPipeline& pipeline, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, float aspectRatio,
+		Vector3 cameraPosition, float cameraFov, float cameraNear, float cameraFar)
 	{
 		const auto& gameObjects = scene->GetGameObjects ();
 		std::vector<Renderer*> renderers;
@@ -354,6 +357,7 @@ namespace GameEngine
 		pipelineData.m_camera.m_position = cameraPosition;
 		pipelineData.m_camera.m_near = cameraNear;
 		pipelineData.m_camera.m_far = cameraFar;
+		pipelineData.m_camera.m_frustum = Camera::CalculateFrustumCorners (viewMatrix, aspectRatio, cameraFov, cameraNear, cameraFar);
 		pipelineData.m_renderers = renderers;
 		pipelineData.m_lights = lights;
 

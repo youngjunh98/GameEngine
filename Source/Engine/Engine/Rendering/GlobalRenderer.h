@@ -60,7 +60,7 @@ namespace GameEngine
 	private:
 		GlobalRenderer ();
 		~GlobalRenderer ();
-		
+
 		static GlobalRenderer& GetInstance ();
 
 	public:
@@ -71,7 +71,8 @@ namespace GameEngine
 		static void Shutdown ();
 
 		static void RenderScene (Scene* scene);
-		static void RenderScene (Scene* scene, RenderPipeline& pipeline, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Vector3 cameraPosition, float cameraNear, float cameraFar);
+		static void RenderScene (Scene* scene, RenderPipeline& pipeline, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, float aspectRatio,
+			Vector3 cameraPosition, float cameraFov, float cameraNear, float cameraFar);
 
 		static void PresentSwapChain ();
 		static bool ResizeSwapChain (uint32 width, uint32 height, bool bFullscreen);
