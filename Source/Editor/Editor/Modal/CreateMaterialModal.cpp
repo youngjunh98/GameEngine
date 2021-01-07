@@ -4,6 +4,7 @@
 #include "Engine/Core/File/FileSystem.h"
 #include "Engine/Core/File/File.h"
 #include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/Rendering/Material.h"
 
 namespace GameEngine
@@ -35,9 +36,9 @@ namespace GameEngine
                 auto material = std::make_shared<Material> ();
                 material->SetShader (AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/StandardShader.hlsl")));
 
-                std::string json = Json::JsonSerializer::SerializeObject (*material).dump ();
-                int64 jsonSize = json.size ();
-                file.Write (json.data (), jsonSize);
+                Json::Json assetJson = Json::JsonSerializer::ObjectToJson (*material);
+                std::string assetData = assetJson.dump ();
+                file.Write (assetData.data (), assetData.size ());
 
                 AssetInfo asset;
                 asset.m_type = EAssetType::Material;

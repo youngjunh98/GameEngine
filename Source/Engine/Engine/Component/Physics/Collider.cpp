@@ -1,4 +1,5 @@
 #include "Collider.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Component/Transform.h"
 
@@ -33,12 +34,10 @@ namespace GameEngine
 
 	void Collider::OnInit ()
 	{
-		m_bTrigger = false;
-		m_offset = Vector3::Zero;
-		m_attachedRigidbody = nullptr;
+		Component::OnInit ();
 
-		m_physxShape = nullptr;
-		m_physxRigidStatic = nullptr;
+		SetTrigger (m_bTrigger);
+		SetOffset (m_offset);
 	}
 
 	void Collider::OnStart ()
@@ -68,7 +67,7 @@ namespace GameEngine
 
 			if (m_physxRigidStatic == nullptr)
 			{
-				g_physics.CreateRigidStatic (*this, position, rotation);
+				g_physics.CreateRigidStatic (*this, position, Quaternion::Identity);
 			}
 
 			physx::PxTransform physxTransform;
@@ -94,24 +93,20 @@ namespace GameEngine
 	void Collider::SetTrigger (bool bIsTrigger)
 	{
 		m_bTrigger = bIsTrigger;
-
-		if (m_physxShape != nullptr)
-		{
-			physx::PxShapeFlags flags = m_physxShape->getFlags ();
+		physx::PxShapeFlags flags = GetShape ()->getFlags ();
 			
-			if (bIsTrigger)
-			{
-				flags.clear (physx::PxShapeFlag::eSIMULATION_SHAPE);
-				flags.set (physx::PxShapeFlag::eTRIGGER_SHAPE);		
-			}
-			else
-			{
-				flags.clear (physx::PxShapeFlag::eTRIGGER_SHAPE);
-				flags.set (physx::PxShapeFlag::eSIMULATION_SHAPE);
-			}
-
-			m_physxShape->setFlags (flags);
+		if (bIsTrigger)
+		{
+			flags.clear (physx::PxShapeFlag::eSIMULATION_SHAPE);
+			flags.set (physx::PxShapeFlag::eTRIGGER_SHAPE);		
 		}
+		else
+		{
+			flags.clear (physx::PxShapeFlag::eTRIGGER_SHAPE);
+			flags.set (physx::PxShapeFlag::eSIMULATION_SHAPE);
+		}
+
+		GetShape ()->setFlags (flags);
 	}
 
 	Vector3 Collider::GetOffset () const
@@ -122,11 +117,7 @@ namespace GameEngine
 	void Collider::SetOffset (Vector3 offset)
 	{
 		m_offset = offset;
-
-		if (m_physxShape != nullptr)
-		{
-			m_physxShape->setLocalPose (physx::PxTransform (offset.m_x, offset.m_y, offset.m_z));
-		}
+		GetShape ()->setLocalPose (physx::PxTransform (offset.m_x, offset.m_y, offset.m_z));
 	}
 
 	Rigidbody* Collider::GetAttachedRigidbody () const
@@ -137,5 +128,21 @@ namespace GameEngine
 	void Collider::SetAttachedRigidbody (Rigidbody& rigidbody)
 	{
 		m_attachedRigidbody = &rigidbody;
+	}
+
+	void Collider::OnSerialize (Json::Json& json) const
+	{
+		Component::OnSerialize (json);
+
+		Json::JsonSerializer::Serialize (json, "trigger", m_bTrigger);
+		Json::JsonSerializer::Serialize (json, "offset", m_offset);
+	}
+
+	void Collider::OnDeserialize (const Json::Json& json)
+	{
+		Component::OnDeserialize (json);
+
+		SetTrigger (Json::JsonSerializer::Deserialize<bool> (json, "trigger"));
+		SetOffset (Json::JsonSerializer::Deserialize<Vector3> (json, "offset"));
 	}
 }

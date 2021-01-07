@@ -18,7 +18,8 @@ namespace GameEngine
 		bool IsAlphaChannel () const;
 
 		ERenderingResourceFormat GetFormat () const;
-		int32 GetRowPitch () const;
+		uint32 GetDataSizeInBytes () const;
+		uint32 GetRowSizeInBytes () const;
 
 		// Pointer to Image Data
 		void* m_data;

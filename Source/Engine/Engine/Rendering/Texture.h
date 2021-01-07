@@ -1,12 +1,13 @@
-#ifndef INCLUDE_TEXTURE
-#define INCLUDE_TEXTURE
+#pragma once
 
 #include <vector>
+#include <memory>
 
-#include "Engine/Core/CoreMinimal.h"
+#include "Type.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
 #include "Engine/Core/Object/Object.h"
+#include "Engine/Engine/Asset/AssetData.h"
 
 namespace GameEngine
 {
@@ -19,6 +20,7 @@ namespace GameEngine
 		Texture3D
 	};
 
+	// For texture cube (will be deleted next commit)
 	struct TextureResourceData
 	{
 		void* m_data;
@@ -47,7 +49,12 @@ namespace GameEngine
 		virtual ERenderingResourceFormat GetFormat () const;
 		virtual void SetFormat (ERenderingResourceFormat format);
 
-		virtual bool UpdateTextureResource (const std::vector<TextureResourceData>& resourceData) = 0;
+		void SetTextureData (const std::vector<TextureData>& textureData);
+		//virtual bool UpdateTextureResource () = 0;
+
+		// For texture cube (will be deleted next commit)
+		virtual bool UpdateTextureResource () { return false; }
+		virtual bool UpdateTextureResource (const std::vector<TextureResourceData>& resourceData) { return false; }
 
 		EFilterMode GetFilterMode () const;
 		void SetFilterMode (EFilterMode filterMode);
@@ -60,10 +67,15 @@ namespace GameEngine
 
 		bool UpdateSamplerResource ();
 
-		RI_ShaderResourceView* GetSRV () const;
+		RI_ShaderResourceView* GetTextureResource () const;
 		RI_Sampler* GetSampler () const;
 
+		virtual void OnSerialize (Json::Json& json) const override;
+		virtual void OnDeserialize (const Json::Json& json) override;
+
 	protected:
+		std::vector<TextureData> m_data;
+
 		uint32 m_width;
 		uint32 m_height;
 		uint32 m_mipMapCount;
@@ -77,5 +89,3 @@ namespace GameEngine
 		RenderingResourcePtr<RI_Sampler> m_sampler;
 	};
 }
-
-#endif

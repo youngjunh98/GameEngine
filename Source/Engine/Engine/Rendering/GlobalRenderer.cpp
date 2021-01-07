@@ -742,31 +742,31 @@ namespace GameEngine
 			{
 				if (shader->IsShaderResourceExist (EShaderStage::Vertex, name))
 				{
-					instance.m_ri->BindVertexShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name).m_bindIndex);
+					instance.m_ri->BindVertexShaderResource (texture->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name).m_bindIndex);
 					instance.m_ri->BindVertexShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Vertex, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Pixel, name))
 				{
-					instance.m_ri->BindPixelShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name).m_bindIndex);
+					instance.m_ri->BindPixelShaderResource (texture->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name).m_bindIndex);
 					instance.m_ri->BindPixelShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Hull, name))
 				{
-					instance.m_ri->BindHullShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Hull, name).m_bindIndex);
+					instance.m_ri->BindHullShaderResource (texture->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Hull, name).m_bindIndex);
 					instance.m_ri->BindHullShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Hull, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Domain, name))
 				{
-					instance.m_ri->BindDomainShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Domain, name).m_bindIndex);
+					instance.m_ri->BindDomainShaderResource (texture->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Domain, name).m_bindIndex);
 					instance.m_ri->BindDomainShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Domain, name + "Sampler").m_bindIndex);
 				}
 
 				if (shader->IsShaderResourceExist (EShaderStage::Geometry, name))
 				{
-					instance.m_ri->BindGeometryShaderResource (texture->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name).m_bindIndex);
+					instance.m_ri->BindGeometryShaderResource (texture->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name).m_bindIndex);
 					instance.m_ri->BindGeometryShaderSampler (texture->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Geometry, name + "Sampler").m_bindIndex);
 				}
 			}
@@ -797,7 +797,7 @@ namespace GameEngine
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTexture"))
 		{
-			instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSRV (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
+			instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTextureSampler"))
@@ -936,7 +936,7 @@ namespace GameEngine
 
 		instance.m_ri->SetInputLayout (instance.m_skyboxMaterial->GetShader ()->GetInputLayout ());
 		instance.m_ri->BindVertexShaderConstantBuffer (instance.m_constantBufferPerCamera.get (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
-		instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSRV (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "Skybox").m_bindIndex);
+		instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetTextureResource (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "Skybox").m_bindIndex);
 		instance.m_ri->BindPixelShaderSampler (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSampler (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "SkyboxSampler").m_bindIndex);
 
 		DrawVertices (skyMesh->GetVertexBufferResource (0), skyMesh->GetIndexBufferResource (0));

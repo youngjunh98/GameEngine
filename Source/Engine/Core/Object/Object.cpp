@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 
 namespace GameEngine
 {

@@ -31,6 +31,12 @@ namespace GameEngine
 
 		Rigidbody* GetAttachedRigidbody () const;
 		void SetAttachedRigidbody (Rigidbody& rigidbody);
+		
+		virtual void OnSerialize (Json::Json& json) const override;
+		virtual void OnDeserialize (const Json::Json& json) override;
+
+	protected:
+		virtual physx::PxShape* GetShape () = 0;
 
 	protected:
 		bool m_bTrigger;

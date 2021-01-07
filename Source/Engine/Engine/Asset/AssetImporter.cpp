@@ -1,9 +1,5 @@
-#include <fstream>
-#include <vector>
-#include <cwctype>
-#include <stack>
-
 #include "AssetImporter.h"
+#include "AssetData.h"
 #include "Engine/Core/Asset/AssetManager.h"
 #include "Engine/Core/Asset/3D/OBJImporter.h"
 #include "Engine/Core/Asset/3D/FbxImporter.h"
@@ -153,7 +149,7 @@ namespace GameEngine
 			{
 				TextureResourceData data;
 				data.m_data = cube[i]->m_data;
-				data.m_dataPitch = cube[i]->GetRowPitch ();
+				data.m_dataPitch = cube[i]->GetRowSizeInBytes ();
 
 				textureData.push_back (data);
 
@@ -168,7 +164,7 @@ namespace GameEngine
 
 					TextureResourceData mipMapData;
 					mipMapData.m_data = mipMap->m_data;
-					mipMapData.m_dataPitch = mipMap->GetRowPitch ();
+					mipMapData.m_dataPitch = mipMap->GetRowSizeInBytes ();
 
 					textureData.push_back (mipMapData);
 					mipMaps.push_back (mipMap);
@@ -304,46 +300,49 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		auto image = std::make_shared<StbImage>();
+		StbImage image;
 
-		if (StbImageImporter::Import (*image, fileData.get (), fileSize, true, false) == false)
+		if (StbImageImporter::Import (image, fileData.get (), fileSize, true, false) == false)
 		{
 			return nullptr;
 		}
 
-		TextureResourceData data;
-		data.m_data = image->m_data;
-		data.m_dataPitch = image->GetRowPitch ();
+		uint8* imageData = static_cast<uint8*> (image.m_data);
+		TextureData data;
+		data.m_dataBytes = image.GetDataSizeInBytes ();
+		data.m_dataRowBytes = image.GetRowSizeInBytes ();
+		data.m_data = std::vector<uint8> (imageData, imageData + data.m_dataBytes);
 
-		std::vector<TextureResourceData> textureData = { data };
-		std::vector<std::shared_ptr<StbImage>> mipMaps;
+		std::vector<TextureData> textureData = { data };
 
-		if (bGenerateMipMaps && image->IsPowerOfTwo () && image->IsSquare ())
+		if (bGenerateMipMaps && image.IsPowerOfTwo () && image.IsSquare ())
 		{
-			for (int32 mipMapSize = image->m_width / 2; mipMapSize > 0; mipMapSize /= 2)
+			for (int32 mipMapSize = image.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
 			{
-				auto mipMap = std::make_shared<StbImage> ();
+				StbImage mipMap;
 
-				if (StbImageImporter::Resize (*mipMap, *image, mipMapSize, mipMapSize) == false)
+				if (StbImageImporter::Resize (mipMap, image, mipMapSize, mipMapSize) == false)
 				{
 					return nullptr;
 				}
 
-				TextureResourceData mipMapData;
-				mipMapData.m_data = mipMap->m_data;
-				mipMapData.m_dataPitch = mipMap->GetRowPitch ();
+				uint8* mipMapImageData = static_cast<uint8*> (image.m_data);
+				TextureData mipMapData;
+				mipMapData.m_dataBytes = mipMap.GetDataSizeInBytes ();
+				mipMapData.m_dataRowBytes = mipMap.GetRowSizeInBytes ();
+				mipMapData.m_data = std::vector<uint8> (mipMapImageData, mipMapImageData + mipMapData.m_dataBytes);
 
 				textureData.push_back (mipMapData);
-				mipMaps.push_back (mipMap);
 			}
 		}
 
 		auto texture2D = std::make_shared<Texture2D> ();
-		texture2D->SetWidth (image->m_width);
-		texture2D->SetHeight (image->m_height);
-		texture2D->SetFormat (image->GetFormat ());
+		texture2D->SetWidth (image.m_width);
+		texture2D->SetHeight (image.m_height);
+		texture2D->SetFormat (image.GetFormat ());
+		texture2D->SetTextureData (textureData);
 
-		if (texture2D->UpdateTextureResource (textureData) == false)
+		if (texture2D->UpdateTextureResource () == false)
 		{
 			return nullptr;
 		}
@@ -369,7 +368,7 @@ namespace GameEngine
 		{
 			return nullptr;
 		}
-		
+
 		AudioData audioData = WavImporter::Import (fileData.get (), fileSize);
 		auto audioClip = std::make_shared<AudioClip> ();
 

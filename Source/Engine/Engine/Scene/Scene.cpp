@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Physics/Physics.h"
 
@@ -71,29 +72,28 @@ namespace GameEngine
 		}
 	}
 
-	void Scene::OnSave (Json::Json& sceneData)
+	void Scene::OnSave (Json::Json& sceneJson)
 	{
-		sceneData["gameObjects"] = Json::Json::array ();
+		Json::JsonSerializer::CreateArray (sceneJson, "gameObjects");
 
-		for (auto& gameObject : m_gameObjects)
+		for (const std::shared_ptr<GameObject>& gameObject : m_gameObjects)
 		{
-			auto serialized = Json::JsonSerializer::SerializeObject<GameObject> (*gameObject);
-			sceneData["gameObjects"].push_back (serialized);
+			Json::Json gameObjectJson = Json::JsonSerializer::ObjectToJson (*gameObject);
+			Json::JsonSerializer::AppendArray (sceneJson, "gameObjects", gameObjectJson);
 		}
 	}
 
-	void Scene::OnLoad (const Json::Json& sceneData)
+	void Scene::OnLoad (const Json::Json& sceneJson)
 	{
-		if (sceneData.find ("gameObjects") != sceneData.end ())
-		{
-			for (auto& gameObjectData : sceneData["gameObjects"].items ())
-			{
-				auto* gameObject = SpawnGameObject ();
-				gameObject->OnDeserialize (gameObjectData.value ());
-			}
-		}
-
 		g_physics.CreatePhysicScene ();
+
+		for (auto it = Json::JsonSerializer::GetArrayBegin (sceneJson, "gameObjects"); it != Json::JsonSerializer::GetArrayEnd (sceneJson, "gameObjects"); it++)
+		{
+			Json::Json gameObjectJson = it.value ();
+
+			auto* gameObject = SpawnGameObject ();
+			gameObject->OnDeserialize (gameObjectJson);
+		}
 	}
 
 	void Scene::OnUnload ()
@@ -113,19 +113,16 @@ namespace GameEngine
 
 	GameObject* Scene::SpawnGameObject ()
 	{
-		GameObject* temp = nullptr;
 		auto gameObject = std::make_shared<GameObject> ("New Game Object");
 
 		if (gameObject != nullptr)
 		{
 			gameObject->SetScene (this);
 			gameObject->Init ();
-
-			temp = gameObject.get ();
 			m_gameObjects.push_back (gameObject);
 		}
 
-		return temp;
+		return gameObject.get ();
 	}
 
 	std::vector<std::shared_ptr<GameObject>>& Scene::GetGameObjects ()

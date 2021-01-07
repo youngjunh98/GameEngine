@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "Engine/Platform/PlatformRenderingInterface.h"
 #include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
 
 namespace GameEngine
@@ -374,12 +375,10 @@ namespace GameEngine
 
 	void Material::OnSerialize (Json::Json& json) const
 	{
-		auto shaderPath = AssetManager::GetInstance ().GetAssetPath (m_shader);
-		std::string asciiShaderPath (shaderPath.begin (), shaderPath.end ());
-
-		json["shader"] = asciiShaderPath;
-		json["textures"] = Json::Json::array ();
-		json["parameters"] = Json::Json::array ();
+		PathString shaderPath = AssetManager::GetInstance ().GetAssetPath (m_shader);
+		Json::JsonSerializer::Serialize (json, "shader", shaderPath);
+		Json::JsonSerializer::CreateArray (json, "textures");
+		Json::JsonSerializer::CreateArray (json, "parameters");
 
 		for (auto& pairNameTexture : m_textureMap)
 		{
@@ -398,11 +397,10 @@ namespace GameEngine
 				continue;
 			}
 
-			Json::Json textureInfo;
-			textureInfo["name"] = textureName;
-			textureInfo["path"] = AssetManager::GetInstance ().GetAssetPath (texture);
-
-			json["textures"].push_back (textureInfo);
+			Json::Json textureJson;
+			Json::JsonSerializer::Serialize (textureJson, "name", textureName);
+			Json::JsonSerializer::Serialize (textureJson, "path", AssetManager::GetInstance ().GetAssetPath (texture));
+			Json::JsonSerializer::AppendArray (json, "textures", textureJson);
 		}
 
 		for (auto& pairNameType : m_parameterTypeMap)
@@ -416,106 +414,59 @@ namespace GameEngine
 				continue;
 			}
 
-			Json::Json parameterInfo;
-			parameterInfo["name"] = parameterName;
-			parameterInfo["type"] = typeName;
+			Json::Json parameterJson;
+			Json::JsonSerializer::Serialize (parameterJson, "name", parameterName);
+			Json::JsonSerializer::Serialize (parameterJson, "type", typeName);
 
 			if (typeName == "Float")
 			{
-				parameterInfo["value"] = GetFloat (parameterName);
+				Json::JsonSerializer::Serialize (parameterJson, "value", GetFloat (parameterName));
 			}
 			else if (typeName == "Vector4")
 			{
-				Json::JsonSerializer::Serialize<Vector4> (parameterInfo, "value", GetVector4 (parameterName));
+				Json::JsonSerializer::Serialize (parameterJson, "value", GetVector4 (parameterName));
 			}
 
-			json["parameters"].push_back (parameterInfo);
+			Json::JsonSerializer::AppendArray (json, "parameters", parameterJson);
 		}
 	}
 
 	void Material::OnDeserialize (const Json::Json& json)
 	{
-		std::string shaderPath;
+		PathString shaderPath = Json::JsonSerializer::Deserialize<PathString> (json, "shader");
+		auto* shader = AssetManager::GetInstance ().FindAsset<Shader> (shaderPath);
+		SetShader (shader);
 
-		if (json.find ("shader") != json.end ())
+		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "textures"); it != Json::JsonSerializer::GetArrayEnd (json, "textures"); ++it)
 		{
-			if (json.at ("shader").is_string ())
+			Json::Json textureJson = it.value ();
+			std::string name = Json::JsonSerializer::Deserialize<std::string> (textureJson, "name");
+			PathString texturePath = Json::JsonSerializer::Deserialize<PathString> (textureJson, "path");
+			Texture* texture = AssetManager::GetInstance ().FindAsset<Texture> (texturePath);
+
+			if (texture != nullptr)
 			{
-				json.at ("shader").get_to (shaderPath);
-
-				std::wstring unicodePath (shaderPath.begin (), shaderPath.end ());
-				auto* shader = AssetManager::GetInstance ().FindAsset<Shader> (unicodePath);
-
-				SetShader (shader);
+				m_textureMap.emplace (name, texture);
 			}
 		}
 
-		if (json.find ("textures") != json.end ())
+		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "parameters"); it != Json::JsonSerializer::GetArrayEnd (json, "parameters"); ++it)
 		{
-			for (auto& textureJson : json["textures"].items ())
+			Json::Json parameterJson = it.value ();
+			std::string name = Json::JsonSerializer::Deserialize<std::string> (parameterJson, "name");
+			std::string type = Json::JsonSerializer::Deserialize<std::string> (parameterJson, "type");
+
+			m_parameterTypeMap.emplace (name, type);
+
+			if (type == "Float")
 			{
-				Json::Json textureInfo = textureJson.value ();
-				std::string name;
-				PathString texturePath;
-
-				textureInfo.at ("name").get_to (name);
-				textureInfo.at ("path").get_to (texturePath);
-
-				Texture* texture = AssetManager::GetInstance ().FindAsset<Texture> (texturePath);
-
-				if (texture == nullptr)
-				{
-					continue;
-				}
-
-				if (m_textureMap.find (name) == m_textureMap.end ())
-				{
-					m_textureMap.emplace (name, texture);
-				}
-				else
-				{
-					m_textureMap[name] = texture;
-				}
+				float value = Json::JsonSerializer::Deserialize<float> (parameterJson, "value");
+				SetFloat (name, value);
 			}
-		}
-
-		if (json.find ("parameters") != json.end ())
-		{
-			for (auto& parameterJson : json["parameters"].items ())
+			else if (type == "Vector4")
 			{
-				Json::Json parameterInfo = parameterJson.value ();
-				std::string parameterName;
-				std::string typeName;
-
-				parameterInfo.at ("name").get_to (parameterName);
-				parameterInfo.at ("type").get_to (typeName);
-
-				if (m_parameterTypeMap.find (parameterName) == m_parameterTypeMap.end ())
-				{
-					m_parameterTypeMap.emplace (parameterName, typeName);
-				}
-				else
-				{
-					m_parameterTypeMap[parameterName] = typeName;
-				}
-
-				if (parameterInfo.find ("value") != parameterInfo.end ())
-				{
-					if (typeName == "Float")
-					{
-						float value = parameterInfo.at ("value");
-						SetFloat (parameterName, value);
-					}
-					else if (typeName == "Vector4")
-					{
-						Vector4 value;
-						value.m_x = parameterInfo.at ("value")[0];
-						value.m_y = parameterInfo.at ("value")[1];
-						value.m_z = parameterInfo.at ("value")[2];
-						value.m_w = parameterInfo.at ("value")[3];
-						SetVector4 (parameterName, value);
-					}
-				}
+				Vector4 value = Json::JsonSerializer::Deserialize<Vector4> (parameterJson, "value");
+				SetVector4 (name, value);
 			}
 		}
 	}

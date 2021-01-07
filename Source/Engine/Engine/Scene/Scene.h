@@ -21,8 +21,8 @@ namespace GameEngine
 		void FixedUpdate ();
 		void Update ();
 
-		void OnSave (Json::Json& sceneData);
-		void OnLoad (const Json::Json& sceneData);
+		void OnSave (Json::Json& sceneJson);
+		void OnLoad (const Json::Json& sceneJson);
 		void OnUnload ();
 
 		GameObject* SpawnGameObject ();

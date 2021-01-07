@@ -68,8 +68,11 @@ namespace GameEngine
 
 		virtual void OnRenderEditor () override;
 
-		//virtual void OnSerialize (Json::Json& json) const override;
-		//virtual void OnDeserialize (const Json::Json& json) override;
+		virtual void OnSerialize (Json::Json& json) const override;
+		virtual void OnDeserialize (const Json::Json& json) override;
+
+	private:
+		physx::PxRigidDynamic* GetRigidDynamic ();
 
 	private:
 		float m_mass;

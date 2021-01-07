@@ -1,5 +1,6 @@
 #include "MeshRenderer.h"
 #include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Rendering/Mesh.h"
@@ -99,13 +100,14 @@ namespace GameEngine
 
 		Json::JsonSerializer::Serialize (json, "mesh", AssetManager::GetInstance ().GetAssetPath (m_mesh));
 		Json::JsonSerializer::Serialize (json, "tessellation", m_bTessellation);
-		json["materials"] = Json::Json::array ();
+		Json::JsonSerializer::CreateArray (json, "materials");
 
 		for (uint32 i = 0; i < m_mesh->GetSubMeshCount (); i++)
 		{
 			Material* material = GetMaterial (i);
 			PathString materialPath = AssetManager::GetInstance ().GetAssetPath (material);
-			json["materials"].push_back (materialPath);
+			Json::Json materialJson = materialPath;
+			Json::JsonSerializer::AppendArray (json, "materials", materialJson);
 		}
 	}
 
@@ -115,20 +117,16 @@ namespace GameEngine
 
 		PathString meshPath = Json::JsonSerializer::Deserialize<PathString> (json, "mesh");
 		m_mesh = AssetManager::GetInstance ().FindAsset<Mesh> (meshPath);
-
 		m_bTessellation = Json::JsonSerializer::Deserialize<bool> (json, "tessellation");
 
-		if (json.contains ("materials"))
-		{
-			uint32 index = 0;
-			for (auto materialJson : json["materials"].items ())
-			{
-				PathString path = materialJson.value ();
-				Material* material = AssetManager::GetInstance ().FindAsset<Material> (path);
+		uint32 index = 0;
 
-				SetMaterial (material, index);
-				++index;
-			}
+		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "materials"); it != Json::JsonSerializer::GetArrayEnd (json, "materials"); it++)
+		{
+			Json::Json materialJson = it.value ();
+			PathString materialPath = materialJson.get<PathString> ();
+			Material* material = AssetManager::GetInstance ().FindAsset<Material> (materialPath);
+			SetMaterial (material, index);
 		}
 	}
 }

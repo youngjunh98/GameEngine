@@ -114,9 +114,13 @@ namespace GameEngine
 		return ERenderingResourceFormat::None;
 	}
 
-	int32 StbImage::GetRowPitch () const
+	uint32 StbImage::GetDataSizeInBytes () const
+	{
+		return m_byte * m_width * m_height * m_channels;
+	}
+
+	uint32 StbImage::GetRowSizeInBytes () const
 	{
 		return m_byte * m_width * m_channels;
 	}
-
 }

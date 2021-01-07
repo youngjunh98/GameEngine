@@ -17,19 +17,12 @@ namespace GameEngine
 
 	void Renderer::SetMaterial (Material* material, uint32 index)
 	{
-		if (index < m_materials.size ())
+		if (index >= m_materials.size ())
 		{
-			m_materials.at (index) = material;
+			m_materials.resize (index + 1, nullptr);
 		}
-		else
-		{
-			for (uint32 i = m_materials.size (); i <= index; i++)
-			{
-				m_materials.push_back (nullptr);
-			}
 
-			m_materials.at (index) = material;
-		}
+		m_materials.at (index) = material;
 	}
 
 	std::vector<Material*>& Renderer::GetMaterials ()

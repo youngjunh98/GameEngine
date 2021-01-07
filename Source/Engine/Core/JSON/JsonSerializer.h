@@ -1,14 +1,13 @@
 #pragma once
 
-#if defined (snprintf)
-	#undef snprintf
-#endif
-
 #include <memory>
 #include <string>
-#include <single_include/nlohmann/json.hpp>
+#include <vector>
 
 #include "Type.h"
+#include "Json.h"
+#include "Engine/Core/CoreMacro.h"
+#include "Engine/Core/Object/Object.h"
 #include "Engine/Core/Object/ObjectFactory.h"
 #include "Engine/Core/Math/Math.h"
 
@@ -16,107 +15,41 @@ namespace GameEngine
 {
 	namespace Json
 	{
-		using Json = nlohmann::json;
-
-		class JsonSerializer
+		class ENGINE_CORE_API JsonSerializer final
 		{
-		public:
+		private:
 			JsonSerializer ();
 			virtual ~JsonSerializer () = 0;
 
-			template<typename TObject>
-			static Json SerializeObject (const TObject& object)
+			static bool IsArray (const Json& json, const std::string& name);
+
+		public:
+			static void CreateArray (Json& json, const std::string& name);
+			static void AppendArray (Json& json, const std::string& name, const Json& jsonToAppend);
+			static JsonIterator GetArrayBegin (Json& json, const std::string& name);
+			static JsonIterator GetArrayEnd (Json& json, const std::string& name);
+			static JsonConstIterator GetArrayBegin (const Json& json, const std::string& name);
+			static JsonConstIterator GetArrayEnd (const Json& json, const std::string& name);
+
+			static Json ObjectToJson (const Object& object);
+			static std::shared_ptr<Object> JsonToObject (const Json& json);
+			static void SerializeObject (Json& json, const std::string& name, const Object& object);
+			static std::shared_ptr<Object> DeserializeObject (const Json& json, const std::string& name);
+
+			template<typename T>
+			static void Serialize (Json& json, const std::string& name, const T& value)
 			{
-				static_assert (IsBaseOf<Object, TObject>::Result, "TObject is not derived from GameEngine::Object!");
-
-				Json json;
-				json["type"] = object.GetTypeName ();
-				object.OnSerialize (json);
-
-				return json;
-			}
-
-			template<typename TObject>
-			static std::shared_ptr<TObject> DeserializeObject (const Json& json)
-			{
-				static_assert (IsBaseOf<Object, TObject>::Result, "TObject is not derived from GameEngine::Object!");
-
-				if (json.find ("type") == json.end ())
-				{
-					return nullptr;
-				}
-
-				std::string type = json["type"].get<std::string> ();
-
-				ObjectFactoryFunction function = ObjectFactory::GetFunction (type);
-				std::shared_ptr<TObject> instance = std::dynamic_pointer_cast<TObject> (function ());
-
-				if (instance != nullptr)
-				{
-					instance->OnDeserialize (json);
-				}
-
-				return instance;
+				json[name] = value;
 			}
 
 			template<typename T>
-			static void Serialize (Json& json, const std::string& name, const T& value);
-
-			template<typename T>
-			static T Deserialize (const Json& json, const std::string& name);
-
-			template<>
-			static void Serialize<int32> (Json& json, const std::string& name, const int32& value)
+			static T Deserialize (const Json& json, const std::string& name)
 			{
-				json[name] = value;
-			}
-
-			template<>
-			static int32 Deserialize<int32> (const Json& json, const std::string& name)
-			{
-				int32 value = 0;
+				T value = {};
 
 				if (json.contains (name))
 				{
-					value = json[name].get<int32> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<float> (Json& json, const std::string& name, const float& value)
-			{
-				json[name] = value;
-			}
-
-			template<>
-			static float Deserialize<float> (const Json& json, const std::string& name)
-			{
-				float value = 0.0f;
-
-				if (json.contains (name))
-				{
-					value = json[name].get<float> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<bool> (Json& json, const std::string& name, const bool& value)
-			{
-				json[name] = value;
-			}
-
-			template<>
-			static bool Deserialize<bool> (const Json& json, const std::string& name)
-			{
-				bool value = false;
-
-				if (json.contains (name))
-				{
-					value = json[name].get<bool> ();
+					value = json[name].get<T> ();
 				}
 
 				return value;
@@ -135,7 +68,7 @@ namespace GameEngine
 			{
 				Vector2 value;
 
-				if (json.contains (name))
+				if (IsArray (json, name))
 				{
 					value.m_x = json[name][0].get<float> ();
 					value.m_y = json[name][1].get<float> ();
@@ -158,7 +91,7 @@ namespace GameEngine
 			{
 				Vector3 value;
 
-				if (json.contains (name))
+				if (IsArray (json, name))
 				{
 					value.m_x = json[name][0].get<float> ();
 					value.m_y = json[name][1].get<float> ();
@@ -183,12 +116,12 @@ namespace GameEngine
 			{
 				Vector4 value;
 
-				if (json.contains (name))
+				if (IsArray (json, name))
 				{
 					value.m_x = json[name][0].get<float> ();
 					value.m_y = json[name][1].get<float> ();
 					value.m_z = json[name][2].get<float> ();
-					value.m_w = json[name][2].get<float> ();
+					value.m_w = json[name][3].get<float> ();
 				}
 
 				return value;
@@ -209,50 +142,12 @@ namespace GameEngine
 			{
 				Quaternion value;
 
-				if (json.contains (name))
+				if (IsArray (json, name))
 				{
 					value.m_x = json[name][0].get<float> ();
 					value.m_y = json[name][1].get<float> ();
 					value.m_z = json[name][2].get<float> ();
-					value.m_w = json[name][2].get<float> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<std::string> (Json& json, const std::string& name, const std::string& value)
-			{
-				json[name] = value;
-			}
-
-			template<>
-			static std::string Deserialize<std::string> (const Json& json, const std::string& name)
-			{
-				std::string value;
-
-				if (json.contains (name))
-				{
-					value = json[name].get<std::string> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<std::wstring> (Json& json, const std::string& name, const std::wstring& value)
-			{
-				json[name] = value;
-			}
-
-			template<>
-			static std::wstring Deserialize<std::wstring> (const Json& json, const std::string& name)
-			{
-				std::wstring value;
-
-				if (json.contains (name))
-				{
-					value = json[name].get<std::wstring> ();
+					value.m_w = json[name][3].get<float> ();
 				}
 
 				return value;

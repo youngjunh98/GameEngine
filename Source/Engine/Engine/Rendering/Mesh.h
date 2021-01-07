@@ -34,6 +34,9 @@ namespace GameEngine
 		RI_IndexBuffer* GetIndexBufferResource (uint32 subMeshIndex) const;
 		bool UpdateIndexBufferResource (uint32 subMeshIndex);
 
+		virtual void OnSerialize (Json::Json& json) const override;
+		virtual void OnDeserialize (const Json::Json& json) override;
+
 	private:
 		struct SubMesh
 		{

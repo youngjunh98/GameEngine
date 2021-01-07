@@ -1,4 +1,5 @@
 #include "Transform.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
 
 namespace GameEngine

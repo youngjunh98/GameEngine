@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/RI/RenderingInterface.h"
 
 namespace GameEngine
@@ -137,5 +138,89 @@ namespace GameEngine
 		m_subMeshList.at (subMeshIndex).m_indexBufferResource = resource;
 
 		return true;
+	}
+
+	void Mesh::OnSerialize (Json::Json& json) const
+	{
+		Object::OnSerialize (json);
+
+		json["subMeshes"] = Json::Json::array ();
+
+		for (const SubMesh& subMesh : m_subMeshList)
+		{
+			Json::Json subMeshJson;
+			subMeshJson["vertices"] = Json::Json::array ();
+			subMeshJson["indices"] = Json::Json::array ();
+
+			for (const Vertex& vertex : subMesh.m_vertices)
+			{
+				Json::Json vertexJson;
+				Json::JsonSerializer::Serialize<Vector3> (vertexJson, "position", vertex.m_position);
+				Json::JsonSerializer::Serialize<Vector2> (vertexJson, "uv", vertex.m_uv);
+				Json::JsonSerializer::Serialize<Vector3> (vertexJson, "normal", vertex.m_normal);
+				Json::JsonSerializer::Serialize<Vector3> (vertexJson, "tangent", vertex.m_tangent);
+				subMeshJson["vertices"].push_back (vertexJson);
+			}
+
+			for (const uint32 index : subMesh.m_indices)
+			{
+				subMeshJson["indices"].push_back (index);
+			}
+
+			json["subMeshes"].push_back (subMeshJson);
+		}
+	}
+
+	void Mesh::OnDeserialize (const Json::Json& json)
+	{
+		if (json.contains ("subMeshes") == false)
+		{
+			return;
+		}
+
+		m_subMeshList.clear ();
+
+		uint32 subMeshCount = static_cast<uint32> (json["subMeshes"].size ());
+		SetSubMeshCount (subMeshCount);
+
+		uint32 subMeshIndex = 0;
+		std::vector<Vertex> vertices;
+		std::vector<uint32> indices;
+
+		for (const Json::Json& subMeshJson : json["subMeshes"])
+		{
+			if (subMeshJson.contains ("vertices"))
+			{
+				for (const Json::Json& vertexJson : subMeshJson["vertices"])
+				{
+					Vertex vertex;
+					vertex.m_position = Json::JsonSerializer::Deserialize<Vector3> (vertexJson, "position");
+					vertex.m_uv = Json::JsonSerializer::Deserialize<Vector2> (vertexJson, "uv");
+					vertex.m_normal = Json::JsonSerializer::Deserialize<Vector3> (vertexJson, "normal");
+					vertex.m_tangent = Json::JsonSerializer::Deserialize<Vector3> (vertexJson, "tangent");
+					vertices.push_back (vertex);
+				}
+			}
+
+			if (subMeshJson.contains ("indices"))
+			{
+				for (const Json::Json& indexJson : subMeshJson["indices"])
+				{
+					uint32 index  = indexJson.get<uint32> ();
+					indices.push_back (index);
+				}
+			}
+
+			SetVertices (subMeshIndex, vertices);
+			SetIndices (subMeshIndex, indices);
+
+			UpdateVertexBufferResource (subMeshIndex);
+			UpdateIndexBufferResource (subMeshIndex);
+
+			vertices.clear ();
+			indices.clear ();
+
+			++subMeshIndex;
+		}
 	}
 }

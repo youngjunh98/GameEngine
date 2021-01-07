@@ -26,7 +26,6 @@ namespace GameEngine
 	void GameObject::Init ()
 	{
 		AddComponent<Transform> ();
-		m_transform = GetComponent<Transform> ();
 	}
 
 	void GameObject::Destroy ()
@@ -125,12 +124,12 @@ namespace GameEngine
 		Object::OnSerialize (json);
 
 		Json::JsonSerializer::Serialize (json, "tag", m_tag);
-		json["components"] = Json::Json::array ();
+		Json::JsonSerializer::CreateArray (json, "components");
 
 		for (const std::shared_ptr<Component>& component : m_components)
 		{
-			Json::Json serialized = Json::JsonSerializer::SerializeObject<Component> (*component);
-			json["components"].push_back (serialized);
+			Json::Json componentJson = Json::JsonSerializer::ObjectToJson (*component);
+			Json::JsonSerializer::AppendArray (json, "components", componentJson);
 		}
 	}
 
@@ -139,20 +138,21 @@ namespace GameEngine
 		Object::OnDeserialize (json);
 
 		m_tag = Json::JsonSerializer::Deserialize<std::string> (json, "tag");
+		m_transform = GetComponent<Transform> ();
 
-		if (json.contains ("components"))
+		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "components"); it != Json::JsonSerializer::GetArrayEnd (json, "components"); it++)
 		{
-			for (auto& componentJson : json["components"].items ())
-			{
-				if (componentJson.value ()["type"] == "Transform")
-				{
-					m_components.at (0)->OnDeserialize (componentJson.value ());
-					continue;
-				}
+			Json::Json componentJson = it.value ();
+			auto type = Json::JsonSerializer::Deserialize<std::string> (componentJson, "type");
 
-				std::shared_ptr<Component> component = Json::JsonSerializer::DeserializeObject<Component> (componentJson.value ());
-				AddComponentInternal (component);
+			if (type == "Transform")
+			{
+				m_components.at (0)->OnDeserialize (componentJson);
+				continue;
 			}
+
+			std::shared_ptr<Object> component = Json::JsonSerializer::JsonToObject (componentJson);
+			AddComponentInternal (std::dynamic_pointer_cast<Component> (component));
 		}
 	}
 
@@ -162,6 +162,7 @@ namespace GameEngine
 		{
 			return;
 		}
+
 		component->SetGameObject (*this);
 		component->OnInit ();
 

@@ -1,4 +1,5 @@
 #include "SphereCollider.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
 
 namespace GameEngine
@@ -18,20 +19,14 @@ namespace GameEngine
 	{
 		Collider::OnInit ();
 
-		m_radius = 1.0f;
-
-		g_physics.CreateSphereCollider (*this);
+		SetRadius (m_radius);
 	}
 
 	void SphereCollider::SetRadius (float radius)
 	{
-		if (m_radius == radius || m_physxShape == nullptr)
-		{
-			return;
-		}
-
+		m_radius = radius;
 		physx::PxSphereGeometry sphereGeometry (radius);
-		m_physxShape->setGeometry (sphereGeometry);
+		GetShape ()->setGeometry (sphereGeometry);
 	}
 
 	float SphereCollider::GetRadius () const
@@ -41,18 +36,32 @@ namespace GameEngine
 
 	void SphereCollider::OnRenderEditor ()
 	{
-		m_radius = Math::Max (EditorGUI::InputFloat ("Size", m_radius), 0.0f);
-		m_offset = EditorGUI::InputVector3 ("Offset", m_offset);
+		float radius = Math::Max (EditorGUI::InputFloat ("Size", m_radius), 0.0f);
+		Vector3 offset = EditorGUI::InputVector3 ("Offset", m_offset);
 
-		if (m_physxShape != nullptr)
+		SetRadius (radius);
+		SetOffset (offset);
+	}
+
+	void SphereCollider::OnSerialize (Json::Json& json) const
+	{
+		Collider::OnSerialize (json);
+		Json::JsonSerializer::Serialize (json, "radius", m_radius);
+	}
+
+	void SphereCollider::OnDeserialize (const Json::Json& json)
+	{
+		Collider::OnDeserialize (json);
+		SetRadius (Json::JsonSerializer::Deserialize<float> (json, "radius"));
+	}
+
+	physx::PxShape* SphereCollider::GetShape ()
+	{
+		if (m_physxShape == nullptr)
 		{
-			physx::PxSphereGeometry sphereGeometry (m_radius);
-			m_physxShape->setGeometry (sphereGeometry);
-
-			physx::PxTransform boxTransform;
-			boxTransform.p = physx::PxVec3 (m_offset.m_x, m_offset.m_y, m_offset.m_z);
-			boxTransform.q = physx::PxQuat (0.0f, 0.0f, 0.0f, 1.0f);
-			m_physxShape->setLocalPose (boxTransform);
+			g_physics.CreateSphereCollider (*this);
 		}
+
+		return m_physxShape;
 	}
 }

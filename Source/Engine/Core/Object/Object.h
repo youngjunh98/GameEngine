@@ -5,7 +5,7 @@
 
 #include "ObjectFactory.h"
 #include "Engine/Core/CoreMacro.h"
-#include "Engine/Core/JSON/JsonSerializer.h"
+#include "Engine/Core/JSON/Json.h"
 
 #define REGISTER_OBJECT_HEADER(OBJECT_CLASS_NAME)\
 virtual ::std::string GetTypeName () const override { return #OBJECT_CLASS_NAME; }

@@ -1,6 +1,7 @@
-#include "Rigidbody.h"
+﻿#include "Rigidbody.h"
 #include "BoxCollider.h"
 #include "SphereCollider.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Component/Transform.h"
 #include "Editor/Core/EditorGUI.h"
@@ -20,7 +21,8 @@ namespace GameEngine
 		m_bConstraintPositionZ (false),
 		m_bConstraintPitch (false),
 		m_bConstraintYaw (false),
-		m_bConstraintRoll (false)
+		m_bConstraintRoll (false),
+		m_physxRigidDynamic (nullptr)
 	{
 	}
 
@@ -38,21 +40,19 @@ namespace GameEngine
 
 	void Rigidbody::OnInit ()
 	{
-		m_lastUpdatePosition = GetGameObject ().GetTransform ().GetPosition ();
-		m_lastUpdateRotation = GetGameObject ().GetTransform ().GetRotation ();
+		m_lastUpdatePosition = Vector3::Zero;
+		m_lastUpdateRotation = Quaternion::Identity;
 
-		g_physics.CreateRigidDynamic (*this, m_lastUpdatePosition, m_lastUpdateRotation);
+		SetMass (m_mass);
 
-		SetMass (1.0f);
+		SetLinearDamping (m_linearDamping);
+		SetAngularDamping (m_angularDamping);
 
-		SetLinearDamping (0.0f);
-		SetAngularDamping (0.0f);
+		SetApplyGravity (m_bGravity);
+		SetKinematic (m_bKinematic);
 
-		SetApplyGravity (true);
-		SetKinematic (false);
-
-		SetConstraintPosition (false, false, false);
-		SetConstraintRotation (false, false, false);
+		SetConstraintPosition (m_bConstraintPositionX, m_bConstraintPositionY, m_bConstraintPositionZ);
+		SetConstraintRotation (m_bConstraintPitch, m_bConstraintYaw, m_bConstraintRoll);
 
 		SetVelocity (Vector3::Zero);
 		SetAngularVelocity (Vector3::Zero);
@@ -61,14 +61,14 @@ namespace GameEngine
 	void Rigidbody::OnFixedUpdate ()
 	{
 		// Sync physx rigid dynamic velocity
-		physx::PxVec3 physxVelocity = m_physxRigidDynamic->getLinearVelocity ();
+		physx::PxVec3 physxVelocity = GetRigidDynamic ()->getLinearVelocity ();
 		m_velocity = Vector3 (physxVelocity.x, physxVelocity.y, physxVelocity.z);
 
-		physx::PxVec3 physxAngularVelocity = m_physxRigidDynamic->getAngularVelocity ();
+		physx::PxVec3 physxAngularVelocity = GetRigidDynamic ()->getAngularVelocity ();
 		m_angularVelocity = Vector3 (physxAngularVelocity.x, physxAngularVelocity.y, physxAngularVelocity.z);
 
 		// Sync transform with physx actor transform
-		physx::PxTransform physxTransform = m_physxRigidDynamic->getGlobalPose ();
+		physx::PxTransform physxTransform = GetRigidDynamic ()->getGlobalPose ();
 		Vector3 physxPosition (physxTransform.p.x, physxTransform.p.y, physxTransform.p.z);
 		Quaternion physxRotation (physxTransform.q.x, physxTransform.q.y, physxTransform.q.z, physxTransform.q.w);
 
@@ -94,7 +94,7 @@ namespace GameEngine
 		physxTransform.q.z = m_lastUpdateRotation.m_z; 
 		physxTransform.q.w = m_lastUpdateRotation.m_w;
 		
-		m_physxRigidDynamic->setGlobalPose (physxTransform);
+		GetRigidDynamic ()->setGlobalPose (physxTransform);
 	}
 
 	void Rigidbody::OnCollisionStart ()
@@ -177,7 +177,7 @@ namespace GameEngine
 
 	void Rigidbody::AddForce (Vector3 force)
 	{
-		m_physxRigidDynamic->addForce (physx::PxVec3 (force.m_x, force.m_y, force.m_z));
+		GetRigidDynamic ()->addForce (physx::PxVec3 (force.m_x, force.m_y, force.m_z));
 	}
 
 	Vector3 Rigidbody::GetVelocity () const
@@ -188,7 +188,7 @@ namespace GameEngine
 	void Rigidbody::SetVelocity (Vector3 velocity)
 	{
 		m_velocity = velocity;
-		m_physxRigidDynamic->setLinearVelocity (physx::PxVec3 (velocity.m_x, velocity.m_y, velocity.m_z));
+		GetRigidDynamic ()->setLinearVelocity (physx::PxVec3 (velocity.m_x, velocity.m_y, velocity.m_z));
 	}
 
 	Vector3 Rigidbody::GetAngularVelocity () const
@@ -199,7 +199,7 @@ namespace GameEngine
 	void Rigidbody::SetAngularVelocity (Vector3 angularVelocity)
 	{
 		m_angularVelocity = angularVelocity;
-		m_physxRigidDynamic->setAngularVelocity (physx::PxVec3 (angularVelocity.m_x, angularVelocity.m_y, angularVelocity.m_z));
+		GetRigidDynamic ()->setAngularVelocity (physx::PxVec3 (angularVelocity.m_x, angularVelocity.m_y, angularVelocity.m_z));
 	}
 
 	float Rigidbody::GetMass () const
@@ -210,7 +210,7 @@ namespace GameEngine
 	void Rigidbody::SetMass (float mass)
 	{
 		m_mass = Math::Max (0.0f, mass);
-		m_physxRigidDynamic->setMass (m_mass);
+		GetRigidDynamic ()->setMass (m_mass);
 	}
 
 	float Rigidbody::GetLinearDamping () const
@@ -221,7 +221,7 @@ namespace GameEngine
 	void Rigidbody::SetLinearDamping (float linearDamping)
 	{
 		m_linearDamping = Math::Max (0.0f, linearDamping);
-		m_physxRigidDynamic->setLinearDamping (m_linearDamping);
+		GetRigidDynamic ()->setLinearDamping (m_linearDamping);
 	}
 
 	float Rigidbody::GetAngularDamping () const
@@ -232,7 +232,7 @@ namespace GameEngine
 	void Rigidbody::SetAngularDamping (float angularDamping)
 	{
 		m_angularDamping = Math::Max (0.0f, angularDamping);
-		m_physxRigidDynamic->setAngularDamping (m_angularDamping);
+		GetRigidDynamic ()->setAngularDamping (m_angularDamping);
 	}
 
 	bool Rigidbody::IsApplyGravity () const
@@ -243,7 +243,7 @@ namespace GameEngine
 	void Rigidbody::SetApplyGravity (bool bGravity)
 	{
 		m_bGravity = bGravity;
-		m_physxRigidDynamic->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, bGravity == false);
+		GetRigidDynamic ()->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, bGravity == false);
 	}
 
 	bool Rigidbody::IsKinematic () const
@@ -254,7 +254,7 @@ namespace GameEngine
 	void Rigidbody::SetKinematic (bool bKinematic)
 	{
 		m_bKinematic = bKinematic;
-		m_physxRigidDynamic->setRigidBodyFlag (physx::PxRigidBodyFlag::eKINEMATIC, bKinematic);
+		GetRigidDynamic ()->setRigidBodyFlag (physx::PxRigidBodyFlag::eKINEMATIC, bKinematic);
 	}
 
 	bool Rigidbody::IsConstraintPosition (ERigidbodyConstraintAxis axis) const
@@ -281,9 +281,9 @@ namespace GameEngine
 		m_bConstraintPositionY = bPositionY;
 		m_bConstraintPositionZ = bPositionZ;
 
-		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, bPositionX);
-		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, bPositionY);
-		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, bPositionZ);
+		GetRigidDynamic ()->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, bPositionX);
+		GetRigidDynamic ()->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, bPositionY);
+		GetRigidDynamic ()->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, bPositionZ);
 	}
 
 	bool Rigidbody::IsConstraintRotation (ERigidbodyConstraintAxis axis) const
@@ -310,9 +310,9 @@ namespace GameEngine
 		m_bConstraintYaw = bYaw;
 		m_bConstraintRoll = bRoll;
 
-		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, bPitch);
-		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, bYaw);
-		m_physxRigidDynamic->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, bRoll);
+		GetRigidDynamic ()->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, bPitch);
+		GetRigidDynamic ()->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, bYaw);
+		GetRigidDynamic ()->setRigidDynamicLockFlag (physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, bRoll);
 	}
 
 	void Rigidbody::OnRenderEditor ()
@@ -340,22 +340,65 @@ namespace GameEngine
 		SetConstraintRotation (bConstraintRotationX, bConstraintRotationY, bConstraintRotationZ);
 	}
 
-	//void Rigidbody::OnSerialize (Json::Json& json) const
-	//{
-	//	Component::OnSerialize (json);
+	void Rigidbody::OnSerialize (Json::Json& json) const
+	{
+		Component::OnSerialize (json);
 
-	//	json["type"] = "Light";
-	//	json["light type"] = static_cast<int32> (m_type);
-	//	json["color"] = Json::JsonSerializer::Serialize<Vector4> (m_color);
-	//	json["intensity"] = m_intensity;
-	//	json["range"] = m_range;
-	//	json["spot angle"] = m_spotAngle;
-	//	json["shadow type"] = static_cast<int32> (m_shadowType);
-	//	json["shadow intensity"] = m_shadowIntensity;
-	//	json["shadow depth bias"] = m_shadowDepthBias;
-	//}
+		Json::JsonSerializer::Serialize (json, "mass", m_mass);
 
-	//void Rigidbody::OnDeserialize (const Json::Json& json)
-	//{
-	//}
+		Json::JsonSerializer::Serialize (json, "linearDamping", m_linearDamping);
+		Json::JsonSerializer::Serialize (json, "angularDamping", m_angularDamping);
+
+		Json::JsonSerializer::Serialize (json, "gravity", m_bGravity);
+		Json::JsonSerializer::Serialize (json, "kinematic", m_bKinematic);
+
+		Json::JsonSerializer::Serialize (json, "constraintPositionX", m_bConstraintPositionX);
+		Json::JsonSerializer::Serialize (json, "constraintPositionY", m_bConstraintPositionY);
+		Json::JsonSerializer::Serialize (json, "constraintPositionZ", m_bConstraintPositionZ);
+
+		Json::JsonSerializer::Serialize (json, "constraintPitch", m_bConstraintPitch);
+		Json::JsonSerializer::Serialize (json, "constraintYaw", m_bConstraintYaw);
+		Json::JsonSerializer::Serialize (json, "constraintRoll", m_bConstraintRoll);
+
+		Json::JsonSerializer::Serialize (json, "velocity", m_velocity);
+		Json::JsonSerializer::Serialize (json, "angularVelocity", m_angularVelocity);
+	}
+
+	void Rigidbody::OnDeserialize (const Json::Json& json)
+	{
+		Component::OnDeserialize (json);
+
+		SetMass (Json::JsonSerializer::Deserialize<float> (json, "mass"));
+
+		SetLinearDamping (Json::JsonSerializer::Deserialize<float> (json, "linearDamping"));
+		SetAngularDamping (Json::JsonSerializer::Deserialize<float> (json, "angularDamping"));
+
+		SetApplyGravity (Json::JsonSerializer::Deserialize<bool> (json, "gravity"));
+		SetKinematic (Json::JsonSerializer::Deserialize<bool> (json, "kinematic"));
+
+		SetConstraintPosition (
+			Json::JsonSerializer::Deserialize<bool> (json, "constraintPositionX"),
+			Json::JsonSerializer::Deserialize<bool> (json, "constraintPositionY"),
+			Json::JsonSerializer::Deserialize<bool> (json, "constraintPositionZ")
+		);
+
+		SetConstraintRotation (
+			Json::JsonSerializer::Deserialize<bool> (json, "constraintPitch"),
+			Json::JsonSerializer::Deserialize<bool> (json, "constraintYaw"),
+			Json::JsonSerializer::Deserialize<bool> (json, "constraintRoll")
+		);
+
+		SetVelocity (Json::JsonSerializer::Deserialize<Vector3> (json, "velocity"));
+		SetAngularVelocity (Json::JsonSerializer::Deserialize<Vector3> (json, "angularVelocity"));
+	}
+
+	physx::PxRigidDynamic* Rigidbody::GetRigidDynamic ()
+	{
+		if (m_physxRigidDynamic == nullptr)
+		{
+			g_physics.CreateRigidDynamic (*this, Vector3::Zero, Quaternion::Identity);
+		}
+		
+		return m_physxRigidDynamic;
+	}
 }

@@ -20,6 +20,12 @@ namespace GameEngine
 
 		virtual void OnRenderEditor () override;
 
+		virtual void OnSerialize (Json::Json& json) const override;
+		virtual void OnDeserialize (const Json::Json& json) override;
+
+	protected:
+		virtual physx::PxShape* GetShape () override;
+
 	private:
 		Vector3 m_size;
 	};

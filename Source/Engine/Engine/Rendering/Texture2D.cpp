@@ -27,25 +27,28 @@ namespace GameEngine
 		return ETextureDimension::Texture2D;
 	}
 
-	bool Texture2D::UpdateTextureResource (const std::vector<TextureResourceData>& resourceData)
+	bool Texture2D::UpdateTextureResource ()
 	{
 		if (m_width <= 0 || m_height <= 0)
 		{
 			return false;
 		}
 
-		std::vector<void*> pixels;
-		std::vector<uint32> pitches;
+		std::vector<uint8*> pixels;
+		std::vector<uint32> rowBytes;
 
-		for (const auto& data : resourceData)
+		for (TextureData& data : m_data)
 		{
-			pixels.push_back (data.m_data);
-			pitches.push_back (data.m_dataPitch);
+			pixels.push_back (data.m_data.data ());
+			rowBytes.push_back (data.m_dataRowBytes);
 		}
 
+		m_mipMapCount = m_data.size ();
+
 		RenderingInterface& renderingInterface = RenderingInterface::GetModule ();
-		m_mipMapCount = resourceData.size ();
-		m_texture2D = renderingInterface.CreateTexture2D (m_width, m_height, m_mipMapCount, 1, m_format, pixels.data (), pitches.data (), false, true, false, false);
+		void** dataPointer = reinterpret_cast<void**> (pixels.data ());
+		uint32* rowBytesPointer = rowBytes.data ();
+		m_texture2D = renderingInterface.CreateTexture2D (m_width, m_height, m_mipMapCount, 1, m_format, dataPointer, rowBytesPointer, false, true, false, false);
 
 		if (m_texture2D == nullptr)
 		{

@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Component/Transform.h"
 #include "Engine/Engine/Rendering/GlobalRenderer.h"
@@ -8,7 +9,7 @@ namespace GameEngine
 {
 	REGISTER_OBJECT_CPP (Camera)
 
-		Camera* Camera::Main = nullptr;
+	Camera* Camera::Main = nullptr;
 
 	Camera::Camera () : Component ("Camera"),
 		m_mode (ECameraMode::Perspective),
