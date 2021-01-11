@@ -15,7 +15,7 @@ namespace GameEngine
 		virtual void Destroy () override;
 
 		virtual ETextureDimension Dimension () const override;
-		virtual bool UpdateTextureResource (const std::vector<TextureResourceData>& resourceData) override;
+		virtual bool UpdateTextureResource () override;
 
 	private:
 		RenderingResourcePtr<RI_Texture2D> m_textureCube;

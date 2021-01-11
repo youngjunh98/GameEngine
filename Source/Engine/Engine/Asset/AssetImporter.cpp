@@ -96,15 +96,10 @@ namespace GameEngine
 	std::shared_ptr<TextureCube> AssetImporter::ImportTextureCube (const PathString cubePath[6])
 	{
 		// 0 = Right, 1 = Left, 2 = Up, 3 = Down, 4 = Front, 5 = Back
-		std::shared_ptr<StbImage> cube[6];
-		cube[0] = std::make_shared<StbImage> ();
-		cube[1] = std::make_shared<StbImage> ();
-		cube[2] = std::make_shared<StbImage> ();
-		cube[3] = std::make_shared<StbImage> ();
-		cube[4] = std::make_shared<StbImage> ();
-		cube[5] = std::make_shared<StbImage> ();
+		const uint32 arraySize = 6;
+		StbImage cube[arraySize];
 
-		for (int32 i = 0; i < 6; i++)
+		for (uint32 i = 0; i < arraySize; i++)
 		{
 			std::unique_ptr<int8[]> fileData;
 			int64 fileSize;
@@ -114,70 +109,65 @@ namespace GameEngine
 				return nullptr;
 			}
 
-			if (StbImageImporter::Import (*cube[i], fileData.get (), fileSize, true, false) == false)
+			if (StbImageImporter::Import (cube[i], fileData.get (), fileSize, true, false) == false)
 			{
 				return nullptr;
 			}
 		}
 
-		if (cube[0]->m_width != cube[1]->m_width || cube[0]->m_width != cube[2]->m_width ||
-			cube[0]->m_width != cube[3]->m_width || cube[0]->m_width != cube[4]->m_width ||
-			cube[0]->m_width != cube[5]->m_width)
+		if (cube[0].IsSquare () == false || cube[0].IsPowerOfTwo () == false)
 		{
 			return nullptr;
 		}
 
-
-		if (cube[0]->m_height != cube[1]->m_height || cube[0]->m_height != cube[2]->m_height ||
-			cube[0]->m_height != cube[3]->m_height || cube[0]->m_height != cube[4]->m_height ||
-			cube[0]->m_height != cube[5]->m_height)
+		for (uint32 i = 1; i < arraySize; i++)
 		{
-			return nullptr;
-		}
-
-		std::vector<TextureResourceData> textureData;
-		std::vector<std::shared_ptr<StbImage>> mipMaps;
-
-		if (cube[0]->IsPowerOfTwo () && cube[0]->IsSquare () &&
-			cube[1]->IsPowerOfTwo () && cube[1]->IsSquare () &&
-			cube[2]->IsPowerOfTwo () && cube[2]->IsSquare () &&
-			cube[3]->IsPowerOfTwo () && cube[3]->IsSquare () &&
-			cube[4]->IsPowerOfTwo () && cube[4]->IsSquare () &&
-			cube[5]->IsPowerOfTwo () && cube[5]->IsSquare ())
-		{
-			for (int32 i = 0; i < 6; i++)
+			if (cube[i].m_width != cube[0].m_width || cube[i].m_height != cube[0].m_height)
 			{
-				TextureResourceData data;
-				data.m_data = cube[i]->m_data;
-				data.m_dataPitch = cube[i]->GetRowSizeInBytes ();
+				return nullptr;
+			}
+		}
 
-				textureData.push_back (data);
+		std::vector<TextureData> textureData;
 
-				for (int32 mipMapSize = cube[i]->m_width / 2; mipMapSize > 0; mipMapSize /= 2)
+		for (uint32 i = 0; i < arraySize; i++)
+		{
+			StbImage& image = cube[i];
+
+			uint8* imageData = static_cast<uint8*> (image.m_data);
+			TextureData data;
+			data.m_dataBytes = image.GetDataSizeInBytes ();
+			data.m_dataRowBytes = image.GetRowSizeInBytes ();
+			data.m_data = std::vector<uint8> (imageData, imageData + data.m_dataBytes);
+
+			textureData.push_back (data);
+
+			for (int32 mipMapSize = image.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
+			{
+				StbImage mipMap;
+
+				if (StbImageImporter::Resize (mipMap, image, mipMapSize, mipMapSize) == false)
 				{
-					auto mipMap = std::make_shared<StbImage> ();
-
-					if (StbImageImporter::Resize (*mipMap, *cube[i], mipMapSize, mipMapSize) == false)
-					{
-						return nullptr;
-					}
-
-					TextureResourceData mipMapData;
-					mipMapData.m_data = mipMap->m_data;
-					mipMapData.m_dataPitch = mipMap->GetRowSizeInBytes ();
-
-					textureData.push_back (mipMapData);
-					mipMaps.push_back (mipMap);
+					return nullptr;
 				}
+
+				uint8* mipMapImageData = static_cast<uint8*> (mipMap.m_data);
+				TextureData mipMapData;
+				mipMapData.m_dataBytes = mipMap.GetDataSizeInBytes ();
+				mipMapData.m_dataRowBytes = mipMap.GetRowSizeInBytes ();
+				mipMapData.m_data = std::vector<uint8> (mipMapImageData, mipMapImageData + mipMapData.m_dataBytes);
+
+				textureData.push_back (mipMapData);
 			}
 		}
 
 		auto textureCube = std::make_shared<TextureCube> ();
-		textureCube->SetWidth (cube[0]->m_width);
-		textureCube->SetHeight (cube[0]->m_height);
-		textureCube->SetFormat (cube[0]->GetFormat ());
+		textureCube->SetWidth (cube[0].m_width);
+		textureCube->SetHeight (cube[0].m_height);
+		textureCube->SetFormat (cube[0].GetFormat ());
+		textureCube->SetTextureData (textureData);
 
-		if (textureCube->UpdateTextureResource (textureData) == false)
+		if (textureCube->UpdateTextureResource () == false)
 		{
 			return nullptr;
 		}
@@ -326,7 +316,7 @@ namespace GameEngine
 					return nullptr;
 				}
 
-				uint8* mipMapImageData = static_cast<uint8*> (image.m_data);
+				uint8* mipMapImageData = static_cast<uint8*> (mipMap.m_data);
 				TextureData mipMapData;
 				mipMapData.m_dataBytes = mipMap.GetDataSizeInBytes ();
 				mipMapData.m_dataRowBytes = mipMap.GetRowSizeInBytes ();

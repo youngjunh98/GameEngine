@@ -20,14 +20,6 @@ namespace GameEngine
 		Texture3D
 	};
 
-	// For texture cube (will be deleted next commit)
-	struct TextureResourceData
-	{
-		void* m_data;
-		uint32 m_dataPitch;
-		uint32 m_dataSlicePitch;
-	};
-
 	class Texture : public Object
 	{
 	public:
@@ -50,11 +42,7 @@ namespace GameEngine
 		virtual void SetFormat (ERenderingResourceFormat format);
 
 		void SetTextureData (const std::vector<TextureData>& textureData);
-		//virtual bool UpdateTextureResource () = 0;
-
-		// For texture cube (will be deleted next commit)
-		virtual bool UpdateTextureResource () { return false; }
-		virtual bool UpdateTextureResource (const std::vector<TextureResourceData>& resourceData) { return false; }
+		virtual bool UpdateTextureResource () = 0;
 
 		EFilterMode GetFilterMode () const;
 		void SetFilterMode (EFilterMode filterMode);

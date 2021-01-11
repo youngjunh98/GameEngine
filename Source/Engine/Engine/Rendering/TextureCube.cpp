@@ -25,25 +25,29 @@ namespace GameEngine
 		return ETextureDimension::Texture2DArray;
 	}
 
-	bool TextureCube::UpdateTextureResource (const std::vector<TextureResourceData>& resourceData)
+	bool TextureCube::UpdateTextureResource ()
 	{
 		if (m_width <= 0 || m_height <= 0)
 		{
 			return false;
 		}
 
-		std::vector<void*> pixels;
-		std::vector<uint32> pitches;
+		std::vector<uint8*> pixels;
+		std::vector<uint32> rowBytes;
 
-		for (const auto& data : resourceData)
+		for (TextureData& data : m_data)
 		{
-			pixels.push_back (data.m_data);
-			pitches.push_back (data.m_dataPitch);
+			pixels.push_back (data.m_data.data ());
+			rowBytes.push_back (data.m_dataRowBytes);
 		}
 
+		const uint32 arraySize = 6;
+		m_mipMapCount = static_cast<uint32> (m_data.size () / arraySize);
+
+		void** dataPointer = reinterpret_cast<void**> (pixels.data ());
+		uint32* rowBytesPointer = rowBytes.data ();
 		RenderingInterface& renderingInterface = RenderingInterface::GetModule ();
-		m_mipMapCount = static_cast<uint32> (resourceData.size () / 6);
-		m_textureCube = renderingInterface.CreateTexture2D (m_width, m_height, m_mipMapCount, 6, m_format, pixels.data (), pitches.data (), true, true, false, false);
+		m_textureCube = renderingInterface.CreateTexture2D (m_width, m_height, m_mipMapCount, arraySize, m_format, dataPointer, rowBytesPointer, true, true, false, false);
 
 		if (m_textureCube == nullptr)
 		{
