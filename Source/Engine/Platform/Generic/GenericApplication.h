@@ -5,6 +5,7 @@
 
 #include "Type.h"
 #include "Engine/Platform/PlatformMacro.h"
+#include "Engine/Platform/Generic/GenericFileSystem.h"
 
 namespace GameEngine
 {
@@ -30,7 +31,7 @@ namespace GameEngine
 			ENGINE_PLATFORM_API void ExecuteResizeCallbacks(uint32 width, uint32 height);
 
 			ENGINE_PLATFORM_API virtual void* GetNativeWindowHandle () const = 0;
-			ENGINE_PLATFORM_API virtual std::wstring GetPath () const = 0;
+			ENGINE_PLATFORM_API virtual PathString GetPath () const = 0;
 
 		private:
 			std::vector<ApplicationResizeCallback> m_resizeListeners;

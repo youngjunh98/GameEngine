@@ -12,6 +12,7 @@ namespace GameEngine
         virtual ~FileSystem () = 0;
 
         static PathString CombinePath (const PathString& path, const PathString& pathToAppend);
+        static PathString GetParentDirectory (const PathString& path);
         static PathString GetFileName (const PathString& path);
         static PathString GetFileExtension (const PathString& path);
         static PathString RemoveFileName (const PathString& path);

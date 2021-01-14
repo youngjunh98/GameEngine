@@ -153,12 +153,12 @@ namespace GameEngine
 			return m_hWnd;
 		}
 
-		std::wstring WindowsApplication::GetPath () const
+		PathString WindowsApplication::GetPath () const
 		{
 			TCHAR path[MAX_PATH];
 			GetModuleFileName (nullptr, path, MAX_PATH);
 
-			return std::wstring (path);
+			return PathString (path);
 		}
 
 		void WindowsApplication::AddWindowProcedureListener (WindowProcedure callback)

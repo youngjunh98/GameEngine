@@ -35,6 +35,28 @@ namespace GameEngine
         return result;
     }
 
+    PathString FileSystem::GetParentDirectory (const PathString& path)
+    {
+        PathString result = path;
+
+        const path_char* originalPathStart = path.c_str ();
+        size_t originalPathSize = path.size ();
+
+        size_t bufferSize = originalPathSize + 1;
+        auto buffer = std::make_unique<path_char[]> (bufferSize);
+        path_char* bufferStart = buffer.get ();
+
+        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
+        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
+
+        if (g_platformFileSystem.GetParentPath (bufferStart, bufferSize))
+        {
+            result = PathString (bufferStart);
+        }
+
+        return result;
+    }
+
     PathString FileSystem::GetFileName (const PathString& path)
     {
         return g_platformFileSystem.GetFileName (path.c_str (), path.size () + 1);

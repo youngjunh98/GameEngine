@@ -24,6 +24,12 @@ namespace GameEngine
 			return SUCCEEDED (PathCchCombine(path, maxPathSize, path1, path2));
 		}
 
+		bool WindowsFileSystem::GetParentPath (path_char* path, const uint32 maxPathSize)
+		{
+			RemoveFileName (path, maxPathSize);
+			return SUCCEEDED (PathCchRemoveFileSpec (path, maxPathSize));
+		}
+
 		PathString WindowsFileSystem::GetFileName (const path_char* path, const uint32 maxPathSize)
 		{
 			return PathString (PathFindFileName (path));
