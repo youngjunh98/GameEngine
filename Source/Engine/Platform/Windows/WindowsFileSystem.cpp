@@ -38,7 +38,7 @@ namespace GameEngine
 		PathString WindowsFileSystem::GetFileExtension (const path_char* path, const uint32 maxPathSize)
 		{
 			PathString extension = PATH("");
-			PCWSTR dotBeforeExtension;
+			PCTSTR dotBeforeExtension;
 
 			if (SUCCEEDED (PathCchFindExtension (path, maxPathSize, &dotBeforeExtension)))
 			{
@@ -46,6 +46,11 @@ namespace GameEngine
 			}
 
 			return extension;
+		}
+
+		bool WindowsFileSystem::SetFileExtension (path_char* path, const uint32 maxPathSize, const path_char* extension)
+		{
+			return SUCCEEDED (PathCchRenameExtension (path, maxPathSize, extension));
 		}
 
 		bool WindowsFileSystem::RemoveFileName (path_char* path, const uint32 maxPathSize)
@@ -91,7 +96,7 @@ namespace GameEngine
 			return bResult;
 		}
 
-		std::vector<PathString> WindowsFileSystem::GetFileList (const path_char* path)
+		std::vector<PathString> WindowsFileSystem::GetFileNames (const path_char* path)
 		{
 			std::vector<PathString> foundList;
 
@@ -119,7 +124,7 @@ namespace GameEngine
 			return foundList;
 		}
 
-		std::vector<PathString> WindowsFileSystem::GetDirectoryList (const path_char* path)
+		std::vector<PathString> WindowsFileSystem::GetDirectoryNames (const path_char* path)
 		{
 			std::vector<PathString> foundList;
 

@@ -30,14 +30,15 @@ namespace GameEngine
 			virtual bool GetParentPath (path_char* path, const uint32 maxPathSize) = 0;
 			virtual PathString GetFileName (const path_char* path, const uint32 maxPathSize) = 0;
 			virtual PathString GetFileExtension (const path_char* path, const uint32 maxPathSize) = 0;
+			virtual bool SetFileExtension (path_char* path, const uint32 maxPathSize, const path_char* extension) = 0;
 			virtual bool RemoveFileName (path_char* path, const uint32 maxPathSize) = 0;
 			virtual bool AddDirectorySeparator (path_char* path, const uint32 maxPathSize) = 0;
 
 			virtual bool FileExists (const path_char* path) = 0;
 			virtual bool DirectoryExists (const path_char* path) = 0;
 
-			virtual std::vector<PathString> GetFileList (const path_char* path) = 0;
-			virtual std::vector<PathString> GetDirectoryList (const path_char* path) = 0;
+			virtual std::vector<PathString> GetFileNames (const path_char* path) = 0;
+			virtual std::vector<PathString> GetDirectoryNames (const path_char* path) = 0;
 		};
 	}
 }

@@ -70,6 +70,31 @@ namespace GameEngine
         return g_platformFileSystem.GetFileExtension (pathStart, pathSize);
     }
 
+    PathString FileSystem::SetFileExtension (const PathString& path, const PathString& extension)
+    {
+        PathString result = path;
+
+        const path_char* originalPathStart = path.c_str ();
+        size_t originalPathSize = path.size ();
+
+        const path_char* extensionStart = extension.c_str ();
+        size_t extensionSize = extension.size ();
+
+        size_t bufferSize = originalPathSize + extensionSize + 1;
+        auto buffer = std::make_unique<path_char[]> (bufferSize);
+        path_char* bufferStart = buffer.get ();
+
+        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
+        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
+
+        if (g_platformFileSystem.SetFileExtension (bufferStart, bufferSize, extensionStart))
+        {
+            result = PathString (bufferStart);
+        }
+
+        return result;
+    }
+
     PathString FileSystem::RemoveFileName (const PathString& path)
     {
         PathString result = path;
@@ -125,13 +150,13 @@ namespace GameEngine
         return g_platformFileSystem.DirectoryExists (path.c_str ());
     }
 
-    std::vector<PathString> FileSystem::GetFileList (const PathString& path)
+    std::vector<PathString> FileSystem::GetFileNames (const PathString& path)
     {
-        return g_platformFileSystem.GetFileList (AddDirectorySeparator (path).c_str ());
+        return g_platformFileSystem.GetFileNames (AddDirectorySeparator (path).c_str ());
     }
 
-    std::vector<PathString> FileSystem::GetDirectoryList (const PathString& path)
+    std::vector<PathString> FileSystem::GetDirectoryNames (const PathString& path)
     {
-        return g_platformFileSystem.GetDirectoryList (AddDirectorySeparator (path).c_str ());
+        return g_platformFileSystem.GetDirectoryNames (AddDirectorySeparator (path).c_str ());
     }
 }

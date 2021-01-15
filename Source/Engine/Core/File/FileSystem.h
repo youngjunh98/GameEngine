@@ -15,13 +15,14 @@ namespace GameEngine
         static PathString GetParentDirectory (const PathString& path);
         static PathString GetFileName (const PathString& path);
         static PathString GetFileExtension (const PathString& path);
+        static PathString SetFileExtension (const PathString& path, const PathString& extension);
         static PathString RemoveFileName (const PathString& path);
         static PathString AddDirectorySeparator (const PathString& path);
 
 		static bool FileExists (const PathString& path);
 		static bool DirectoryExists (const PathString& path);
 
-		static std::vector<PathString> GetFileList (const PathString& path);
-		static std::vector<PathString> GetDirectoryList (const PathString& path);
+		static std::vector<PathString> GetFileNames (const PathString& path);
+		static std::vector<PathString> GetDirectoryNames (const PathString& path);
     };
 }
