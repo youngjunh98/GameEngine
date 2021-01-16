@@ -31,7 +31,7 @@ namespace GameEngine
 			ENGINE_PLATFORM_API void ExecuteResizeCallbacks(uint32 width, uint32 height);
 
 			ENGINE_PLATFORM_API virtual void* GetNativeWindowHandle () const = 0;
-			ENGINE_PLATFORM_API virtual PathString GetPath () const = 0;
+			ENGINE_PLATFORM_API virtual PathString GetExecutablePath () const = 0;
 
 		private:
 			std::vector<ApplicationResizeCallback> m_resizeListeners;

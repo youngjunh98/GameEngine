@@ -18,10 +18,10 @@ namespace GameEngine
 
 		void ModuleManager::Initialize ()
 		{
-			PathString applicationPath = Platform::GetGenericApplication ().GetPath ();
+			PathString applicationPath = Platform::GetGenericApplication ().GetExecutablePath ();
 			PathString moduleSerachPath = FileSystem::AddDirectorySeparator (FileSystem::RemoveFileName (applicationPath));
 
-			for (PathString fileName : FileSystem::GetFileList (moduleSerachPath))
+			for (PathString fileName : FileSystem::GetFileNames (moduleSerachPath))
 			{
 				PathString extension = FileSystem::GetFileExtension (fileName);
 

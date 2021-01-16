@@ -153,7 +153,7 @@ namespace GameEngine
 			return m_hWnd;
 		}
 
-		PathString WindowsApplication::GetPath () const
+		PathString WindowsApplication::GetExecutablePath () const
 		{
 			TCHAR path[MAX_PATH];
 			GetModuleFileName (nullptr, path, MAX_PATH);

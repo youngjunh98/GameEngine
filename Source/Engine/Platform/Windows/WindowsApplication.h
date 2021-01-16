@@ -26,7 +26,7 @@ namespace GameEngine
 			ENGINE_PLATFORM_API virtual void ResizeWindow (uint32 width, uint32 height, bool bFullScreen) override;
 
 			ENGINE_PLATFORM_API virtual void* GetNativeWindowHandle () const override;
-			ENGINE_PLATFORM_API virtual PathString GetPath () const override;
+			ENGINE_PLATFORM_API virtual PathString GetExecutablePath () const override;
 
 			ENGINE_PLATFORM_API void AddWindowProcedureListener (WindowProcedure callback);
 			ENGINE_PLATFORM_API void RemoveWindowProcedureListener (WindowProcedure callback);
