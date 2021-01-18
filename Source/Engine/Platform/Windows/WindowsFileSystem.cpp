@@ -21,7 +21,7 @@ namespace GameEngine
 
 		bool WindowsFileSystem::CombinePath (path_char* path, const uint32 maxPathSize, const path_char* path1, const path_char* path2)
 		{
-			return SUCCEEDED (PathCchCombine(path, maxPathSize, path1, path2));
+			return SUCCEEDED (PathCchCombine (path, maxPathSize, path1, path2));
 		}
 
 		bool WindowsFileSystem::GetParentPath (path_char* path, const uint32 maxPathSize)
@@ -37,7 +37,7 @@ namespace GameEngine
 
 		PathString WindowsFileSystem::GetFileExtension (const path_char* path, const uint32 maxPathSize)
 		{
-			PathString extension = PATH("");
+			PathString extension = PATH ("");
 			PCTSTR dotBeforeExtension;
 
 			if (SUCCEEDED (PathCchFindExtension (path, maxPathSize, &dotBeforeExtension)))
@@ -50,7 +50,24 @@ namespace GameEngine
 
 		bool WindowsFileSystem::SetFileExtension (path_char* path, const uint32 maxPathSize, const path_char* extension)
 		{
-			return SUCCEEDED (PathCchRenameExtension (path, maxPathSize, extension));
+			bool bSucceed = false;
+			PCTSTR dotBeforeExtension;
+
+			if (SUCCEEDED (PathCchFindExtension (path, maxPathSize, &dotBeforeExtension)))
+			{
+				if (*dotBeforeExtension == PATH ('.'))
+				{
+					bSucceed = SUCCEEDED (PathCchRenameExtension (path, maxPathSize, extension));
+
+				}
+				else
+				{
+					bSucceed = SUCCEEDED (PathCchAddExtension (path, maxPathSize, extension));
+				}
+			}
+
+
+			return bSucceed;
 		}
 
 		bool WindowsFileSystem::RemoveFileName (path_char* path, const uint32 maxPathSize)
@@ -73,7 +90,7 @@ namespace GameEngine
 		bool WindowsFileSystem::FileExists (const path_char* path)
 		{
 			bool bResult = false;
-			DWORD attributes = GetFileAttributes(path);
+			DWORD attributes = GetFileAttributes (path);
 
 			if (attributes != INVALID_FILE_ATTRIBUTES)
 			{
@@ -86,7 +103,7 @@ namespace GameEngine
 		bool WindowsFileSystem::DirectoryExists (const path_char* path)
 		{
 			bool bResult = false;
-			DWORD attributes = GetFileAttributes(path);
+			DWORD attributes = GetFileAttributes (path);
 
 			if (attributes != INVALID_FILE_ATTRIBUTES)
 			{
@@ -112,7 +129,7 @@ namespace GameEngine
 				{
 					bool bDirectory = (searchData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 
-					if (bDirectory == false && searchData.cFileName[0] != PATH('.'))
+					if (bDirectory == false && searchData.cFileName[0] != PATH ('.'))
 					{
 						foundList.push_back (searchData.cFileName);
 					}
@@ -140,7 +157,7 @@ namespace GameEngine
 				{
 					bool bDirectory = (searchData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 
-					if (bDirectory && searchData.cFileName[0] != PATH('.'))
+					if (bDirectory && searchData.cFileName[0] != PATH ('.'))
 					{
 						foundList.push_back (searchData.cFileName);
 					}
