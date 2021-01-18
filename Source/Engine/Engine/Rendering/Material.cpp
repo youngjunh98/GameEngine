@@ -328,7 +328,7 @@ namespace GameEngine
 				}
 
 				Texture* texture = textureInfo.second;
-				texture = static_cast<Texture*> (EditorGUI::InputAsset (textureName, "Texture", texture));
+				texture = static_cast<Texture*> (EditorGUI::InputAsset (textureName, "Texture2D", texture));
 
 				if (texture != nullptr)
 				{
@@ -375,7 +375,7 @@ namespace GameEngine
 
 	void Material::OnSerialize (Json::Json& json) const
 	{
-		PathString shaderPath = AssetManager::GetInstance ().GetAssetPath (m_shader);
+		PathString shaderPath = AssetManager::GetAssetPath (*m_shader);
 		Json::JsonSerializer::Serialize (json, "shader", shaderPath);
 		Json::JsonSerializer::CreateArray (json, "textures");
 		Json::JsonSerializer::CreateArray (json, "parameters");
@@ -399,7 +399,7 @@ namespace GameEngine
 
 			Json::Json textureJson;
 			Json::JsonSerializer::Serialize (textureJson, "name", textureName);
-			Json::JsonSerializer::Serialize (textureJson, "path", AssetManager::GetInstance ().GetAssetPath (texture));
+			Json::JsonSerializer::Serialize (textureJson, "path", AssetManager::GetAssetPath (*texture));
 			Json::JsonSerializer::AppendArray (json, "textures", textureJson);
 		}
 
@@ -434,7 +434,7 @@ namespace GameEngine
 	void Material::OnDeserialize (const Json::Json& json)
 	{
 		PathString shaderPath = Json::JsonSerializer::Deserialize<PathString> (json, "shader");
-		auto* shader = AssetManager::GetInstance ().FindAsset<Shader> (shaderPath);
+		auto* shader = dynamic_cast<Shader*> (AssetManager::GetAsset (shaderPath).get ());
 		SetShader (shader);
 
 		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "textures"); it != Json::JsonSerializer::GetArrayEnd (json, "textures"); ++it)
@@ -442,11 +442,11 @@ namespace GameEngine
 			Json::Json textureJson = it.value ();
 			std::string name = Json::JsonSerializer::Deserialize<std::string> (textureJson, "name");
 			PathString texturePath = Json::JsonSerializer::Deserialize<PathString> (textureJson, "path");
-			Texture* texture = AssetManager::GetInstance ().FindAsset<Texture> (texturePath);
+			Texture* texture = dynamic_cast<Texture*> (AssetManager::GetAsset (texturePath).get ());
 
 			if (texture != nullptr)
 			{
-				m_textureMap.emplace (name, texture);
+				m_textureMap.at (name) = texture;
 			}
 		}
 
@@ -456,7 +456,7 @@ namespace GameEngine
 			std::string name = Json::JsonSerializer::Deserialize<std::string> (parameterJson, "name");
 			std::string type = Json::JsonSerializer::Deserialize<std::string> (parameterJson, "type");
 
-			m_parameterTypeMap.emplace (name, type);
+			m_parameterTypeMap.at (name) = type;
 
 			if (type == "Float")
 			{

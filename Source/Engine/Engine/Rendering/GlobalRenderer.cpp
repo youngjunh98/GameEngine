@@ -119,28 +119,7 @@ namespace GameEngine
 			return false;
 		}
 
-		TextureCube* textureCube = nullptr;
-		PathString skyPath[] = { PATH ("Assets/skyRight.hdr"), PATH ("Assets/skyLeft.hdr"),
-			PATH ("Assets/skyTop.hdr"), PATH ("Assets/skyBottom.hdr"), PATH ("Assets/skyFront.hdr"), PATH ("Assets/skyBack.hdr") };
-
-		if (AssetImporter::ImportTextureCube (skyPath))
-		{
-			textureCube = AssetManager::GetInstance ().FindAsset<TextureCube> (skyPath[0]);
-		}
-
-		AssetImporter::ImportAsset (PATH ("Assets/sphere.obj"));
-		AssetImporter::ImportAsset (PATH ("Assets/Shader/Skybox.hlsl"));
-		AssetImporter::ImportAsset (PATH ("Assets/Shader/ShadowMapShader.hlsl"));
-		AssetImporter::ImportAsset (PATH ("Assets/Shader/OmnidirectionalShadowMapShader.hlsl"));
-		AssetImporter::ImportAsset (PATH ("Assets/Shader/StandardShader.hlsl"));
-		AssetImporter::ImportAsset (PATH ("Assets/Shader/StandardTessellationShader.hlsl"));
-
-		Shader* skyboxShader = AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/Skybox.hlsl"));
-		instance.m_skyboxMaterial = new Material ();
-		instance.m_skyboxMaterial->SetShader (skyboxShader);
-		instance.m_skyboxMaterial->SetTexture ("Skybox", *textureCube);
-		instance.m_shadowMapShader = AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/ShadowMapShader.hlsl"));
-		instance.m_omnidirectionalShadowMapShader = AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/OmnidirectionalShadowMapShader.hlsl"));
+		LoadInternalRenderingAsset ();
 
 		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 		instance.m_shadowMapSampler = renderingInterface.CreateSampler (EAddressMode::Border, EFilterMode::Linear, 1, borderColor);
@@ -241,15 +220,7 @@ namespace GameEngine
 		Platform::GetGenericApplication ().RemoveResizeListener (ChangeResolution);
 		GlobalRenderer& instance = GetInstance ();
 
-		if (instance.m_skyboxMaterial != nullptr)
-		{
-			instance.m_skyboxMaterial->Destroy ();
-			delete instance.m_skyboxMaterial;
-			instance.m_skyboxMaterial = nullptr;
-		}
-
-		instance.m_shadowMapShader = nullptr;
-		instance.m_omnidirectionalShadowMapShader = nullptr;
+		UnloadInternalRenderingAsset ();
 
 		instance.m_defaultForwardPipeline.Release ();
 		instance.m_defaultLinePipeline.Release ();
@@ -322,7 +293,7 @@ namespace GameEngine
 			Matrix4x4 view = camera->GetViewMatrix ();
 			Matrix4x4 projection = camera->GetProjectionMatrix ();
 			float cameraAspect = camera->GetAspectRatio ();
-			float cameraFov = camera->GetFieldOfView ();
+			float cameraFov = camera->GetMode () == ECameraMode::Orthographic ? 90.0f : camera->GetFieldOfView ();
 			float cameraNear = camera->GetNear ();
 			float cameraFar = camera->GetFar ();
 
@@ -357,6 +328,8 @@ namespace GameEngine
 		pipelineData.m_camera.m_position = cameraPosition;
 		pipelineData.m_camera.m_near = cameraNear;
 		pipelineData.m_camera.m_far = cameraFar;
+		pipelineData.m_camera.m_fov = cameraFov;
+		pipelineData.m_camera.m_aspectRatio = aspectRatio;
 		pipelineData.m_camera.m_frustum = Camera::CalculateFrustumCorners (viewMatrix, aspectRatio, cameraFov, cameraNear, cameraFar);
 		pipelineData.m_renderers = renderers;
 		pipelineData.m_lights = lights;
@@ -583,11 +556,11 @@ namespace GameEngine
 
 		if (lightType == ELightType::Directional || lightType == ELightType::Spot)
 		{
-			shader = instance.m_shadowMapShader;
+			shader = instance.m_shadowMapShader.get ();
 		}
 		else if (lightType == ELightType::Point)
 		{
-			shader = instance.m_omnidirectionalShadowMapShader;
+			shader = instance.m_omnidirectionalShadowMapShader.get ();
 		}
 
 		if (shader != nullptr)
@@ -797,12 +770,12 @@ namespace GameEngine
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTexture"))
 		{
-			instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
+			instance.m_ri->BindPixelShaderResource (instance.m_defaultSkyMaterial->GetTextureMap ().at ("Skybox")->GetTextureResource (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTexture").m_bindIndex);
 		}
 
 		if (shader->IsShaderResourceExist (EShaderStage::Pixel, "g_EnvironmentTextureSampler"))
 		{
-			instance.m_ri->BindPixelShaderSampler (instance.m_skyboxMaterial->GetTextureMap ().at ("Skybox")->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTextureSampler").m_bindIndex);
+			instance.m_ri->BindPixelShaderSampler (instance.m_defaultSkyMaterial->GetTextureMap ().at ("Skybox")->GetSampler (), shader->GetShaderResourceBinding (EShaderStage::Pixel, "g_EnvironmentTextureSampler").m_bindIndex);
 		}
 	}
 
@@ -898,7 +871,7 @@ namespace GameEngine
 		}
 	}
 
-	void GlobalRenderer::DrawSkybox ()
+	void GlobalRenderer::DrawSkybox (Matrix4x4 viewMatrix, float cameraNear, float cameraFar, float cameraFov, float aspectRatio)
 	{
 		if (Camera::Main == nullptr)
 		{
@@ -910,36 +883,24 @@ namespace GameEngine
 		instance.m_ri->SetRasterizerState (instance.m_rsCullNone.get ());
 		instance.m_ri->SetDepthStencilState (instance.m_dssLessEqualStencilAlways.get ());
 
-		instance.m_ri->ActivateVertexShader (instance.m_skyboxMaterial->GetShader ()->GetVertexShader ());
-		instance.m_ri->ActivatePixelShader (instance.m_skyboxMaterial->GetShader ()->GetPixelShader ());
-
-		float cameraNear = Camera::Main->GetNear ();
-		float cameraFar = Camera::Main->GetFar ();
-		float cameraFov = Camera::Main->GetMode () == ECameraMode::Orthographic ? 90.0f : Camera::Main->GetFieldOfView ();
-		float aspectRatio = Camera::Main->GetAspectRatio ();
-
-		Matrix4x4 cameraViewTransposed = Camera::Main->GetViewMatrix ().Transposed ();
-		Matrix4x4 cameraProjectionTransposed = Matrix4x4::Perspective (cameraFov, aspectRatio, cameraNear, cameraFar).Transposed ();
-
-		Vector3 cameraPosition = Camera::Main->GetGameObject ().GetTransform ().GetPosition ();
+		instance.m_ri->ActivateVertexShader (instance.m_defaultSkyMaterial->GetShader ()->GetVertexShader ());
+		instance.m_ri->ActivatePixelShader (instance.m_defaultSkyMaterial->GetShader ()->GetPixelShader ());
 
 		CameraConstantBuffer cameraConstantBuffer;
-		cameraConstantBuffer.m_view = cameraViewTransposed;
-		cameraConstantBuffer.m_projection = cameraProjectionTransposed;
-		cameraConstantBuffer.m_viewProjection = cameraProjectionTransposed * cameraViewTransposed;
-		cameraConstantBuffer.m_cameraWorldPosition = cameraPosition;
+		cameraConstantBuffer.m_view = viewMatrix.Transposed ();
+		cameraConstantBuffer.m_projection = Matrix4x4::Perspective (cameraFov, aspectRatio, cameraNear, cameraFar).Transposed ();
+		cameraConstantBuffer.m_viewProjection = cameraConstantBuffer.m_projection * cameraConstantBuffer.m_view;
+		cameraConstantBuffer.m_cameraWorldPosition = Vector3::Zero;
 		cameraConstantBuffer.m_cameraFar = cameraFar;
 
 		GlobalRenderer::SetGlobalShaderConstantBuffer ("CBCamera", &cameraConstantBuffer);
 
-		auto* skyMesh = AssetManager::GetInstance ().FindAsset<Mesh> (L"Assets/sphere.obj");
+		instance.m_ri->SetInputLayout (instance.m_defaultSkyMaterial->GetShader ()->GetInputLayout ());
+		instance.m_ri->BindVertexShaderConstantBuffer (instance.m_constantBufferPerCamera.get (), instance.m_defaultSkyMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
+		instance.m_ri->BindPixelShaderResource (instance.m_defaultSkyMaterial->GetTextureMap ().find ("Skybox")->second->GetTextureResource (), instance.m_defaultSkyMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "Skybox").m_bindIndex);
+		instance.m_ri->BindPixelShaderSampler (instance.m_defaultSkyMaterial->GetTextureMap ().find ("Skybox")->second->GetSampler (), instance.m_defaultSkyMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "SkyboxSampler").m_bindIndex);
 
-		instance.m_ri->SetInputLayout (instance.m_skyboxMaterial->GetShader ()->GetInputLayout ());
-		instance.m_ri->BindVertexShaderConstantBuffer (instance.m_constantBufferPerCamera.get (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Vertex, "CBCamera").m_bindIndex);
-		instance.m_ri->BindPixelShaderResource (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetTextureResource (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "Skybox").m_bindIndex);
-		instance.m_ri->BindPixelShaderSampler (instance.m_skyboxMaterial->GetTextureMap ().find ("Skybox")->second->GetSampler (), instance.m_skyboxMaterial->GetShader ()->GetShaderResourceBinding (EShaderStage::Pixel, "SkyboxSampler").m_bindIndex);
-
-		DrawVertices (skyMesh->GetVertexBufferResource (0), skyMesh->GetIndexBufferResource (0));
+		DrawVertices (instance.m_defaultSphereMesh->GetVertexBufferResource (0), instance.m_defaultSphereMesh->GetIndexBufferResource (0));
 
 		instance.m_ri->SetRasterizerState (instance.m_rsCullBack.get ());
 		instance.m_ri->SetDepthStencilState (instance.m_depthLessStencilAlways.get ());
@@ -998,6 +959,113 @@ namespace GameEngine
 	int32 GlobalRenderer::GetMaxLightCount ()
 	{
 		return GetInstance ().m_maxLightCount;
+	}
+
+	std::shared_ptr<Shader> GlobalRenderer::GetStandardShader ()
+	{
+		return GetInstance ().m_standardShader;
+	}
+
+	void GlobalRenderer::LoadInternalRenderingAsset ()
+	{
+		GlobalRenderer& instance = GetInstance ();
+
+		PathString internalAssetPath = AssetManager::GetInternalAssetPath ();
+		PathString assetPath = FileSystem::CombinePath (internalAssetPath, PATH ("Assets"));
+		PathString shaderPath = FileSystem::CombinePath (internalAssetPath, PATH ("Shader"));
+
+		// Load standard shaders
+		PathString standardShaderPath = FileSystem::CombinePath (shaderPath, PATH ("StandardShader.hlsl"));
+		PathString standardTessellationShaderPath = FileSystem::CombinePath (shaderPath, PATH ("StandardTessellationShader.hlsl"));
+		AssetImporter::LoadShader (standardShaderPath, true);
+		AssetImporter::LoadShader (standardTessellationShaderPath, true);
+		instance.m_standardShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (standardShaderPath));
+		instance.m_standardTessellationShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (standardTessellationShaderPath));
+
+		// Load shadow map shaders
+		PathString shadowMapShaderPath = FileSystem::CombinePath (shaderPath, PATH ("ShadowMapShader.hlsl"));
+		PathString omnidirectionalShadowMapShader = FileSystem::CombinePath (shaderPath, PATH ("OmnidirectionalShadowMapShader.hlsl"));
+		AssetImporter::LoadShader (shadowMapShaderPath, true);
+		AssetImporter::LoadShader (omnidirectionalShadowMapShader, true);
+		instance.m_shadowMapShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (shadowMapShaderPath));
+		instance.m_omnidirectionalShadowMapShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (omnidirectionalShadowMapShader));
+
+		// Load default skybox assets
+		PathString defaultSkyboxShaderPath = FileSystem::CombinePath (shaderPath, PATH ("Skybox.hlsl"));
+		PathString defaultSphereMeshPath = FileSystem::CombinePath (assetPath, PATH ("sphere.obj"));
+
+		PathString skyPath[] = { 
+			FileSystem::CombinePath (assetPath, PATH ("skyRight.hdr")),
+			FileSystem::CombinePath (assetPath, PATH ("skyLeft.hdr")),
+			FileSystem::CombinePath (assetPath, PATH ("skyTop.hdr")),
+			FileSystem::CombinePath (assetPath, PATH ("skyBottom.hdr")),
+			FileSystem::CombinePath (assetPath, PATH ("skyFront.hdr")),
+			FileSystem::CombinePath (assetPath, PATH ("skyBack.hdr"))
+		};
+
+		AssetImporter::LoadShader (defaultSkyboxShaderPath, true);
+		AssetImporter::ImportAsset (defaultSphereMeshPath, true);
+		AssetImporter::ImportTextureCube (skyPath, true);
+
+		instance.m_defaultSkyboxShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (defaultSkyboxShaderPath));
+		instance.m_defaultSphereMesh = std::dynamic_pointer_cast<Mesh> (AssetManager::GetInternalAsset (defaultSphereMeshPath));
+		instance.m_defaultSkyTexture = std::dynamic_pointer_cast<TextureCube> (AssetManager::GetInternalAsset (skyPath[0]));
+		instance.m_defaultSkyMaterial = std::make_shared<Material> ();
+		instance.m_defaultSkyMaterial->SetShader (instance.m_defaultSkyboxShader.get ());
+		instance.m_defaultSkyMaterial->SetTexture ("Skybox", *instance.m_defaultSkyTexture);
+	}
+
+	void GlobalRenderer::UnloadInternalRenderingAsset ()
+	{
+		GlobalRenderer& instance = GetInstance ();
+
+		if (instance.m_standardShader != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_standardShader));
+			instance.m_standardShader = nullptr;
+		}
+
+		if (instance.m_standardTessellationShader != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_standardTessellationShader));
+			instance.m_standardTessellationShader = nullptr;
+		}
+
+		if (instance.m_shadowMapShader != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_shadowMapShader));
+			instance.m_shadowMapShader = nullptr;
+		}
+
+		if (instance.m_omnidirectionalShadowMapShader != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_omnidirectionalShadowMapShader));
+			instance.m_omnidirectionalShadowMapShader = nullptr;
+		}
+
+		if (instance.m_defaultSkyboxShader != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_defaultSkyboxShader));
+			instance.m_defaultSkyboxShader = nullptr;
+		}
+
+		if (instance.m_defaultSphereMesh != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_defaultSphereMesh));
+			instance.m_defaultSphereMesh = nullptr;
+		}
+
+		if (instance.m_defaultSkyTexture != nullptr)
+		{
+			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_defaultSkyTexture));
+			instance.m_defaultSkyTexture = nullptr;
+		}
+
+		if (instance.m_defaultSkyMaterial != nullptr)
+		{
+			instance.m_defaultSkyMaterial->Destroy ();
+			instance.m_defaultSkyMaterial = nullptr;
+		}
 	}
 
 	GlobalRendererSettings GlobalRenderer::GetSettings ()

@@ -13,87 +13,54 @@
 
 namespace GameEngine
 {
-	void AssetImporter::ImportAllAssets ()
+	bool AssetImporter::ImportAsset (const PathString& path, bool bInternalAsset)
 	{
-		ImportAllAssetsRecursive (PATH ("Assets"));
+		bool bResult = false;
+		std::shared_ptr<Object> asset;
+		PathString extension = FileSystem::GetFileExtension (path);
+
+		if (IsSupported3D (extension))
+		{
+			asset = Import3D (path);
+		}
+		else if (IsSupported2D (extension))
+		{
+			asset = Import2D (path, true);
+		}
+		else if (IsSupportedAudio (extension))
+		{
+			asset = ImportAudio (path);
+		}
+
+		if (asset != nullptr)
+		{
+			RegisterAsset (asset, path, bInternalAsset);
+			bResult = true;
+		}
+
+		return bResult;
 	}
 
-	bool AssetImporter::ImportAsset (const PathString& path)
+	std::shared_ptr<Shader> AssetImporter::LoadShader (const PathString& path, bool bInternalAsset)
 	{
-		AssetManager& assetManager = AssetManager::GetInstance ();
+		auto shader = std::make_shared<Shader> ();
 
-		bool bSucceed = false;
-		bool bNoAssetFound = assetManager.FindAsset<Object> (path) == nullptr;
-
-		if (bNoAssetFound)
+		if (shader != nullptr)
 		{
-			AssetInfo asset;
-			auto extension = FileSystem::GetFileExtension (path);
-
-			if (IsSupported3D (extension))
+			if (shader->Initialize (path))
 			{
-				asset.m_type = EAssetType::Mesh;
-				asset.m_asset = Import3D (path);
+				RegisterAsset (shader, path, bInternalAsset);
 			}
-			else if (IsSupported2D (extension))
+			else
 			{
-				asset.m_type = EAssetType::Texture;
-				asset.m_asset = Import2D (path, true);
-			}
-			else if (IsSupportedAudio (extension))
-			{
-				asset.m_type = EAssetType::Audio;
-				asset.m_asset = ImportAudio (path);
-			}
-			else if (extension == PATH ("hlsl"))
-			{
-				asset.m_type = EAssetType::Shader;
-				asset.m_asset = LoadShader (path);
-			}
-			else if (extension == PATH ("scene"))
-			{
-				File file (path, EFileAccessMode::Read);
-				int64 fileSize = file.GetSize ();
-
-				std::string jsonString (fileSize + 1, L'\0');
-				auto* first = const_cast<char*> (jsonString.data ());
-
-				file.ReadAll (first);
-				Json::Json sceneData = Json::Json::parse (jsonString);
-
-				SceneManager::GetInstance ().RegisterScene (path, sceneData);
-
-				return true;
-			}
-			else if (extension == PATH ("material"))
-			{
-				File file (path, EFileAccessMode::Read);
-				int64 fileSize = file.GetSize ();
-
-				std::string jsonString (fileSize + 1, '\0');
-				auto* first = const_cast<char*> (jsonString.data ());
-
-				file.ReadAll (first);
-				Json::Json materialData = Json::Json::parse (jsonString, nullptr, false);
-
-				auto material = std::make_shared<Material> ();
-				material->OnDeserialize (materialData);
-
-				asset.m_type = EAssetType::Material;
-				asset.m_asset = material;
-			}
-
-			if (asset.m_asset != nullptr)
-			{
-				bSucceed = true;
-				assetManager.AddAsset (asset, path);
+				shader = nullptr;
 			}
 		}
 
-		return bSucceed;
+		return shader;
 	}
 
-	std::shared_ptr<TextureCube> AssetImporter::ImportTextureCube (const PathString cubePath[6])
+	std::shared_ptr<TextureCube> AssetImporter::ImportTextureCube (const PathString cubePath[6], bool bInternalAsset)
 	{
 		// 0 = Right, 1 = Left, 2 = Up, 3 = Down, 4 = Front, 5 = Back
 		const uint32 arraySize = 6;
@@ -181,26 +148,26 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		AssetInfo asset;
-		asset.m_type = EAssetType::Texture;
-		asset.m_asset = textureCube;
-		AssetManager::GetInstance ().AddAsset (asset, cubePath[0]);
+		RegisterAsset (textureCube, cubePath[0], bInternalAsset);
 
 		return textureCube;
 	}
 
-	void AssetImporter::ImportAllAssetsRecursive (const PathString& path)
+	void AssetImporter::RegisterAsset (const std::shared_ptr<Object>& asset, const PathString& path, bool bInternalAsset)
 	{
-		for (const PathString& fileName : FileSystem::GetFileList (path))
+		PathString assetPath = path;
+
+		if (bInternalAsset == false)
 		{
-			PathString filePath = path + PATH ("/") + fileName;
-			ImportAsset (filePath);
+			assetPath = FileSystem::CombinePath (PATH ("Assets"), FileSystem::GetFileName (path));
+			assetPath = FileSystem::SetFileExtension (assetPath, PATH ("asset"));
 		}
 
-		for (const PathString& directoryName : FileSystem::GetDirectoryList (path))
+		AssetManager::AddAsset (asset, assetPath);
+
+		if (bInternalAsset == false)
 		{
-			PathString directoryPath = path + PATH ("/") + directoryName;
-			ImportAllAssetsRecursive (directoryPath);
+			AssetManager::SaveAsset (assetPath);
 		}
 	}
 
@@ -218,21 +185,6 @@ namespace GameEngine
 	bool AssetImporter::IsSupportedAudio (const PathString& extension)
 	{
 		return extension == PATH ("wav");
-	}
-
-	std::shared_ptr<Shader> AssetImporter::LoadShader (const PathString& path)
-	{
-		auto shader = std::make_shared<Shader> ();
-
-		if (shader != nullptr)
-		{
-			if (shader->Initialize (path) == false)
-			{
-				shader = nullptr;
-			}
-		}
-
-		return shader;
 	}
 
 	std::shared_ptr<Mesh> AssetImporter::Import3D (const PathString& path)

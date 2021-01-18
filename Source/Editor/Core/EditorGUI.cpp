@@ -288,41 +288,23 @@ namespace GameEngine
 
 		if (value != nullptr)
 		{
-			PathString name = AssetManager::GetInstance ().GetAssetName (value);
+			PathString name = AssetManager::GetAssetName (*value);
 			assetName = std::string (name.begin (), name.end ());
-		}
-
-		std::vector<Object*> foundAssets;
-
-		if (type == "Mesh")
-		{
-			foundAssets = AssetManager::GetInstance ().FindAssetsByType (EAssetType::Mesh);
-		}
-		else if (type == "Texture")
-		{
-			foundAssets = AssetManager::GetInstance ().FindAssetsByType (EAssetType::Texture);
-		}
-		else if (type == "Shader")
-		{
-			foundAssets = AssetManager::GetInstance ().FindAssetsByType (EAssetType::Shader);
-		}
-		else if (type == "Material")
-		{
-			foundAssets = AssetManager::GetInstance ().FindAssetsByType (EAssetType::Material);
 		}
 
 		ImGui::PushID (label.c_str ());
 
 		if (ImGui::BeginCombo ("##SelectAsset", assetName.c_str (), ImGuiComboFlags_NoArrowButton))
 		{
-			for (Object* found : foundAssets)
+			for (std::shared_ptr<Object>& found : AssetManager::FindAssets (type))
 			{
-				PathString name = AssetManager::GetInstance ().GetAssetName (found);
+				Object* asset = found.get ();
+				PathString name = AssetManager::GetAssetName (*asset);
 				assetName = std::string (name.begin (), name.end ());
 
-				if (SelectableLabel (assetName, found == value))
+				if (SelectableLabel (assetName, asset == value))
 				{
-					value = found;
+					value = asset;
 				}
 			}
 

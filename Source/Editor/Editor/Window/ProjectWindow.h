@@ -17,7 +17,9 @@ namespace GameEngine
         virtual void OnRender () override;
 
     private:
-        void RenderDirectoryTreeRecursive (PathString directoryName, PathString pathToDirectory);
+        void RenderDirectoryRecursive (PathString directoryName, PathString pathToDirectory);
+        void RenderCreateMenu ();
+        void RenderEditMenu ();
 
     private:
         PathString m_selectedAssetPath;

@@ -27,6 +27,6 @@ namespace GameEngine
 		m_meshRenderPass.Render (pipelineData);
 		m_meshRenderPass.PostRender (pipelineData);
 
-		GlobalRenderer::DrawSkybox ();
+		GlobalRenderer::DrawSkybox (pipelineData.m_camera.m_viewMatrix, pipelineData.m_camera.m_near, pipelineData.m_camera.m_far, pipelineData.m_camera.m_fov, pipelineData.m_camera.m_aspectRatio);
 	}
 }

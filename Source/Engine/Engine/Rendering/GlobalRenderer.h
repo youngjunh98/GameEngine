@@ -115,7 +115,7 @@ namespace GameEngine
 
 		static void DrawVertices (RI_VertexBuffer* vertexBuffer, RI_IndexBuffer* indexBuffer);
 
-		static void DrawSkybox ();
+		static void DrawSkybox (Matrix4x4 viewMatrix, float cameraNear, float cameraFar, float cameraFov, float aspectRatio);
 
 		static LightData GetLightData (uint32 index);
 		static void AddLightData (LightData data);
@@ -124,6 +124,12 @@ namespace GameEngine
 
 		static int32 GetLightCount ();
 		static int32 GetMaxLightCount ();
+
+		static std::shared_ptr<Shader> GetStandardShader ();
+
+	private:
+		static void LoadInternalRenderingAsset ();
+		static void UnloadInternalRenderingAsset ();
 
 	private:
 		GlobalRendererSettings m_settings;
@@ -176,9 +182,19 @@ namespace GameEngine
 		std::vector<RenderingResourcePtr<RI_DepthStencilView>> m_spotLightShadowMapDSV;
 		uint32 m_spotLightShadowMapLastSlot;
 
-		Shader* m_shadowMapShader;
-		Shader* m_omnidirectionalShadowMapShader;
+		std::shared_ptr<Shader> m_standardShader;
+		std::shared_ptr<Shader> m_standardTessellationShader;
+		std::shared_ptr<Shader> m_shadowMapShader;
+		std::shared_ptr<Shader> m_omnidirectionalShadowMapShader;
+		std::shared_ptr<Shader> m_defaultSkyboxShader;
+		std::shared_ptr<Mesh> m_defaultSphereMesh;
+		std::shared_ptr<TextureCube> m_defaultSkyTexture;
+		std::shared_ptr<Material> m_defaultSkyMaterial;
 
-		Material* m_skyboxMaterial;
+
+		//Shader* m_shadowMapShader;
+		//Shader* m_omnidirectionalShadowMapShader;
+
+		//Material* m_skyboxMaterial;
 	};
 }

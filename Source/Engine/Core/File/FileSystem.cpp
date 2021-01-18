@@ -1,4 +1,3 @@
-#include <memory>
 #include <cstring>
 
 #include "Engine/Core/File/FileSystem.h"
@@ -15,23 +14,21 @@ namespace GameEngine
         PathString result = path;
         PathString separatorAdded = AddDirectorySeparator (path);
 
-        const path_char* originalPathStart = separatorAdded.c_str ();
-        size_t originalPathSize = separatorAdded.size ();
+        size_t bufferSize = separatorAdded.size () + pathToAppend.size () + 1;
+        std::unique_ptr<path_char[]> buffer;
 
-        const path_char* appendPathStart = pathToAppend.c_str ();
-        size_t appendPathSize = pathToAppend.size ();
-
-        size_t bufferSize = originalPathSize + appendPathSize + 1;
-        auto buffer = std::make_unique<path_char[]> (bufferSize);
-        path_char* bufferStart = buffer.get ();
-
-        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
-
-        if (g_platformFileSystem.CombinePath (bufferStart, bufferSize, originalPathStart, appendPathStart) == true)
+        if (CreatePathBuffer (buffer, bufferSize, PATH("")))
         {
-            result = PathString (bufferStart);
+            path_char* bufferStart = buffer.get ();
+            const path_char* originalPathStart = separatorAdded.c_str ();
+            const path_char* appendPathStart = pathToAppend.c_str ();
+
+            if (g_platformFileSystem.CombinePath (bufferStart, bufferSize, originalPathStart, appendPathStart) == true)
+            {
+                result = PathString (bufferStart);
+            }
         }
-        
+
         return result;
     }
 
@@ -39,19 +36,17 @@ namespace GameEngine
     {
         PathString result = path;
 
-        const path_char* originalPathStart = path.c_str ();
-        size_t originalPathSize = path.size ();
+        size_t bufferSize = path.size () + 2;
+        std::unique_ptr<path_char[]> buffer;
 
-        size_t bufferSize = originalPathSize + 1;
-        auto buffer = std::make_unique<path_char[]> (bufferSize);
-        path_char* bufferStart = buffer.get ();
-
-        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
-        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
-
-        if (g_platformFileSystem.GetParentPath (bufferStart, bufferSize))
+        if (CreatePathBuffer (buffer, bufferSize, path))
         {
-            result = PathString (bufferStart);
+            path_char* bufferStart = buffer.get ();
+
+            if (g_platformFileSystem.GetParentPath (bufferStart, bufferSize))
+            {
+                result = PathString (bufferStart);
+            }
         }
 
         return result;
@@ -74,22 +69,19 @@ namespace GameEngine
     {
         PathString result = path;
 
-        const path_char* originalPathStart = path.c_str ();
-        size_t originalPathSize = path.size ();
+        // original + dot + extension + null
+        size_t bufferSize = path.size () + extension.size () + 2;
+        std::unique_ptr<path_char[]> buffer;
 
-        const path_char* extensionStart = extension.c_str ();
-        size_t extensionSize = extension.size ();
-
-        size_t bufferSize = originalPathSize + extensionSize + 1;
-        auto buffer = std::make_unique<path_char[]> (bufferSize);
-        path_char* bufferStart = buffer.get ();
-
-        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
-        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
-
-        if (g_platformFileSystem.SetFileExtension (bufferStart, bufferSize, extensionStart))
+        if (CreatePathBuffer (buffer, bufferSize, path))
         {
-            result = PathString (bufferStart);
+            path_char* bufferStart = buffer.get ();
+            const path_char* extensionStart = extension.c_str ();
+
+            if (g_platformFileSystem.SetFileExtension (bufferStart, bufferSize, extensionStart))
+            {
+                result = PathString (bufferStart);
+            }
         }
 
         return result;
@@ -99,19 +91,17 @@ namespace GameEngine
     {
         PathString result = path;
 
-        const path_char* originalPathStart = path.c_str ();
-        size_t originalPathSize = path.size ();
+        size_t bufferSize = path.size ()+ 1;
+        std::unique_ptr<path_char[]> buffer;
 
-        size_t bufferSize = originalPathSize + 1;
-        auto buffer = std::make_unique<path_char[]> (bufferSize);
-        path_char* bufferStart = buffer.get ();
-
-        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
-        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
-
-        if (g_platformFileSystem.RemoveFileName (bufferStart, bufferSize) == true)
+        if (CreatePathBuffer (buffer, bufferSize, path))
         {
-            result = PathString (bufferStart);
+            path_char* bufferStart = buffer.get ();
+
+            if (g_platformFileSystem.RemoveFileName (bufferStart, bufferSize) == true)
+            {
+                result = PathString (bufferStart);
+            }
         }
 
         return result;
@@ -121,20 +111,18 @@ namespace GameEngine
     {
         PathString result = path;
 
-        const path_char* originalPathStart = path.c_str ();
-        size_t originalPathSize = path.size ();
-
         // original path + null character + separator + extra
-        size_t bufferSize = originalPathSize + 10;
-        auto buffer = std::make_unique<path_char[]> (bufferSize);
-        path_char* bufferStart = buffer.get ();
+        size_t bufferSize = path.size () + 10;
+        std::unique_ptr<path_char[]> buffer;
 
-        std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
-        std::memcpy (bufferStart, originalPathStart, originalPathSize * sizeof (path_char));
-
-        if (g_platformFileSystem.AddDirectorySeparator (bufferStart, bufferSize) == true)
+        if (CreatePathBuffer (buffer, bufferSize, path))
         {
-            result = PathString (bufferStart);
+            path_char* bufferStart = buffer.get ();
+
+            if (g_platformFileSystem.AddDirectorySeparator (bufferStart, bufferSize) == true)
+            {
+                result = PathString (bufferStart);
+            }
         }
 
         return result;
@@ -158,5 +146,27 @@ namespace GameEngine
     std::vector<PathString> FileSystem::GetDirectoryNames (const PathString& path)
     {
         return g_platformFileSystem.GetDirectoryNames (AddDirectorySeparator (path).c_str ());
+    }
+
+    bool FileSystem::CreatePathBuffer (std::unique_ptr<path_char[]>& buffer, uint32 bufferSize, const PathString& initPath)
+    {
+        bool bSucceed = false;
+        buffer = std::make_unique<path_char[]> (bufferSize);
+
+        if (buffer != nullptr)
+        {
+            bSucceed = true;
+
+            // Fill buffer with null character
+            path_char* bufferStart = buffer.get ();
+            std::memset (bufferStart, PATH ('\0'), bufferSize * sizeof (path_char));
+
+            // Copy initPath to buffer
+            const path_char* initPathStart = initPath.c_str ();
+            size_t initPathSize = initPath.size ();
+            std::memcpy (bufferStart, initPathStart, initPathSize * sizeof (path_char));
+        }
+
+        return bSucceed;
     }
 }

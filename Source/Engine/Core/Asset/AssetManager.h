@@ -6,21 +6,11 @@
 #include <vector>
 
 #include "Engine/Core/CoreMacro.h"
-#include "Engine/Core/Object/Object.h"
 #include "Engine/Core/File/FileSystem.h"
 
 namespace GameEngine
 {
-	enum class EAssetType
-	{
-		None, Audio, Mesh, Texture, Shader, Material
-	};
-
-	struct AssetInfo
-	{
-		EAssetType m_type;
-		std::shared_ptr<Object> m_asset;
-	};
+	class Object;
 
 	class ENGINE_CORE_API AssetManager final
 	{
@@ -28,56 +18,33 @@ namespace GameEngine
 		AssetManager ();
 		~AssetManager ();
 
+		static AssetManager& GetInstance ();
+
 	public:
 		AssetManager (const AssetManager&) = delete;
 		AssetManager& operator= (const AssetManager&) = delete;
 
-		static AssetManager& GetInstance ();
+		static bool IsAssetLoaded (const PathString& path);
+		static void LoadAsset (const PathString& path);
+		static void LoadAllAssets (const PathString& path);
+		static void UnloadAsset (const PathString& path);
+		static void UnloadAllAssets ();
 
-		void Shutdown ();
-
-		void SaveAsset (const PathString& path);
-		PathString GetAssetPath (const Object* asset);
-		PathString GetAssetName (const Object* asset);
-
-		template<typename TAsset>
-		TAsset* FindAsset (const PathString& path)
-		{
-			TAsset* found = nullptr;
-			auto pair = m_assetMap.find (path);
-
-			if (pair != m_assetMap.end ())
-			{
-				Object* asset = pair->second.m_asset.get ();
-				found = dynamic_cast<TAsset*> (asset);
-			}
-
-			return found;
-		}
-
-		template<typename TAsset>
-		std::vector<TAsset*> FindAssets ()
-		{
-			std::vector<TAsset*> foundList;
-
-			for (auto pair : m_assetMap)
-			{
-				Object* asset = pair.second.m_asset.get ();
-				TAsset* casted = dynamic_cast<TAsset*> (asset);
-
-				if (casted != nullptr)
-				{
-					foundList.push_back (casted);
-				}
-			}
-
-			return foundList;
-		}
-
-		void AddAsset (AssetInfo asset, const PathString& path);
-		std::vector<Object*> FindAssetsByType (EAssetType type);
+		static void AddAsset (const std::shared_ptr<Object>& object, const PathString& path);
+		static void SaveAsset (const PathString& path);
+		static PathString GetInternalAssetPath ();
+		static std::shared_ptr<Object> GetInternalAsset (const PathString& path);
+		static std::shared_ptr<Object> GetAsset (const PathString& path);
+		static std::vector<std::shared_ptr<Object>> GetAssets (const PathString& path);
+		static std::vector<std::shared_ptr<Object>> FindAssets (const std::string& typeName);
+		static PathString GetAssetPath (const Object& object);
+		static PathString GetAssetName (const Object& object);
 
 	private:
-		std::unordered_map<PathString, AssetInfo> m_assetMap;
+		static void LoadAllAssetsRecursive (const PathString& path);
+
+	private:
+		using AssetMap = std::unordered_map<PathString, std::shared_ptr<Object>>;
+		AssetMap m_assetMap;
 	};
 }

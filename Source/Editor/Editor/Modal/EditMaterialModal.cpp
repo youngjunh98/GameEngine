@@ -20,9 +20,9 @@ namespace GameEngine
             m_material->OnRenderEditor ();
         }
 
-        if (EditorGUI::Button ("Save"))
+        if (EditorGUI::Button ("Save") && m_material != nullptr)
         {
-            AssetManager::GetInstance ().SaveAsset (AssetManager::GetInstance ().GetAssetPath (m_material));
+            AssetManager::SaveAsset (AssetManager::GetAssetPath (*m_material));
             Close ();
         }
 

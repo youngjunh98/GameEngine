@@ -26,6 +26,7 @@ namespace GameEngine
 	void GameObject::Init ()
 	{
 		AddComponent<Transform> ();
+		m_transform = GetComponent<Transform> ();
 	}
 
 	void GameObject::Destroy ()
@@ -138,7 +139,6 @@ namespace GameEngine
 		Object::OnDeserialize (json);
 
 		m_tag = Json::JsonSerializer::Deserialize<std::string> (json, "tag");
-		m_transform = GetComponent<Transform> ();
 
 		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "components"); it != Json::JsonSerializer::GetArrayEnd (json, "components"); it++)
 		{

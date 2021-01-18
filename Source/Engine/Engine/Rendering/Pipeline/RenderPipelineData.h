@@ -21,6 +21,8 @@ namespace GameEngine
             Vector3 m_position;
 			float m_near;
 			float m_far;
+			float m_fov;
+			float m_aspectRatio;
 			FrustumCorners m_frustum;
 		};
 

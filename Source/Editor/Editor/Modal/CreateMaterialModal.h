@@ -15,6 +15,6 @@ namespace GameEngine
         virtual void OnRender () override;
 
     private:
-        std::string m_assetPath;
+        std::string m_name;
     };
 }

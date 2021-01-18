@@ -98,14 +98,14 @@ namespace GameEngine
 	{
 		Renderer::OnSerialize (json);
 
-		Json::JsonSerializer::Serialize (json, "mesh", AssetManager::GetInstance ().GetAssetPath (m_mesh));
+		Json::JsonSerializer::Serialize (json, "mesh", AssetManager::GetAssetPath (*m_mesh));
 		Json::JsonSerializer::Serialize (json, "tessellation", m_bTessellation);
 		Json::JsonSerializer::CreateArray (json, "materials");
 
 		for (uint32 i = 0; i < m_mesh->GetSubMeshCount (); i++)
 		{
 			Material* material = GetMaterial (i);
-			PathString materialPath = AssetManager::GetInstance ().GetAssetPath (material);
+			PathString materialPath = AssetManager::GetAssetPath (*material);
 			Json::Json materialJson = materialPath;
 			Json::JsonSerializer::AppendArray (json, "materials", materialJson);
 		}
@@ -116,7 +116,7 @@ namespace GameEngine
 		Renderer::OnDeserialize (json);
 
 		PathString meshPath = Json::JsonSerializer::Deserialize<PathString> (json, "mesh");
-		m_mesh = AssetManager::GetInstance ().FindAsset<Mesh> (meshPath);
+		m_mesh = dynamic_cast<Mesh*> (AssetManager::GetAsset (meshPath).get ());
 		m_bTessellation = Json::JsonSerializer::Deserialize<bool> (json, "tessellation");
 
 		uint32 index = 0;
@@ -125,7 +125,7 @@ namespace GameEngine
 		{
 			Json::Json materialJson = it.value ();
 			PathString materialPath = materialJson.get<PathString> ();
-			Material* material = AssetManager::GetInstance ().FindAsset<Material> (materialPath);
+			Material* material = dynamic_cast<Material*> (AssetManager::GetAsset (materialPath).get ());
 			SetMaterial (material, index);
 		}
 	}

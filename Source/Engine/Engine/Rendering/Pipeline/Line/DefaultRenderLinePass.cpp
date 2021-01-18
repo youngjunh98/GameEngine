@@ -74,7 +74,7 @@ namespace GameEngine
 		if (m_whiteMaterial == nullptr)
 		{
 			m_whiteMaterial = std::make_unique<Material> ();
-			m_whiteMaterial->SetShader (AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/WhiteShader.hlsl")));
+			m_whiteMaterial->SetShader (dynamic_cast<Shader*> (AssetManager::GetAsset (PATH ("Assets/Shader/WhiteShader.hlsl")).get ()));
 		}
 
 		GlobalRenderer::BindMaterial (m_whiteMaterial.get ());

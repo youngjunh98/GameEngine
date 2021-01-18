@@ -65,7 +65,7 @@ namespace GameEngine
 		Audio::Shutdown ();
 
 		SceneManager::GetInstance ().UnloadScene ();
-		AssetManager::GetInstance ().Shutdown ();
+		AssetManager::UnloadAllAssets ();
 		
 		g_physics.Shutdown ();
 		GlobalRenderer::Shutdown ();
@@ -80,7 +80,7 @@ namespace GameEngine
 		auto& platformInput = Platform::GetGenericInput ();
 		auto& platformTimer = Platform::GetGenericTimer ();
 
-		AssetImporter::ImportAllAssets ();
+		AssetManager::LoadAllAssets (PATH ("Assets"));
 		platformTimer.Reset (1.0f / 60.0f);
 
 		while (platformApplication.Update ())

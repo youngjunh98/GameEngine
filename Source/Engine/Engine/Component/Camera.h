@@ -65,7 +65,7 @@ namespace GameEngine
 
 	private:
 		ECameraMode m_mode;
-		float m_fieldOfView;
+		float m_fov;
 		float m_orthographicSize;
 		float m_near;
 		float m_far;

@@ -5,12 +5,13 @@
 #include "Engine/Core/File/File.h"
 #include "Engine/Core/Asset/AssetManager.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
+#include "Engine/Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Engine/Rendering/Material.h"
 
 namespace GameEngine
 {
     CreateMaterialModal::CreateMaterialModal () : EditorModalWindow ("Create Material"),
-        m_assetPath ("")
+        m_name ("")
     {
     }
 
@@ -22,29 +23,23 @@ namespace GameEngine
     {
         EditorGUI::Label ("Material Path");
 
-        EditorGUI::Label ("Assets/");
+        EditorGUI::Label ("Name");
         EditorGUI::SameLine ();
-        m_assetPath = EditorGUI::InputText ("##path", m_assetPath);
+        m_name = EditorGUI::InputText ("##name", m_name);
 
         if (EditorGUI::Button ("Create"))
         {
-            PathString path = PATH ("Assets/") + PathString (m_assetPath.begin (), m_assetPath.end ());
+            PathString name = FileSystem::SetFileExtension (PathString (m_name.begin (), m_name.end ()), PATH("asset"));
+            PathString path = FileSystem::CombinePath (PATH ("Assets"), name);
             File file (path, EFileAccessMode::Write);
 
             if (file.IsOpen ())
             {
                 auto material = std::make_shared<Material> ();
-                material->SetShader (AssetManager::GetInstance ().FindAsset<Shader> (PATH ("Assets/Shader/StandardShader.hlsl")));
+                material->SetShader (GlobalRenderer::GetStandardShader (). get());
 
-                Json::Json assetJson = Json::JsonSerializer::ObjectToJson (*material);
-                std::string assetData = assetJson.dump ();
-                file.Write (assetData.data (), assetData.size ());
-
-                AssetInfo asset;
-                asset.m_type = EAssetType::Material;
-                asset.m_asset = material;
-
-                AssetManager::GetInstance ().AddAsset (asset, path);
+                AssetManager::AddAsset (material, path);
+                AssetManager::SaveAsset (path);
             }
 
             Close ();

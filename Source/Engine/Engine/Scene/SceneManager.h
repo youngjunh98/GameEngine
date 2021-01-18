@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
 #include <memory>
 #include <unordered_map>
 
+#include "Engine/Core/File/FileSystem.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/EngineMacro.h"
 #include "Engine/Engine/Scene/Scene.h"
@@ -26,20 +26,20 @@ namespace GameEngine
 		void UpdateScene ();
 
 		void SaveScene ();
-		void LoadScene (const std::wstring& path);
+		void LoadScene (const PathString& path);
 		void UnloadScene ();
 
-		void CreateEmptyScene (const std::wstring& path);
-		void RegisterScene (const std::wstring& path, const Json::Json& sceneData);
+		void CreateEmptyScene (const PathString& path);
+		void RegisterScene (const PathString& path, const Json::Json& sceneData);
 
 		Scene* GetScene ();
-		std::wstring GetScenePath ();
-		Json::Json FindSceneData (const std::wstring& path);
+		PathString GetScenePath ();
+		bool FindSceneData (const PathString& path, Json::Json& sceneJson);
 
 	private:
 		std::unique_ptr<Scene> m_scene;
-		std::wstring m_scenePath;
+		PathString m_scenePath;
 
-		std::unordered_map<std::wstring, Json::Json> m_sceneDataMap;
+		std::unordered_map<PathString, Json::Json> m_sceneDataMap;
 	};
 }

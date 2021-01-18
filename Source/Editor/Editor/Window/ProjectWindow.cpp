@@ -8,92 +8,96 @@
 
 namespace GameEngine
 {
-    ProjectWindow::ProjectWindow () : EditorWindow ("Project"),
-        m_selectedAssetPath (), m_hoveredAsset (nullptr)
-    {
-    }
+	ProjectWindow::ProjectWindow () : EditorWindow ("Project"),
+		m_selectedAssetPath (), m_hoveredAsset (nullptr)
+	{
+	}
 
-    ProjectWindow::~ProjectWindow ()
-    {
-    }
+	ProjectWindow::~ProjectWindow ()
+	{
+	}
 
-    void ProjectWindow::OnRender ()
-    {
-        RenderDirectoryTreeRecursive (PATH ("Assets"), PATH (""));
+	void ProjectWindow::OnRender ()
+	{
+		RenderDirectoryRecursive (PATH ("Assets"), PATH (""));
 
-		if (EditorGUI::BeginPopupContext ("EditAssetPopup"))
-        {
-            if (EditorGUI::SelectableLabel ("Create Material", false))
-            {
-				Editor::GetInstance ().OpenModalWindow<CreateMaterialModal> ();
-            }
+		if (EditorGUI::BeginPopupContext ("ProjectWindowPopup"))
+		{
+			RenderCreateMenu ();
+			RenderEditMenu ();
 
-            if (EditorGUI::SelectableLabel ("Edit", false, m_hoveredAsset == nullptr))
-            {
-                PathString extension = FileSystem::GetFileExtension (AssetManager::GetInstance ().GetAssetName (m_hoveredAsset));
+			EditorGUI::EndPopupContext ();
+		}
+		else
+		{
+			m_hoveredAsset = nullptr;
+		}
+	}
 
-                if (extension == PATH ("material"))
-                {
-                    Material* material = dynamic_cast<Material*> (m_hoveredAsset);
-                        
-                    if (material != nullptr)
-                    {
-                        EditMaterialModal* materialModal = Editor::GetInstance ().OpenModalWindow<EditMaterialModal> ();
-                            
-                        if (materialModal != nullptr)
-                        {
-                            materialModal->SetMaterial (material);
-                        }
-                    }
-                }
-            }
+	void ProjectWindow::RenderDirectoryRecursive (PathString directoryName, PathString pathToDirectory)
+	{
+		PathString path = FileSystem::CombinePath (pathToDirectory, directoryName);
 
-			/*
-            if (EditorGUI::SelectableLabel ("Delete Asset", false))
-            {
-            }
-			*/
+		for (PathString directory : FileSystem::GetDirectoryNames (path))
+		{
+			std::string asciiDirectory (directory.begin (), directory.end ());
+			bool bSelected = true;
 
-            EditorGUI::EndPopupContext ();
-        }
-        else
-        {
-            m_hoveredAsset = nullptr;
-        }
-    }
+			if (EditorGUI::TreeBeginNode (asciiDirectory))
+			{
+				RenderDirectoryRecursive (directory, path);
+				EditorGUI::TreePopNode ();
+			}
+		}
 
-    void ProjectWindow::RenderDirectoryTreeRecursive (PathString directoryName, PathString pathToDirectory)
-    {
-        PathString path = FileSystem::CombinePath (pathToDirectory, directoryName);
+		for (PathString file : FileSystem::GetFileNames (path))
+		{
+			std::string asciiFile (file.begin (), file.end ());
 
-        for (PathString directory : FileSystem::GetDirectoryList (path))
-        {
-            std::string asciiDirectory (directory.begin (), directory.end ());
-            bool bSelected = true;
+			PathString filePath = FileSystem::CombinePath(path, file);
+			bool bSelected = filePath == m_selectedAssetPath;
 
-            if (EditorGUI::TreeBeginNode (asciiDirectory))
-            {
-                RenderDirectoryTreeRecursive (directory, path);
-                EditorGUI::TreePopNode ();
-            }
-        }
+			if (EditorGUI::SelectableLabel (asciiFile.c_str (), bSelected))
+			{
+				m_selectedAssetPath = filePath;
+			}
 
-        for (PathString file : FileSystem::GetFileList (path))
-        {
-            std::string asciiFile (file.begin (), file.end ());
+			if (EditorGUI::IsLastItemHovered () && m_hoveredAsset == nullptr)
+			{
+				m_hoveredAsset = AssetManager::GetAsset (filePath).get ();
+			}
+		}
+	}
 
-            PathString filePath = path + PATH ("/") + file;
-            bool bSelected = filePath == m_selectedAssetPath;
-            
-            if (EditorGUI::SelectableLabel (asciiFile.c_str (), bSelected))
-            {
-                m_selectedAssetPath = filePath;
-            }
+	void ProjectWindow::RenderCreateMenu ()
+	{
+		if (EditorGUI::SelectableLabel ("Create Material", false))
+		{
+			Editor::GetInstance ().OpenModalWindow<CreateMaterialModal> ();
+		}
+	}
 
-            if (EditorGUI::IsLastItemHovered () && m_hoveredAsset == nullptr)
-            {
-                m_hoveredAsset = AssetManager::GetInstance ().FindAsset<Object> (filePath);;
-            }
-        }
-    }
+	void ProjectWindow::RenderEditMenu ()
+	{
+		if (EditorGUI::SelectableLabel ("Edit", false, m_hoveredAsset == nullptr))
+		{
+			if (m_hoveredAsset == nullptr)
+			{
+				return;
+			}
+
+			std::string type = m_hoveredAsset->GetTypeName ();
+
+			if (type == "Material")
+			{
+				Material* material = dynamic_cast<Material*> (m_hoveredAsset);
+				EditMaterialModal* materialModal = Editor::GetInstance ().OpenModalWindow<EditMaterialModal> ();
+
+				if (materialModal != nullptr)
+				{
+					materialModal->SetMaterial (material);
+				}
+			}
+		}
+	}
 }

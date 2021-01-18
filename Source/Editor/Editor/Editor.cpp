@@ -1,6 +1,7 @@
 ﻿#include "Editor.h"
 #include "Menu/FileMenu.h"
 #include "Menu/WindowMenu.h"
+#include "Menu/AssetMenu.h"
 #include "Window/GameWindow.h"
 #include "Window/InspectorWindow.h"
 #include "Window/ProjectWindow.h"
@@ -50,6 +51,7 @@ namespace GameEngine
 
 		m_menus.push_back (std::make_unique<FileMenu> ());
 		m_menus.push_back (std::make_unique<WindowMenu> ());
+		m_menus.push_back (std::make_unique<AssetMenu> ());
 
 		OpenWindow<GameWindow> ();
 		OpenWindow<InspectorWindow> ();

@@ -57,14 +57,22 @@ namespace GameEngine
 		file.Write (jsonString.data (), jsonStringSize);
 	}
 
-	void SceneManager::LoadScene (const std::wstring& path)
+	void SceneManager::LoadScene (const PathString& path)
 	{
-		auto sceneDataIter = m_sceneDataMap.find (path);
-		bool bPathInvalid = sceneDataIter == m_sceneDataMap.end ();
+		Json::Json sceneJson;
 
-		if (bPathInvalid)
+		if (FindSceneData (path, sceneJson) == false)
 		{
-			return;
+			File file (path, EFileAccessMode::Read);
+			int64 fileSize = file.GetSize ();
+
+			std::string jsonString (fileSize + 1, L'\0');
+			auto* first = const_cast<char*> (jsonString.data ());
+
+			file.ReadAll (first);
+			sceneJson = Json::Json::parse (jsonString);
+
+			RegisterScene (path, sceneJson);
 		}
 
 		if (m_scene != nullptr)
@@ -75,7 +83,7 @@ namespace GameEngine
 		m_scene = std::make_unique<Scene> ();
 		m_scenePath = path;
 
-		m_scene->OnLoad (sceneDataIter->second);
+		m_scene->OnLoad (sceneJson);
 		m_scene->Start ();
 	}
 
@@ -90,7 +98,7 @@ namespace GameEngine
 		m_scenePath = L"";
 	}
 
-	void SceneManager::CreateEmptyScene (const std::wstring& path)
+	void SceneManager::CreateEmptyScene (const PathString& path)
 	{
 		File file (path, EFileAccessMode::Write);
 
@@ -110,7 +118,7 @@ namespace GameEngine
 		LoadScene (path);
 	}
 
-	void SceneManager::RegisterScene (const std::wstring& path, const Json::Json& sceneData)
+	void SceneManager::RegisterScene (const PathString& path, const Json::Json& sceneData)
 	{
 		auto foundIter = m_sceneDataMap.find (path);
 		bool bFound = foundIter != m_sceneDataMap.end ();
@@ -130,23 +138,21 @@ namespace GameEngine
 		return m_scene.get ();
 	}
 
-	std::wstring SceneManager::GetScenePath ()
+	PathString SceneManager::GetScenePath ()
 	{
 		return m_scenePath;
 	}
 
-	Json::Json SceneManager::FindSceneData (const std::wstring& path)
+	bool SceneManager::FindSceneData (const PathString& path, Json::Json& sceneJson)
 	{
-		Json::Json found;
-
 		auto sceneDataIter = m_sceneDataMap.find (path);
 		bool bFound = sceneDataIter != m_sceneDataMap.end ();
 
 		if (bFound)
 		{
-			found = sceneDataIter->second;
+			sceneJson = sceneDataIter->second;
 		}
 
-		return found;
+		return bFound;
 	}
 }

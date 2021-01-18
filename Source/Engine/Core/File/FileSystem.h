@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+
+#include "Type.h"
 #include "Engine/Platform/Platform.h"
 #include "Engine/Core/CoreMacro.h"
 
@@ -24,5 +27,8 @@ namespace GameEngine
 
 		static std::vector<PathString> GetFileNames (const PathString& path);
 		static std::vector<PathString> GetDirectoryNames (const PathString& path);
+
+    private:
+        static bool CreatePathBuffer (std::unique_ptr<path_char[]>& buffer, uint32 bufferSize, const PathString& initPath);
     };
 }

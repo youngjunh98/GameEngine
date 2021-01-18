@@ -13,7 +13,7 @@ namespace GameEngine
 
 	Camera::Camera () : Component ("Camera"),
 		m_mode (ECameraMode::Perspective),
-		m_fieldOfView (60.0f), m_orthographicSize (5.0f),
+		m_fov (60.0f), m_orthographicSize (5.0f),
 		m_near (0.1f), m_far (1000.0f)
 	{
 	}
@@ -70,7 +70,7 @@ namespace GameEngine
 
 		if (m_mode == ECameraMode::Perspective)
 		{
-			projectionMatrix = Matrix4x4::Perspective (m_fieldOfView, aspectRatio, m_near, m_far);
+			projectionMatrix = Matrix4x4::Perspective (m_fov, aspectRatio, m_near, m_far);
 		}
 		else
 		{
@@ -95,12 +95,12 @@ namespace GameEngine
 
 	float Camera::GetFieldOfView () const
 	{
-		return m_fieldOfView;
+		return m_fov;
 	}
 
 	void Camera::SetFieldOfView (float fieldOfView)
 	{
-		m_fieldOfView = fieldOfView;
+		m_fov = fieldOfView;
 	}
 
 	float Camera::GetNear () const
@@ -166,7 +166,7 @@ namespace GameEngine
 
 		if (m_mode == ECameraMode::Perspective)
 		{
-			m_fieldOfView = Math::Clamp (EditorGUI::InputFloat ("FOV", m_fieldOfView), 1.0f, 179.0f);
+			m_fov = Math::Clamp (EditorGUI::InputFloat ("FOV", m_fov), 1.0f, 179.0f);
 		}
 		else
 		{
@@ -182,7 +182,7 @@ namespace GameEngine
 		Component::OnSerialize (json);
 
 		Json::JsonSerializer::Serialize (json, "mode", static_cast<int32> (m_mode));
-		Json::JsonSerializer::Serialize (json, "fov", m_fieldOfView);
+		Json::JsonSerializer::Serialize (json, "fov", m_fov);
 		Json::JsonSerializer::Serialize (json, "ortho size", m_orthographicSize);
 		Json::JsonSerializer::Serialize (json, "near", m_near);
 		Json::JsonSerializer::Serialize (json, "far", m_far);
@@ -193,7 +193,7 @@ namespace GameEngine
 		Component::OnDeserialize (json);
 
 		m_mode = static_cast<ECameraMode> (Json::JsonSerializer::Deserialize<int32> (json, "mode"));
-		m_fieldOfView = Json::JsonSerializer::Deserialize<float> (json, "fov");
+		m_fov = Json::JsonSerializer::Deserialize<float> (json, "fov");
 		m_orthographicSize = Json::JsonSerializer::Deserialize<float> (json, "ortho size");
 		m_near = Json::JsonSerializer::Deserialize<float> (json, "near");
 		m_far = Json::JsonSerializer::Deserialize<float> (json, "far");
