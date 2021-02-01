@@ -34,6 +34,6 @@ namespace GameEngine
 		static std::shared_ptr<Texture2D> Import2D (const PathString& path, bool bGenerateMipMaps);
 		static std::shared_ptr<AudioClip> ImportAudio (const PathString& path);
 
-		static bool GetFileDataAndSize (const PathString& path, std::unique_ptr<int8[]>& data, int64& size);
+		static bool GetFileDataAndSize (const PathString& path, std::unique_ptr<uint8[]>& data, int64& size);
 	};
 }

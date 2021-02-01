@@ -11,6 +11,6 @@ namespace GameEngine
 	class ENGINE_CORE_API WavImporter
 	{
 	public:
-		static AudioData Import (const int8* data, const int64 dataSize);
+		static AudioData Import (const uint8* data, const int64 dataSize);
 	};
 }

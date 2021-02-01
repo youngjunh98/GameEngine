@@ -40,7 +40,7 @@ namespace GameEngine
 		for (TextureData& data : m_data)
 		{
 			pixels.push_back (data.m_data.data ());
-			rowBytes.push_back (data.m_dataRowBytes);
+			rowBytes.push_back (data.GetRowSizeInBytes ());
 		}
 
 		m_mipMapCount = m_data.size ();

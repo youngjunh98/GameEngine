@@ -5,7 +5,7 @@
 
 namespace GameEngine
 {
-	MeshData OBJImporter::Import (int8* data, const int64 dataSize)
+	MeshData OBJImporter::Import (uint8* data, const int64 dataSize)
 	{
 		MeshData meshData;
 		meshData.m_subMeshData.resize (1);
@@ -151,13 +151,14 @@ namespace GameEngine
 		return meshData;
 	}
 
-	std::string OBJImporter::ReadToken (const int8* start)
+	std::string OBJImporter::ReadToken (const uint8* start)
 	{
 		std::string result;
+		const char* str = reinterpret_cast<const char*> (start);
 
-		for (int32 i = 0; start[i] != ' ' && start[i] && '\t' && start[i] != '\n'; i++)
+		for (int32 i = 0; str[i] != ' ' && str[i] && '\t' && str[i] != '\n'; i++)
 		{
-			result += start[i];
+			result += str[i];
 		}
 
 		return result;

@@ -27,7 +27,7 @@ namespace GameEngine
 		g_fbxManager = nullptr;
 	}
 
-	MeshData FBXImporter::Import (int8* data, const int64 dataSize)
+	MeshData FBXImporter::Import (uint8* data, const int64 dataSize)
 	{
 		MeshData meshData;
 		FBXMemoryReadStream stream (dataSize, g_fbxManager);

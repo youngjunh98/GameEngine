@@ -14,7 +14,7 @@ namespace GameEngine
 		static bool Start ();
 		static void Shutdown ();
 
-		static MeshData Import (int8* data, const int64 dataSize);
+		static MeshData Import (uint8* data, const int64 dataSize);
 		
 	private:
 		static void TraverseNode (FbxNode* fbxNode, MeshData& meshData);

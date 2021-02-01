@@ -7,7 +7,7 @@
 
 namespace GameEngine
 {
-	AudioData WavImporter::Import (const int8* data, const int64 dataSize)
+	AudioData WavImporter::Import (const uint8* data, const int64 dataSize)
 	{
 		AudioData audioData;
 		bool bInvalidDataSize = dataSize < 44;
@@ -69,7 +69,7 @@ namespace GameEngine
 				return audioData;
 			}
 
-			const int8* sampleData = data + 44;
+			const int8* sampleData = reinterpret_cast<const int8*> (data) + 44;
 			int32 sampleCount = subchunk2Size / blockAlign;
 
 			audioData.m_channelCount = channels;

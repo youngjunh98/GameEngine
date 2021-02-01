@@ -64,11 +64,11 @@ namespace GameEngine
 	{
 		// 0 = Right, 1 = Left, 2 = Up, 3 = Down, 4 = Front, 5 = Back
 		const uint32 arraySize = 6;
-		StbImage cube[arraySize];
+		TextureData cube[arraySize];
 
 		for (uint32 i = 0; i < arraySize; i++)
 		{
-			std::unique_ptr<int8[]> fileData;
+			std::unique_ptr<uint8[]> fileData;
 			int64 fileSize;
 
 			if (GetFileDataAndSize (cubePath[i], fileData, fileSize) == false)
@@ -76,7 +76,9 @@ namespace GameEngine
 				return nullptr;
 			}
 
-			if (StbImageImporter::Import (cube[i], fileData.get (), fileSize, true, false) == false)
+			cube[i] = StbImageImporter::Import (fileData.get (), fileSize, true, false);
+
+			if (cube[i].GetDataSizeInBytes () <= 0)
 			{
 				return nullptr;
 			}
@@ -99,39 +101,26 @@ namespace GameEngine
 
 		for (uint32 i = 0; i < arraySize; i++)
 		{
-			StbImage& image = cube[i];
+			TextureData& texture = cube[i];
+			textureData.push_back (texture);
 
-			uint8* imageData = static_cast<uint8*> (image.m_data);
-			TextureData data;
-			data.m_dataBytes = image.GetDataSizeInBytes ();
-			data.m_dataRowBytes = image.GetRowSizeInBytes ();
-			data.m_data = std::vector<uint8> (imageData, imageData + data.m_dataBytes);
-
-			textureData.push_back (data);
-
-			for (int32 mipMapSize = image.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
+			for (int32 mipMapSize = texture.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
 			{
-				StbImage mipMap;
+				TextureData mipMap = StbImageImporter::Resize (texture, mipMapSize, mipMapSize);
 
-				if (StbImageImporter::Resize (mipMap, image, mipMapSize, mipMapSize) == false)
+				if (mipMap.GetDataSizeInBytes () <= 0)
 				{
 					return nullptr;
 				}
 
-				uint8* mipMapImageData = static_cast<uint8*> (mipMap.m_data);
-				TextureData mipMapData;
-				mipMapData.m_dataBytes = mipMap.GetDataSizeInBytes ();
-				mipMapData.m_dataRowBytes = mipMap.GetRowSizeInBytes ();
-				mipMapData.m_data = std::vector<uint8> (mipMapImageData, mipMapImageData + mipMapData.m_dataBytes);
-
-				textureData.push_back (mipMapData);
+				textureData.push_back (mipMap);
 			}
 		}
 
 		auto textureCube = std::make_shared<TextureCube> ();
 		textureCube->SetWidth (cube[0].m_width);
 		textureCube->SetHeight (cube[0].m_height);
-		textureCube->SetFormat (cube[0].GetFormat ());
+		textureCube->SetFormat (StbImageImporter::GetFormat (cube[0].m_channels, cube[0].m_bytes, cube[0].m_bLinear));
 		textureCube->SetTextureData (textureData);
 
 		if (textureCube->UpdateTextureResource () == false)
@@ -189,7 +178,7 @@ namespace GameEngine
 
 	std::shared_ptr<Mesh> AssetImporter::Import3D (const PathString& path)
 	{
-		std::unique_ptr<int8[]> fileData;
+		std::unique_ptr<uint8[]> fileData;
 		int64 fileSize;
 
 		if (GetFileDataAndSize (path, fileData, fileSize) == false)
@@ -234,7 +223,7 @@ namespace GameEngine
 
 	std::shared_ptr<Texture2D> AssetImporter::Import2D (const PathString& path, bool bGenerateMipMaps)
 	{
-		std::unique_ptr<int8[]> fileData;
+		std::unique_ptr<uint8[]> fileData;
 		int64 fileSize;
 
 		if (GetFileDataAndSize (path, fileData, fileSize) == false)
@@ -242,46 +231,34 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		StbImage image;
+		TextureData texture = StbImageImporter::Import (fileData.get (), fileSize, true, false);
 
-		if (StbImageImporter::Import (image, fileData.get (), fileSize, true, false) == false)
+		if (texture.GetDataSizeInBytes () <= 0)
 		{
 			return nullptr;
 		}
 
-		uint8* imageData = static_cast<uint8*> (image.m_data);
-		TextureData data;
-		data.m_dataBytes = image.GetDataSizeInBytes ();
-		data.m_dataRowBytes = image.GetRowSizeInBytes ();
-		data.m_data = std::vector<uint8> (imageData, imageData + data.m_dataBytes);
+		std::vector<TextureData> textureData = { texture };
 
-		std::vector<TextureData> textureData = { data };
-
-		if (bGenerateMipMaps && image.IsPowerOfTwo () && image.IsSquare ())
+		if (bGenerateMipMaps && texture.IsPowerOfTwo () && texture.IsSquare ())
 		{
-			for (int32 mipMapSize = image.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
+			for (int32 mipMapSize = texture.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
 			{
-				StbImage mipMap;
+				TextureData mipMap = StbImageImporter::Resize (texture, mipMapSize, mipMapSize);
 
-				if (StbImageImporter::Resize (mipMap, image, mipMapSize, mipMapSize) == false)
+				if (mipMap.GetDataSizeInBytes () <= 0)
 				{
 					return nullptr;
 				}
 
-				uint8* mipMapImageData = static_cast<uint8*> (mipMap.m_data);
-				TextureData mipMapData;
-				mipMapData.m_dataBytes = mipMap.GetDataSizeInBytes ();
-				mipMapData.m_dataRowBytes = mipMap.GetRowSizeInBytes ();
-				mipMapData.m_data = std::vector<uint8> (mipMapImageData, mipMapImageData + mipMapData.m_dataBytes);
-
-				textureData.push_back (mipMapData);
+				textureData.push_back (mipMap);
 			}
 		}
 
 		auto texture2D = std::make_shared<Texture2D> ();
-		texture2D->SetWidth (image.m_width);
-		texture2D->SetHeight (image.m_height);
-		texture2D->SetFormat (image.GetFormat ());
+		texture2D->SetWidth (texture.m_width);
+		texture2D->SetHeight (texture.m_height);
+		texture2D->SetFormat (StbImageImporter::GetFormat (texture.m_channels, texture.m_bytes, texture.m_bLinear));
 		texture2D->SetTextureData (textureData);
 
 		if (texture2D->UpdateTextureResource () == false)
@@ -303,7 +280,7 @@ namespace GameEngine
 
 	std::shared_ptr<AudioClip> AssetImporter::ImportAudio (const PathString& path)
 	{
-		std::unique_ptr<int8[]> fileData;
+		std::unique_ptr<uint8[]> fileData;
 		int64 fileSize;
 
 		if (GetFileDataAndSize (path, fileData, fileSize) == false)
@@ -322,7 +299,7 @@ namespace GameEngine
 		return audioClip;
 	}
 
-	bool AssetImporter::GetFileDataAndSize (const PathString& path, std::unique_ptr<int8[]>& data, int64& size)
+	bool AssetImporter::GetFileDataAndSize (const PathString& path, std::unique_ptr<uint8[]>& data, int64& size)
 	{
 		File file (path, EFileAccessMode::Read);
 
@@ -338,7 +315,7 @@ namespace GameEngine
 			return false;
 		}
 
-		data = std::make_unique<int8[]> (fileSize);
+		data = std::make_unique<uint8[]> (fileSize);
 		size = file.ReadAll (data.get ());
 
 		return true;

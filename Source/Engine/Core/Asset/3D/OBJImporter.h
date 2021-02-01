@@ -11,9 +11,9 @@ namespace GameEngine
 	class ENGINE_CORE_API OBJImporter
 	{
 	public:
-		static MeshData Import (int8* data, const int64 dataSize);
+		static MeshData Import (uint8* data, const int64 dataSize);
 
 	private:
-		static std::string ReadToken (const int8* start);
+		static std::string ReadToken (const uint8* start);
 	};
 }
