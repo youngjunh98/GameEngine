@@ -1,4 +1,5 @@
 project(Engine)
+include(${CMAKE_SOURCE_DIR}/CMake/Functions.txt)
 
 ###################
 # Engine Platform #
@@ -22,14 +23,10 @@ if(WIN32)
     )
 endif()
 
-if(BUILD_STATIC)
-    add_library(EnginePlatform STATIC ${ENGINE_PLATFORM_SRC})
-else()
-    add_library(EnginePlatform SHARED ${ENGINE_PLATFORM_SRC})
-endif()
-
-set_target_properties(EnginePlatform PROPERTIES OUTPUT_NAME "Engine_Platform")
-target_compile_definitions(EnginePlatform PRIVATE EXPORT_ENGINE_PLATFORM)
+build_engine_module_function(
+    module_name Engine_Platform
+    module_sources ${ENGINE_PLATFORM_SRC}
+)
 
 
 ###############
@@ -40,19 +37,12 @@ file(GLOB_RECURSE ENGINE_CORE_SRC
     "Engine/Core/**.h"
 )
 
-if(BUILD_STATIC)
-    add_library(EngineCore STATIC ${ENGINE_CORE_SRC})
-else()
-    add_library(EngineCore SHARED ${ENGINE_CORE_SRC})
-endif()
-
-set_target_properties(EngineCore PROPERTIES OUTPUT_NAME "Engine_Core")
-target_compile_definitions(EngineCore PRIVATE EXPORT_ENGINE_CORE)
-target_link_libraries(EngineCore PRIVATE ${THIRD_PARTY_FBX_SDK_LIBS})
-
-add_dependencies(EngineCore EnginePlatform)
-target_compile_definitions(EngineCore PUBLIC IMPORT_ENGINE_PLATFORM)
-target_link_libraries(EngineCore PUBLIC EnginePlatform)
+build_engine_module_function(
+    module_name Engine_Core
+    module_sources ${ENGINE_CORE_SRC}
+    import_modules Engine_Platform
+    third_party_libs ${THIRD_PARTY_FBX_SDK_LIBS}
+)
 
 
 ##############################
@@ -77,40 +67,26 @@ if(WIN32)
     endif()
 endif()
 
-if(BUILD_STATIC)
-    add_library(EngineRI STATIC ${ENGINE_RI_SRC})
-else()
-    add_library(EngineRI SHARED ${ENGINE_RI_SRC})
-endif()
+build_engine_module_function(
+    module_name Engine_RI
+    module_sources ${ENGINE_RI_SRC}
+    import_modules Engine_Platform Engine_Core
+)
 
-set_target_properties(EngineRI PROPERTIES OUTPUT_NAME "Engine_RI")
-target_compile_definitions(EngineRI PRIVATE EXPORT_ENGINE_RI)
-
-add_dependencies(EngineRI EnginePlatform EngineCore)
-target_compile_definitions(EngineRI PUBLIC IMPORT_ENGINE_PLATFORM IMPORT_ENGINE_CORE)
-target_link_libraries(EngineRI PUBLIC EnginePlatform EngineCore)
 
 ###############
 # Editor Core #
 ###############
-
 file(GLOB EDITOR_CORE_SRC
     "Editor/Core/*.cpp"
     "Editor/Core/*.h"
 )
 
-if(BUILD_STATIC)
-    add_library(EditorCore STATIC ${EDITOR_CORE_SRC})
-else()
-    add_library(EditorCore SHARED ${EDITOR_CORE_SRC})
-endif()
-
-set_target_properties(EditorCore PROPERTIES OUTPUT_NAME "Editor_Core")
-target_compile_definitions(EditorCore PRIVATE EXPORT_EDITOR_CORE)
-
-add_dependencies(EditorCore EngineRI)
-target_compile_definitions(EditorCore PUBLIC IMPORT_ENGINE_RI)
-target_link_libraries(EditorCore PUBLIC EngineRI)
+build_engine_module_function(
+    module_name Editor_Core
+    module_sources ${EDITOR_CORE_SRC}
+    import_modules Engine_RI
+)
 
 
 ##########
@@ -121,44 +97,24 @@ file(GLOB_RECURSE ENGINE_SRC
     "Engine/Engine/**.h"
 )
 
-if(BUILD_STATIC)
-    add_library(Engine STATIC ${ENGINE_SRC})
-else()
-    add_library(Engine SHARED ${ENGINE_SRC})
-endif()
+build_engine_module_function(
+    module_name Engine
+    module_sources ${ENGINE_SRC}
+    import_modules Engine_Core Engine_RI Editor_Core
+    third_party_libs ${THIRD_PARTY_PHYSX_SDK_LIBS} ${THIRD_PARTY_FBX_SDK_LIBS}
+)
 
-set_target_properties(Engine PROPERTIES OUTPUT_NAME "Engine")
-target_compile_definitions(Engine PRIVATE EXPORT_ENGINE)
-target_link_libraries(Engine PRIVATE ${THIRD_PARTY_PHYSX_SDK_LIBS} ${THIRD_PARTY_FBX_SDK_LIBS})
-
-add_dependencies(Engine EngineCore EngineRI EditorCore)
-target_compile_definitions(Engine PUBLIC IMPORT_ENGINE_CORE IMPORT_ENGINE_RI IMPORT_EDITOR_CORE)
-target_link_libraries(Engine PUBLIC EngineCore EngineRI EditorCore)
 
 ##########
 # Editor #
 ##########
-
-file(GLOB EDITOR_SRC
-    "Editor/Editor/*.cpp"
-    "Editor/Editor/*.h"
-    "Editor/Editor/Menu/*.cpp"
-    "Editor/Editor/Menu/*.h"
-    "Editor/Editor/Modal/*.cpp"
-    "Editor/Editor/Modal/*.h"
-    "Editor/Editor/Window/*.cpp"
-    "Editor/Editor/Window/*.h"
+file(GLOB_RECURSE EDITOR_SRC
+    "Editor/Editor/**.cpp"
+    "Editor/Editor/**.h"
 )
 
-if(BUILD_STATIC)
-    add_library(Editor STATIC ${EDITOR_SRC})
-else()
-    add_library(Editor SHARED ${EDITOR_SRC})
-endif()
-
-set_target_properties(Editor PROPERTIES OUTPUT_NAME "Editor")
-target_compile_definitions(Editor PRIVATE EXPORT_EDITOR)
-
-add_dependencies(Editor Engine)
-target_compile_definitions(Editor PUBLIC IMPORT_ENGINE)
-target_link_libraries(Editor PUBLIC Engine)
+build_engine_module_function(
+    module_name Editor
+    module_sources ${EDITOR_SRC}
+    import_modules Engine
+)

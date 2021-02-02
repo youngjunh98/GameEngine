@@ -1,0 +1,52 @@
+# module_name: name of module
+# module_sources: source files of module (cpp, h...)
+# import_modules: module names to import
+# third_party_libs: library names to link
+function(build_engine_module_function)
+    set(prefix param)
+    set(flags)
+    set(single_value_args module_name)
+    set(multi_value_args module_sources import_modules third_party_libs)
+
+    include(CMakeParseArguments)
+    cmake_parse_arguments(${prefix} "${flags}" "${single_value_args}" "${multi_value_args}" ${ARGN})
+
+    if(NOT DEFINED param_module_name OR NOT DEFINED param_module_sources)
+        message("No module name or source!")
+        return()
+    endif()
+
+    message("==============================")
+    message("Build ${param_module_name} module...")
+    message("Source files: ${param_module_sources}")
+
+    if(BUILD_STATIC)
+        add_library(${param_module_name} STATIC ${param_module_sources})
+    else()
+        add_library(${param_module_name} SHARED ${param_module_sources})
+    endif()
+
+    string(TOUPPER ${param_module_name} module_name_upper)
+
+    set_target_properties(${param_module_name} PROPERTIES OUTPUT_NAME ${param_module_name})
+    target_compile_definitions(${param_module_name} PRIVATE "EXPORT_${module_name_upper}")
+
+    if(DEFINED param_third_party_libs)
+        target_link_libraries(${param_module_name} PRIVATE ${param_third_party_libs})
+        message("Third party libraries: ${param_third_party_libs}")
+    endif()
+
+    if(DEFINED param_import_modules)
+        list(JOIN param_import_modules " " import_names)
+        message("Import modules: ${import_names}")
+
+        foreach(import_name ${param_import_modules})
+            string(TOUPPER ${import_name} import_name_upper)
+            list(APPEND import_macros "IMPORT_${import_name_upper}")
+        endforeach()
+
+        add_dependencies(${param_module_name} ${param_import_modules})
+        target_compile_definitions(${param_module_name} PUBLIC ${import_macros})
+        target_link_libraries(${param_module_name} PUBLIC ${param_import_modules})
+    endif()
+endfunction()
