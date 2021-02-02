@@ -3,7 +3,7 @@
 #include "Engine/Core/Asset/AssetManager.h"
 #include "Engine/Core/Asset/3D/OBJImporter.h"
 #include "Engine/Core/Asset/3D/FbxImporter.h"
-#include "Engine/Core/Asset/Image/StbImageImporter.h"
+#include "Engine/Core/Asset/Image/StbImage.h"
 #include "Engine/Core/Asset/Audio/WavImporter.h"
 #include "Engine/Core/Json/JsonSerializer.h"
 #include "Engine/Core/File/File.h"
@@ -76,7 +76,7 @@ namespace GameEngine
 				return nullptr;
 			}
 
-			cube[i] = StbImageImporter::Import (fileData.get (), fileSize, true, false);
+			cube[i] = StbImage::Import (fileData.get (), fileSize, true, false);
 
 			if (cube[i].GetDataSizeInBytes () <= 0)
 			{
@@ -106,7 +106,7 @@ namespace GameEngine
 
 			for (int32 mipMapSize = texture.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
 			{
-				TextureData mipMap = StbImageImporter::Resize (texture, mipMapSize, mipMapSize);
+				TextureData mipMap = StbImage::Resize (texture, mipMapSize, mipMapSize);
 
 				if (mipMap.GetDataSizeInBytes () <= 0)
 				{
@@ -120,7 +120,7 @@ namespace GameEngine
 		auto textureCube = std::make_shared<TextureCube> ();
 		textureCube->SetWidth (cube[0].m_width);
 		textureCube->SetHeight (cube[0].m_height);
-		textureCube->SetFormat (StbImageImporter::GetFormat (cube[0].m_channels, cube[0].m_bytes, cube[0].m_bLinear));
+		textureCube->SetFormat (StbImage::GetFormat (cube[0].m_channels, cube[0].m_bytes, cube[0].m_bLinear));
 		textureCube->SetTextureData (textureData);
 
 		if (textureCube->UpdateTextureResource () == false)
@@ -231,7 +231,7 @@ namespace GameEngine
 			return nullptr;
 		}
 
-		TextureData texture = StbImageImporter::Import (fileData.get (), fileSize, true, false);
+		TextureData texture = StbImage::Import (fileData.get (), fileSize, true, false);
 
 		if (texture.GetDataSizeInBytes () <= 0)
 		{
@@ -244,7 +244,7 @@ namespace GameEngine
 		{
 			for (int32 mipMapSize = texture.m_width / 2; mipMapSize > 0; mipMapSize /= 2)
 			{
-				TextureData mipMap = StbImageImporter::Resize (texture, mipMapSize, mipMapSize);
+				TextureData mipMap = StbImage::Resize (texture, mipMapSize, mipMapSize);
 
 				if (mipMap.GetDataSizeInBytes () <= 0)
 				{
@@ -258,7 +258,7 @@ namespace GameEngine
 		auto texture2D = std::make_shared<Texture2D> ();
 		texture2D->SetWidth (texture.m_width);
 		texture2D->SetHeight (texture.m_height);
-		texture2D->SetFormat (StbImageImporter::GetFormat (texture.m_channels, texture.m_bytes, texture.m_bLinear));
+		texture2D->SetFormat (StbImage::GetFormat (texture.m_channels, texture.m_bytes, texture.m_bLinear));
 		texture2D->SetTextureData (textureData);
 
 		if (texture2D->UpdateTextureResource () == false)

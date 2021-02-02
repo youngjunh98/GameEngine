@@ -1,17 +1,20 @@
 #pragma once
 
-#include "Type.h"
 #include "Engine/Core/CoreMacro.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
+#include "Engine/Engine/Asset/AssetData.h"
 
 namespace GameEngine
 {
-	struct ENGINE_CORE_API StbImage
+	class ENGINE_CORE_API StbImage
 	{
-		StbImage ();
-		~StbImage ();
+	public:
+		static TextureData Import (const uint8* fileData, int64 fileSize, bool bForceAlphaChannel, bool bForceGray);
+		static TextureData Resize (const TextureData& textureData,  int32 resizedWidth, int32 resizedHeight);
 
-		// Pointer to Image Data
-		void* m_data;
+		static bool IsRGB (const int32 channels);
+		static bool IsAlpha (const int32 channels);
+		static bool IsOpaque (const int32 channels);
+		static ERenderingResourceFormat GetFormat (const int32 channels, const int32 bytes, const bool bLinearColor);
 	};
 }

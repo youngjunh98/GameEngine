@@ -2,7 +2,7 @@
 
 #include "Texture.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
-#include "Engine/Core/Asset/Image/StbImageImporter.h"
+#include "Engine/Core/Asset/Image/StbImage.h"
 #include "Engine/RI/RenderingInterface.h"
 
 namespace GameEngine
@@ -177,7 +177,7 @@ namespace GameEngine
 			const Json::Json& mipMapJson = it.value ();
 			int32 mipMapWidth = Json::JsonSerializer::Deserialize<int32> (mipMapJson, "width");
 			int32 mipMapHeight = Json::JsonSerializer::Deserialize<int32> (mipMapJson, "height");
-			TextureData mipMap = StbImageImporter::Resize (texture, mipMapWidth, mipMapHeight);
+			TextureData mipMap = StbImage::Resize (texture, mipMapWidth, mipMapHeight);
 
 			if (mipMap.GetDataSizeInBytes () > 0)
 			{
