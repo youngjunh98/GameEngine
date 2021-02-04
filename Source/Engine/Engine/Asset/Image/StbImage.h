@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Engine/Core/CoreMacro.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
 #include "Engine/Engine/Asset/AssetData.h"
 
 namespace GameEngine
 {
-	class ENGINE_CORE_API StbImage
+	class StbImage
 	{
 	public:
 		static TextureData Import (const uint8* fileData, int64 fileSize, bool bForceAlphaChannel, bool bForceGray);

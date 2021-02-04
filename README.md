@@ -60,9 +60,9 @@ width="30%" height="30%" title="PBR Metal" alt="PBR Metal"></img>
 ## Roadmap
 
 ### Working
+- 프로젝트 생성 및 관리
 - Thread Job
 - Particle effect
-- Asset Manager 개선하기.
 - Global Renderer, Render Pipeline 개선하기.
 - String, WString 클래스.
 - Game 모듈.

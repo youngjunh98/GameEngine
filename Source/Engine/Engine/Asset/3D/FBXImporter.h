@@ -3,12 +3,11 @@
 #include <fbxsdk.h>
 
 #include "Type.h"
-#include "Engine/Core/CoreMacro.h"
 #include "Engine/Engine/Asset/AssetData.h"
 
 namespace GameEngine
 {
-	class ENGINE_CORE_API FBXImporter
+	class FBXImporter
 	{
 	public:
 		static bool Start ();

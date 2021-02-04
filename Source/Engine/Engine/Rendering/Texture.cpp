@@ -2,7 +2,7 @@
 
 #include "Texture.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
-#include "Engine/Core/Asset/Image/StbImage.h"
+#include "Engine/Engine/Asset/Image/StbImage.h"
 #include "Engine/RI/RenderingInterface.h"
 
 namespace GameEngine
