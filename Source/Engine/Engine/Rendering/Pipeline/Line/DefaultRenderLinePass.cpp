@@ -1,5 +1,5 @@
 #include "DefaultRenderLinePass.h"
-#include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/RI/RenderingInterface.h"
 #include "Engine/Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Engine/GameObject.h"
@@ -13,7 +13,7 @@ namespace GameEngine
 	{
 	}
 
-	DefaultRenderLinePass::~DefaultRenderLinePass()
+	DefaultRenderLinePass::~DefaultRenderLinePass ()
 	{
 	}
 

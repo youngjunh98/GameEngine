@@ -1,15 +1,18 @@
 #pragma once
 
+#include "Engine/Asset/AssetMacro.h"
+#include "Engine/Asset/AssetData.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
-#include "Engine/Engine/Asset/AssetData.h"
 
 namespace GameEngine
 {
-	class StbImage
+	class ENGINE_ASSET_API StbImage
 	{
 	public:
 		static TextureData Import (const uint8* fileData, int64 fileSize, bool bForceAlphaChannel, bool bForceGray);
-		static TextureData Resize (const TextureData& textureData,  int32 resizedWidth, int32 resizedHeight);
+		static bool GenerateMipMap (const TextureData::MipMapData& source, TextureData::MipMapData& destination,
+			uint32 mipMapWidth, uint32 mipMapHeight, int32 channels, int32 bytes, bool bLinearColor);
+		static bool AddAndGenerateMipMap (TextureData& texture, uint32 mipMapWidth, uint32 mipMapHeight);
 
 		static bool IsRGB (const int32 channels);
 		static bool IsAlpha (const int32 channels);

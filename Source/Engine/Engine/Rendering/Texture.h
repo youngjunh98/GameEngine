@@ -4,10 +4,11 @@
 #include <memory>
 
 #include "Type.h"
+#include "Engine/Core/Object/Object.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
-#include "Engine/Core/Object/Object.h"
-#include "Engine/Engine/Asset/AssetData.h"
+#include "Engine/Asset/AssetData.h"
+#include "Engine/Engine/EngineMacro.h"
 
 namespace GameEngine
 {
@@ -20,29 +21,22 @@ namespace GameEngine
 		Texture3D
 	};
 
-	class Texture : public Object
+	class ENGINE_API Texture : public Object
 	{
 	public:
 		Texture ();
-		virtual ~Texture () = 0 {}
+		virtual ~Texture () = 0;
 
 		virtual void Destroy () override;
 
 		virtual ETextureDimension Dimension () const = 0;
+		uint32 GetWidth () const;
+		uint32 GetHeight () const;
+		uint32 GetMipMapCount () const;
+		ERenderingResourceFormat GetFormat () const;
 
-		virtual uint32 GetWidth () const;
-		virtual void SetWidth (uint32 width);
-
-		virtual uint32 GetHeight () const;
-		virtual void SetHeight (uint32 height);
-
-		virtual uint32 GetMipMapCount () const;
-
-		virtual ERenderingResourceFormat GetFormat () const;
-		virtual void SetFormat (ERenderingResourceFormat format);
-
-		void SetTextureData (const std::vector<TextureData>& textureData);
-		virtual bool UpdateTextureResource () = 0;
+		void SetTextureData (const TextureData& textureData);
+		virtual bool UpdateTextureResource ();
 
 		EFilterMode GetFilterMode () const;
 		void SetFilterMode (EFilterMode filterMode);
@@ -62,7 +56,7 @@ namespace GameEngine
 		virtual void OnDeserialize (const Json::Json& json) override;
 
 	protected:
-		std::vector<TextureData> m_data;
+		TextureData m_data;
 
 		uint32 m_width;
 		uint32 m_height;

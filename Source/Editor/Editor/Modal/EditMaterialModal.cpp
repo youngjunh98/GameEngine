@@ -1,6 +1,6 @@
 #include "EditMaterialModal.h"
 #include "Editor/Core/EditorGUI.h"
-#include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace GameEngine
 {

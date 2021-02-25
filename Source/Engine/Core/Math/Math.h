@@ -102,6 +102,10 @@ namespace GameEngine
 		static int32  Clamp (int32 value, int32 min, int32 max);
 		static int64  Clamp (int64 value, int64 min, int64 max);
 
+
+		static bool IsPowerOfTwo (int32 value);
+		static bool IsPowerOfTwo (uint32 value);
+
 	public:
 		static const float Pi;
 		static const float RcpPi;

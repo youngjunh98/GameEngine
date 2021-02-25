@@ -1,7 +1,7 @@
 #include "EditorGUI.h"
 #include "Editor/Core/DearImGui.h"
 #include "Engine/Core/File/FileSystem.h"
-#include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 
 namespace GameEngine
 {

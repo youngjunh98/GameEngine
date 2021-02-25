@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Texture.h"
+#include "Engine/Engine/EngineMacro.h"
 
 namespace GameEngine
 {
-	class Texture2D : public Texture
+	class ENGINE_API Texture2D : public Texture
 	{
 	public:
 		REGISTER_OBJECT_HEADER (Texture2D)

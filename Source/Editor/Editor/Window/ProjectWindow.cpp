@@ -3,7 +3,7 @@
 #include "Editor/Editor/Editor.h"
 #include "Editor/Editor/Modal/CreateMaterialModal.h"
 #include "Editor/Editor/Modal/EditMaterialModal.h"
-#include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Engine/Rendering/Material.h"
 
 namespace GameEngine

@@ -41,7 +41,6 @@ build_engine_module_function(
     module_name Engine_Core
     module_sources ${ENGINE_CORE_SRC}
     import_modules Engine_Platform
-    third_party_libs ${THIRD_PARTY_FBX_SDK_LIBS}
 )
 
 
@@ -74,6 +73,22 @@ build_engine_module_function(
 )
 
 
+################
+# Engine Asset #
+################
+file(GLOB_RECURSE ENGINE_ASSET_SRC
+    "Engine/Asset/*.cpp"
+    "Engine/Asset/*.h"
+)
+
+build_engine_module_function(
+    module_name Engine_Asset
+    module_sources ${ENGINE_ASSET_SRC}
+    import_modules Engine_Core
+    third_party_libs ${THIRD_PARTY_FBX_SDK_LIBS}
+)
+
+
 ###############
 # Editor Core #
 ###############
@@ -85,7 +100,7 @@ file(GLOB EDITOR_CORE_SRC
 build_engine_module_function(
     module_name Editor_Core
     module_sources ${EDITOR_CORE_SRC}
-    import_modules Engine_RI
+    import_modules Engine_RI Engine_Asset
 )
 
 
@@ -100,8 +115,8 @@ file(GLOB_RECURSE ENGINE_SRC
 build_engine_module_function(
     module_name Engine
     module_sources ${ENGINE_SRC}
-    import_modules Engine_Core Engine_RI Editor_Core
-    third_party_libs ${THIRD_PARTY_PHYSX_SDK_LIBS} ${THIRD_PARTY_FBX_SDK_LIBS}
+    import_modules Engine_RI Engine_Asset Editor_Core
+    third_party_libs ${THIRD_PARTY_PHYSX_SDK_LIBS} 
 )
 
 

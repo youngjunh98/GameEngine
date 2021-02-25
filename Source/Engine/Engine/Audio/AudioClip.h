@@ -4,10 +4,11 @@
 
 #include "Engine/Core/CoreMinimal.h"
 #include "Engine/Core/Object/Object.h"
+#include "Engine/Engine/EngineMacro.h"
 
 namespace GameEngine
 {
-	class AudioClip : public Object
+	class ENGINE_API AudioClip : public Object
 	{
 	public:
 		REGISTER_OBJECT_HEADER (AudioClip)

@@ -5,14 +5,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Engine/Core/CoreMacro.h"
+#include "AssetMacro.h"
 #include "Engine/Core/File/FileSystem.h"
 
 namespace GameEngine
 {
 	class Object;
 
-	class ENGINE_CORE_API AssetManager final
+	class ENGINE_ASSET_API AssetManager final
 	{
 	private:
 		AssetManager ();
@@ -32,8 +32,7 @@ namespace GameEngine
 
 		static void AddAsset (const std::shared_ptr<Object>& object, const PathString& path);
 		static void SaveAsset (const PathString& path);
-		static PathString GetInternalAssetPath ();
-		static std::shared_ptr<Object> GetInternalAsset (const PathString& path);
+		static PathString ConvertToInternalAssetPath (const PathString& path);
 		static std::shared_ptr<Object> GetAsset (const PathString& path);
 		static std::vector<std::shared_ptr<Object>> GetAssets (const PathString& path);
 		static std::vector<std::shared_ptr<Object>> FindAssets (const std::string& typeName);

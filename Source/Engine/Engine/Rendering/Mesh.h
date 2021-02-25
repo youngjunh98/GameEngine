@@ -6,10 +6,11 @@
 #include "Vertex.h"
 #include "Engine/Core/Object/Object.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
+#include "Engine/Engine/EngineMacro.h"
 
 namespace GameEngine
 {
-	class Mesh : public Object
+	class ENGINE_API Mesh : public Object
 	{
 	public:
 		REGISTER_OBJECT_HEADER (Mesh)

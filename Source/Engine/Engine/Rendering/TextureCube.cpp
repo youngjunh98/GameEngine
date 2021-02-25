@@ -15,7 +15,7 @@ namespace GameEngine
 
 	void TextureCube::Destroy ()
 	{
-		Texture::Destroy ();
+		TextureArray::Destroy ();
 
 		m_textureCube = nullptr;
 	}
@@ -27,7 +27,12 @@ namespace GameEngine
 
 	bool TextureCube::UpdateTextureResource ()
 	{
-		if (m_width <= 0 || m_height <= 0)
+		if (TextureArray::UpdateTextureResource () == false)
+		{
+			return false;
+		}
+
+		if (m_arraySize != 6)
 		{
 			return false;
 		}
@@ -35,19 +40,23 @@ namespace GameEngine
 		std::vector<uint8*> pixels;
 		std::vector<uint32> rowBytes;
 
-		for (TextureData& data : m_data)
+		for (uint32 arrayIndex = 0; arrayIndex < m_data.m_array.size (); arrayIndex++)
 		{
-			pixels.push_back (data.m_data.data ());
-			rowBytes.push_back (data.GetRowSizeInBytes ());
-		}
+			TextureData::ArrayData& texture = m_data.m_array.at (arrayIndex);
 
-		const uint32 arraySize = 6;
-		m_mipMapCount = static_cast<uint32> (m_data.size () / arraySize);
+			for (uint32 mipMapIndex = 0; mipMapIndex < texture.m_mipMaps.size (); mipMapIndex++)
+			{
+				TextureData::MipMapData& mipMap = texture.m_mipMaps.at (mipMapIndex);
+
+				pixels.push_back (mipMap.m_pixels.data ());
+				rowBytes.push_back (m_data.GetRowSizeInBytes (arrayIndex, mipMapIndex));
+			}
+		}
 
 		void** dataPointer = reinterpret_cast<void**> (pixels.data ());
 		uint32* rowBytesPointer = rowBytes.data ();
 		RenderingInterface& renderingInterface = RenderingInterface::GetModule ();
-		m_textureCube = renderingInterface.CreateTexture2D (m_width, m_height, m_mipMapCount, arraySize, m_format, dataPointer, rowBytesPointer, true, true, false, false);
+		m_textureCube = renderingInterface.CreateTexture2D (m_width, m_height, m_mipMapCount, m_arraySize, m_format, dataPointer, rowBytesPointer, true, true, false, false);
 
 		if (m_textureCube == nullptr)
 		{

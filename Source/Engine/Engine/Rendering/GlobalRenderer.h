@@ -7,11 +7,14 @@
 #include "Engine/Core/CoreMinimal.h"
 #include "Engine/RI/RenderingInterface.h"
 #include "Engine/Engine/EngineMacro.h"
+#include "Engine/Engine/Rendering/Shader.h"
+#include "Engine/Engine/Rendering/Mesh.h"
+#include "Engine/Engine/Rendering/TextureCube.h"
+#include "Engine/Engine/Rendering/Material.h"
 #include "Engine/Engine/Rendering/Pipeline/RenderPipeline.h"
 #include "Engine/Engine/Rendering/Pipeline/Forward/DefaultForwardRenderPipeline.h"
 #include "Engine/Engine/Rendering/Pipeline/Line/DefaultLineRenderPipeline.h"
 #include "Engine/Engine/Rendering/GlobalRendererSettings.h"
-#include "Engine/Engine/Rendering/TextureCube.h"
 #include "Engine/Engine/Component/Rendering/Light.h"
 
 namespace GameEngine
@@ -125,7 +128,7 @@ namespace GameEngine
 		static int32 GetLightCount ();
 		static int32 GetMaxLightCount ();
 
-		static std::shared_ptr<Shader> GetStandardShader ();
+		static std::shared_ptr<Shader>& GetStandardShader ();
 
 	private:
 		static void LoadInternalRenderingAsset ();
@@ -190,11 +193,5 @@ namespace GameEngine
 		std::shared_ptr<Mesh> m_defaultSphereMesh;
 		std::shared_ptr<TextureCube> m_defaultSkyTexture;
 		std::shared_ptr<Material> m_defaultSkyMaterial;
-
-
-		//Shader* m_shadowMapShader;
-		//Shader* m_omnidirectionalShadowMapShader;
-
-		//Material* m_skyboxMaterial;
 	};
 }

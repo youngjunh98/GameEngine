@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Texture.h"
+#include "TextureArray.h"
 
 namespace GameEngine
 {
-	class TextureCube : public Texture
+	class TextureCube : public TextureArray
 	{
 	public:
 		REGISTER_OBJECT_HEADER (TextureCube)

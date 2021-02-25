@@ -38,7 +38,7 @@ namespace GameEngine
 
 		// Create buffer to read json.
 		int64 fileSize = file.GetSize ();
-		auto fileBuffer  = std::make_unique<uint8[]> (fileSize);
+		auto fileBuffer = std::make_unique<uint8[]> (fileSize);
 
 		// Read json from file.
 		uint8* fileBufferStart = fileBuffer.get ();
@@ -139,23 +139,18 @@ namespace GameEngine
 		file.Write (jsonString.data (), jsonStringSize);
 	}
 
-	PathString AssetManager::GetInternalAssetPath ()
+	PathString AssetManager::ConvertToInternalAssetPath (const PathString& path)
 	{
 		PathString enginePath = FileSystem::RemoveFileName (Platform::GetGenericApplication ().GetExecutablePath ());
 		PathString internalPath = FileSystem::CombinePath (enginePath, PATH ("Internal"));
-		return internalPath;
-	}
-
-	std::shared_ptr<Object> AssetManager::GetInternalAsset (const PathString& path)
-	{
-		return GetAsset (FileSystem::CombinePath (GetInternalAssetPath (), path));
+		return FileSystem::CombinePath (internalPath, path);
 	}
 
 	std::shared_ptr<Object> AssetManager::GetAsset (const PathString& path)
 	{
 		std::shared_ptr<Object> asset;
 
-		if (IsAssetLoaded (path) == false && FileSystem::GetFileExtension (path) == PATH("asset"))
+		if (IsAssetLoaded (path) == false && FileSystem::GetFileExtension (path) == PATH ("asset"))
 		{
 			LoadAsset (path);
 		}
@@ -209,7 +204,7 @@ namespace GameEngine
 	{
 		std::vector<std::shared_ptr<Object>> assets;
 
-		for (const std::shared_ptr<Object>& asset : GetAssets (PATH("")))
+		for (const std::shared_ptr<Object>& asset : GetAssets (PATH ("")))
 		{
 			if (asset->GetTypeName () == typeName)
 			{

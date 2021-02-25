@@ -1,8 +1,8 @@
 ﻿#include "Engine.h"
 #include "Engine/Platform/Platform.h"
 #include "Engine/Core/Modular/ModuleManager.h"
-#include "Engine/Core/Asset/AssetManager.h"
-#include "Engine/Engine/Asset/AssetImporter.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetImporter.h"
 #include "Engine/Engine/Audio/Audio.h"
 #include "Engine/Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Engine/Scene/SceneManager.h"
@@ -66,7 +66,7 @@ namespace GameEngine
 
 		SceneManager::GetInstance ().UnloadScene ();
 		AssetManager::UnloadAllAssets ();
-		
+
 		g_physics.Shutdown ();
 		GlobalRenderer::Shutdown ();
 
@@ -108,7 +108,7 @@ namespace GameEngine
 			SceneManager::GetInstance ().UpdateScene ();
 			GlobalRenderer::ClearRenderTargetAndDepthStencil (Vector4 (0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 			GlobalRenderer::RenderScene (SceneManager::GetInstance ().GetScene ());
-			
+
 			for (auto postRenderEvent : m_postRenderEvents)
 			{
 				postRenderEvent ();
@@ -117,7 +117,7 @@ namespace GameEngine
 			GlobalRenderer::PresentSwapChain ();
 
 			platformInput.Update ();
-		}	
+		}
 	}
 
 	void Engine::AddPostRenderCallback (PostRenderEvent callback)

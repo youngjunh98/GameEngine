@@ -2,7 +2,7 @@
 
 #include "Material.h"
 #include "Engine/Platform/PlatformRenderingInterface.h"
-#include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
 
@@ -435,6 +435,12 @@ namespace GameEngine
 	{
 		PathString shaderPath = Json::JsonSerializer::Deserialize<PathString> (json, "shader");
 		auto* shader = dynamic_cast<Shader*> (AssetManager::GetAsset (shaderPath).get ());
+
+		if (shader == nullptr)
+		{
+			return;
+		}
+
 		SetShader (shader);
 
 		for (auto it = Json::JsonSerializer::GetArrayBegin (json, "textures"); it != Json::JsonSerializer::GetArrayEnd (json, "textures"); ++it)

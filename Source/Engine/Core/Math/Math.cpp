@@ -323,4 +323,14 @@ namespace GameEngine
 	{
 		return Min (Max (value, min), max);
 	}
+
+	bool Math::IsPowerOfTwo (int32 value)
+	{
+		return value > 0 && ((value & (value - 1)) == 0);
+	}
+
+	bool Math::IsPowerOfTwo (uint32 value)
+	{
+		return value > 0 && ((value & (value - 1)) == 0);
+	}
 }

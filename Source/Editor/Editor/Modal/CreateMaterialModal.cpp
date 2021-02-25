@@ -3,7 +3,7 @@
 #include "Editor/Core/EditorGUI.h"
 #include "Engine/Core/File/FileSystem.h"
 #include "Engine/Core/File/File.h"
-#include "Engine/Core/Asset/AssetManager.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/Rendering/GlobalRenderer.h"
 #include "Engine/Engine/Rendering/Material.h"
@@ -36,7 +36,7 @@ namespace GameEngine
             if (file.IsOpen ())
             {
                 auto material = std::make_shared<Material> ();
-                material->SetShader (GlobalRenderer::GetStandardShader (). get());
+                material->SetShader (GlobalRenderer::GetStandardShader ().get());
 
                 AssetManager::AddAsset (material, path);
                 AssetManager::SaveAsset (path);

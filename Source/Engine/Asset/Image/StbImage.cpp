@@ -32,90 +32,119 @@ namespace GameEngine
 			}
 
 			StbImageData image;
+			int32 imageWidth = 0;
+			int32 imageHeight = 0;
 			bool bIsHDR = stbi_is_hdr_from_memory (fileData, fileSize) == 1;
 			bool bIs16Bit = stbi_is_16_bit_from_memory (fileData, fileSize) == 1;
 
 			if (bIsHDR)
 			{
-				image.m_data = stbi_loadf_from_memory (fileData, fileSize, &texture.m_width, &texture.m_height, nullptr, texture.m_channels);
+				image.m_data = stbi_loadf_from_memory (fileData, fileSize, &imageWidth, &imageHeight, nullptr, texture.m_channels);
 				texture.m_bytes = 4;
 			}
 			else if (bIs16Bit)
 			{
-				image.m_data = stbi_load_16_from_memory (fileData, fileSize, &texture.m_width, &texture.m_height, nullptr, texture.m_channels);
+				image.m_data = stbi_load_16_from_memory (fileData, fileSize, &imageWidth, &imageHeight, nullptr, texture.m_channels);
 				texture.m_bytes = 2;
 			}
 			else
 			{
-				image.m_data = stbi_load_from_memory (fileData, fileSize, &texture.m_width, &texture.m_height, nullptr, texture.m_channels);
+				image.m_data = stbi_load_from_memory (fileData, fileSize, &imageWidth, &imageHeight, nullptr, texture.m_channels);
 				texture.m_bytes = 1;
 			}
 
 			if (image.m_data != nullptr)
 			{
+				texture.m_format = GetFormat (texture.m_channels, texture.m_bytes, texture.m_bLinear);
+				texture.m_array.emplace_back ();
+				texture.m_array.back ().m_fileData = std::vector<uint8> (fileData, fileData + fileSize);
+				texture.m_array.back ().m_mipMaps.emplace_back ();
+
+				TextureData::MipMapData& original = texture.m_array.back ().m_mipMaps.back ();
+				original.m_width = imageWidth;
+				original.m_height = imageHeight;
+
 				uint8* imageStart = static_cast<uint8*> (image.m_data);
-				uint8* imageEnd = imageStart + texture.GetDataSizeInBytes ();
-				texture.m_data = std::vector<uint8> (imageStart, imageEnd);
+				uint8* imageEnd = imageStart + texture.GetDataSizeInBytes (0, 0);
+				original.m_pixels = std::vector<uint8> (imageStart, imageEnd);
 			}
 		}
 
 		return texture;
 	}
 
-	TextureData StbImage::Resize (const TextureData& textureData, int32 resizedWidth, int32 resizedHeight)
+	bool StbImage::GenerateMipMap (const TextureData::MipMapData& source, TextureData::MipMapData& destination,
+		uint32 mipMapWidth, uint32 mipMapHeight, int32 channels, int32 bytes, bool bLinearColor)
 	{
 		bool bSucceed = false;
 
-		TextureData resized;
-		int32 resizedDataSize = resizedWidth * resizedHeight * textureData.m_channels * textureData.m_bytes;
-		resized.m_data.resize (resizedDataSize);
+		// Set size of mip map
+		uint32 mipMapDataSize = mipMapWidth * mipMapHeight * channels * bytes;
+		destination.m_pixels.resize (mipMapDataSize);
 
-		int32 alphaIndex = IsAlpha (textureData.m_channels) ? textureData.m_channels - 1 : STBIR_ALPHA_CHANNEL_NONE;
+		// Stb params
+		int32 alphaIndex = IsAlpha (channels) ? channels - 1 : STBIR_ALPHA_CHANNEL_NONE;
 		int32 flags = 0;
 
 		stbir_edge edge = STBIR_EDGE_WRAP;
 		stbir_filter filter = STBIR_FILTER_BOX;
-		stbir_colorspace colorSpace = textureData.m_bLinear ? STBIR_COLORSPACE_LINEAR : STBIR_COLORSPACE_SRGB;
+		stbir_colorspace colorSpace = bLinearColor ? STBIR_COLORSPACE_LINEAR : STBIR_COLORSPACE_SRGB;
 
-		if (textureData.m_bytes == 1)
+		// Get data
+		const uint8* sourceData = source.m_pixels.data ();
+		uint8* mipMapData = destination.m_pixels.data ();
+
+		if (bytes == 1)
 		{
-			auto* sourceData = static_cast<const uint8*> (textureData.m_data.data ());
-			auto* resizedData = static_cast<uint8*> (resized.m_data.data ());
-
-			bSucceed = stbir_resize_uint8_generic (sourceData, textureData.m_width, textureData.m_height, 0, resizedData, resizedWidth, resizedHeight, 0,
-				textureData.m_channels, alphaIndex, flags, edge, filter, colorSpace, nullptr) == 1;
+			bSucceed = stbir_resize_uint8_generic (sourceData, source.m_width, source.m_height, 0, mipMapData, mipMapWidth, mipMapHeight, 0,
+				channels, alphaIndex, flags, edge, filter, colorSpace, nullptr) == 1;
 		}
-		else if (textureData.m_bytes == 2)
+		else if (bytes == 2)
 		{
-			auto* sourceData = reinterpret_cast<const uint16*> (textureData.m_data.data ());
-			auto* resizedData = reinterpret_cast<uint16*> (resized.m_data.data ());
+			auto* sourceData16 = reinterpret_cast<const uint16*> (sourceData);
+			auto* mipMapData16 = reinterpret_cast<uint16*> (mipMapData);
 
-			bSucceed = stbir_resize_uint16_generic (sourceData, textureData.m_width, textureData.m_height, 0, resizedData, resizedWidth, resizedHeight, 0,
-				textureData.m_channels, alphaIndex, flags, edge, filter, colorSpace, nullptr) == 1;
+			bSucceed = stbir_resize_uint16_generic (sourceData16, source.m_width, source.m_height, 0, mipMapData16, mipMapWidth, mipMapHeight, 0,
+				channels, alphaIndex, flags, edge, filter, colorSpace, nullptr) == 1;
 		}
-		else if (textureData.m_bytes == 4)
+		else if (bytes == 4)
 		{
-			auto* sourceData = reinterpret_cast<const float*> (textureData.m_data.data ());
-			auto* resizedData = reinterpret_cast<float*> (resized.m_data.data ());
+			auto* sourceDataFloat = reinterpret_cast<const float*> (sourceData);
+			auto* mipMapDataFloat = reinterpret_cast<float*> (mipMapData);
 
-			bSucceed = stbir_resize_float_generic (sourceData, textureData.m_width, textureData.m_height, 0, resizedData, resizedWidth, resizedHeight, 0,
-				textureData.m_channels, alphaIndex, flags, edge, filter, colorSpace, nullptr) == 1;
+			bSucceed = stbir_resize_float_generic (sourceDataFloat, source.m_width, source.m_height, 0, mipMapDataFloat, mipMapWidth, mipMapHeight, 0,
+				channels, alphaIndex, flags, edge, filter, colorSpace, nullptr) == 1;
 		}
 
 		if (bSucceed)
 		{
-			resized.m_width = resizedWidth;
-			resized.m_height = resizedHeight;
-			resized.m_channels = textureData.m_channels;
-			resized.m_bytes = textureData.m_bytes;
-			resized.m_bLinear = textureData.m_bLinear;
-		}
-		else
-		{
-			resized.m_data.clear ();
+			destination.m_width = mipMapWidth;
+			destination.m_height = mipMapHeight;
 		}
 
-		return resized;
+		return bSucceed;
+	}
+
+	bool StbImage::AddAndGenerateMipMap (TextureData& texture, uint32 mipMapWidth, uint32 mipMapHeight)
+	{
+		bool bSucceed = false;
+
+		if (texture.m_array.size () > 0)
+		{
+			for (TextureData::ArrayData& tex : texture.m_array)
+			{
+				tex.m_mipMaps.emplace_back ();
+				TextureData::MipMapData& mipMap = tex.m_mipMaps.back ();
+				const TextureData::MipMapData& first = tex.m_mipMaps.front ();
+
+				if (GenerateMipMap (first, mipMap, mipMapWidth, mipMapHeight, texture.m_channels, texture.m_bytes, texture.m_bLinear))
+				{
+					bSucceed = true;
+				}
+			}
+		}
+
+		return bSucceed;
 	}
 
 	bool StbImage::IsRGB (const int32 channels)

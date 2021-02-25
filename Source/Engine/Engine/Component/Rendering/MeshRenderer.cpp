@@ -1,7 +1,7 @@
 #include "MeshRenderer.h"
-#include "Engine/Core/Asset/AssetManager.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
+#include "Engine/Asset/AssetManager.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Rendering/Mesh.h"
 #include "Engine/Engine/Rendering/GlobalRenderer.h"

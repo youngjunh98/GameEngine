@@ -1,7 +1,7 @@
 #include "GlobalRenderer.h"
 #include "Engine/Platform/Platform.h"
-#include "Engine/Core/Asset/AssetManager.h"
-#include "Engine/Engine/Asset/AssetImporter.h"
+#include "Engine/Asset/AssetManager.h"
+#include "Engine/Asset/AssetImporter.h"
 #include "Engine/Engine/Scene/Scene.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Component/Transform.h"
@@ -581,7 +581,7 @@ namespace GameEngine
 	void GlobalRenderer::BindShadowRenderTarget (ELightType lightType, uint32 renderTargetIndex)
 	{
 		GlobalRenderer& instance = GetInstance ();
-		
+
 		if (lightType == ELightType::Directional)
 		{
 			if (renderTargetIndex >= instance.m_directionalLightShadowMapDSV.size ())
@@ -961,7 +961,7 @@ namespace GameEngine
 		return GetInstance ().m_maxLightCount;
 	}
 
-	std::shared_ptr<Shader> GlobalRenderer::GetStandardShader ()
+	std::shared_ptr<Shader>& GlobalRenderer::GetStandardShader ()
 	{
 		return GetInstance ().m_standardShader;
 	}
@@ -970,46 +970,58 @@ namespace GameEngine
 	{
 		GlobalRenderer& instance = GetInstance ();
 
-		PathString internalAssetPath = AssetManager::GetInternalAssetPath ();
-		PathString assetPath = FileSystem::CombinePath (internalAssetPath, PATH ("Assets"));
-		PathString shaderPath = FileSystem::CombinePath (internalAssetPath, PATH ("Shader"));
-
 		// Load standard shaders
-		PathString standardShaderPath = FileSystem::CombinePath (shaderPath, PATH ("StandardShader.hlsl"));
-		PathString standardTessellationShaderPath = FileSystem::CombinePath (shaderPath, PATH ("StandardTessellationShader.hlsl"));
-		AssetImporter::LoadShader (standardShaderPath, true);
-		AssetImporter::LoadShader (standardTessellationShaderPath, true);
-		instance.m_standardShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (standardShaderPath));
-		instance.m_standardTessellationShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (standardTessellationShaderPath));
+		PathString standardShaderPath = AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Shader"), PATH ("StandardShader.hlsl")));
+		instance.m_standardShader = std::make_shared<Shader> ();
+		instance.m_standardShader->Initialize (standardShaderPath);
+		AssetManager::AddAsset (instance.m_standardShader, standardShaderPath);
+
+		PathString standardTessellationShaderPath = AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Shader"), PATH ("StandardTessellationShader.hlsl")));
+		instance.m_standardTessellationShader = std::make_shared<Shader> ();
+		instance.m_standardTessellationShader->Initialize (standardTessellationShaderPath);
+		AssetManager::AddAsset (instance.m_standardTessellationShader, standardTessellationShaderPath);
 
 		// Load shadow map shaders
-		PathString shadowMapShaderPath = FileSystem::CombinePath (shaderPath, PATH ("ShadowMapShader.hlsl"));
-		PathString omnidirectionalShadowMapShader = FileSystem::CombinePath (shaderPath, PATH ("OmnidirectionalShadowMapShader.hlsl"));
-		AssetImporter::LoadShader (shadowMapShaderPath, true);
-		AssetImporter::LoadShader (omnidirectionalShadowMapShader, true);
-		instance.m_shadowMapShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (shadowMapShaderPath));
-		instance.m_omnidirectionalShadowMapShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (omnidirectionalShadowMapShader));
+		PathString shadowMapShaderPath = AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Shader"), PATH ("ShadowMapShader.hlsl")));
+		instance.m_shadowMapShader = std::make_shared<Shader> ();
+		instance.m_shadowMapShader->Initialize (shadowMapShaderPath);
+		AssetManager::AddAsset (instance.m_shadowMapShader, shadowMapShaderPath);
+
+		PathString omnidirectionalShadowMapShaderPath = AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Shader"), PATH ("OmnidirectionalShadowMapShader.hlsl")));
+		instance.m_omnidirectionalShadowMapShader = std::make_shared<Shader> ();
+		instance.m_omnidirectionalShadowMapShader->Initialize (omnidirectionalShadowMapShaderPath);
+		AssetManager::AddAsset (instance.m_omnidirectionalShadowMapShader, omnidirectionalShadowMapShaderPath);
 
 		// Load default skybox assets
-		PathString defaultSkyboxShaderPath = FileSystem::CombinePath (shaderPath, PATH ("Skybox.hlsl"));
-		PathString defaultSphereMeshPath = FileSystem::CombinePath (assetPath, PATH ("sphere.obj"));
+		PathString defaultSkyboxShaderPath = AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Shader"), PATH ("Skybox.hlsl")));
+		instance.m_defaultSkyboxShader = std::make_shared<Shader> ();
+		instance.m_defaultSkyboxShader->Initialize (defaultSkyboxShaderPath);
+		//AssetManager::AddAsset (instance.m_defaultSkyboxShader, defaultSkyboxShaderPath);
 
-		PathString skyPath[] = { 
-			FileSystem::CombinePath (assetPath, PATH ("skyRight.hdr")),
-			FileSystem::CombinePath (assetPath, PATH ("skyLeft.hdr")),
-			FileSystem::CombinePath (assetPath, PATH ("skyTop.hdr")),
-			FileSystem::CombinePath (assetPath, PATH ("skyBottom.hdr")),
-			FileSystem::CombinePath (assetPath, PATH ("skyFront.hdr")),
-			FileSystem::CombinePath (assetPath, PATH ("skyBack.hdr"))
-		};
+		PathString defaultSphereMeshPath = AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("sphere.obj")));
+		MeshData skyMesh = AssetImporter::ImportMesh (defaultSphereMeshPath);
+		instance.m_defaultSphereMesh = std::make_shared<Mesh> ();
+		instance.m_defaultSphereMesh->SetSubMeshCount (skyMesh.m_subMeshData.size ());
+		for (uint32 subMeshIndex = 0; subMeshIndex < skyMesh.m_subMeshData.size (); subMeshIndex++)
+		{
+			instance.m_defaultSphereMesh->SetVertices (subMeshIndex, skyMesh.m_subMeshData.at (subMeshIndex).m_vertices);
+			instance.m_defaultSphereMesh->UpdateVertexBufferResource (subMeshIndex);
+		}
+		//AssetManager::AddAsset (instance.m_defaultSkyboxShader, defaultSphereMeshPath);
 
-		AssetImporter::LoadShader (defaultSkyboxShaderPath, true);
-		AssetImporter::ImportAsset (defaultSphereMeshPath, true);
-		AssetImporter::ImportTextureCube (skyPath, true);
+		TextureData skyTexture = AssetImporter::ImportTexture (AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("skyRight.hdr"))), true);
+		skyTexture.AddTextureArray (AssetImporter::ImportTexture (AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("skyLeft.hdr"))), true));
+		skyTexture.AddTextureArray (AssetImporter::ImportTexture (AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("skyTop.hdr"))), true));
+		skyTexture.AddTextureArray (AssetImporter::ImportTexture (AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("skyBottom.hdr"))), true));
+		skyTexture.AddTextureArray (AssetImporter::ImportTexture (AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("skyFront.hdr"))), true));
+		skyTexture.AddTextureArray (AssetImporter::ImportTexture (AssetManager::ConvertToInternalAssetPath (FileSystem::CombinePath (PATH ("Assets"), PATH ("skyBack.hdr"))), true));
+		instance.m_defaultSkyTexture = std::make_shared<TextureCube> ();
+		instance.m_defaultSkyTexture->SetTextureData (skyTexture);
+		instance.m_defaultSkyTexture->UpdateTextureResource ();
+		instance.m_defaultSkyTexture->SetFilterMode (EFilterMode::Trilinear);
+		instance.m_defaultSkyTexture->SetAddressMode (EAddressMode::Wrap);
+		instance.m_defaultSkyTexture->UpdateSamplerResource ();
 
-		instance.m_defaultSkyboxShader = std::dynamic_pointer_cast<Shader> (AssetManager::GetInternalAsset (defaultSkyboxShaderPath));
-		instance.m_defaultSphereMesh = std::dynamic_pointer_cast<Mesh> (AssetManager::GetInternalAsset (defaultSphereMeshPath));
-		instance.m_defaultSkyTexture = std::dynamic_pointer_cast<TextureCube> (AssetManager::GetInternalAsset (skyPath[0]));
 		instance.m_defaultSkyMaterial = std::make_shared<Material> ();
 		instance.m_defaultSkyMaterial->SetShader (instance.m_defaultSkyboxShader.get ());
 		instance.m_defaultSkyMaterial->SetTexture ("Skybox", *instance.m_defaultSkyTexture);
@@ -1019,53 +1031,29 @@ namespace GameEngine
 	{
 		GlobalRenderer& instance = GetInstance ();
 
-		if (instance.m_standardShader != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_standardShader));
-			instance.m_standardShader = nullptr;
-		}
+		instance.m_standardShader->Destroy ();
+		instance.m_standardShader = nullptr;
 
-		if (instance.m_standardTessellationShader != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_standardTessellationShader));
-			instance.m_standardTessellationShader = nullptr;
-		}
+		instance.m_standardTessellationShader->Destroy ();
+		instance.m_standardTessellationShader = nullptr;
 
-		if (instance.m_shadowMapShader != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_shadowMapShader));
-			instance.m_shadowMapShader = nullptr;
-		}
+		instance.m_shadowMapShader->Destroy ();
+		instance.m_shadowMapShader = nullptr;
 
-		if (instance.m_omnidirectionalShadowMapShader != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_omnidirectionalShadowMapShader));
-			instance.m_omnidirectionalShadowMapShader = nullptr;
-		}
+		instance.m_omnidirectionalShadowMapShader->Destroy ();
+		instance.m_omnidirectionalShadowMapShader = nullptr;
 
-		if (instance.m_defaultSkyboxShader != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_defaultSkyboxShader));
-			instance.m_defaultSkyboxShader = nullptr;
-		}
+		instance.m_defaultSkyboxShader->Destroy ();
+		instance.m_defaultSkyboxShader = nullptr;
 
-		if (instance.m_defaultSphereMesh != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_defaultSphereMesh));
-			instance.m_defaultSphereMesh = nullptr;
-		}
+		instance.m_defaultSphereMesh->Destroy ();
+		instance.m_defaultSphereMesh = nullptr;
 
-		if (instance.m_defaultSkyTexture != nullptr)
-		{
-			AssetManager::UnloadAsset (AssetManager::GetAssetPath (*instance.m_defaultSkyTexture));
-			instance.m_defaultSkyTexture = nullptr;
-		}
+		instance.m_defaultSkyTexture->Destroy ();
+		instance.m_defaultSkyTexture = nullptr;
 
-		if (instance.m_defaultSkyMaterial != nullptr)
-		{
-			instance.m_defaultSkyMaterial->Destroy ();
-			instance.m_defaultSkyMaterial = nullptr;
-		}
+		instance.m_defaultSkyMaterial->Destroy ();
+		instance.m_defaultSkyMaterial = nullptr;
 	}
 
 	GlobalRendererSettings GlobalRenderer::GetSettings ()
