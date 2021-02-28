@@ -21,6 +21,16 @@ if(WIN32)
         ${ENGINE_PLATFORM_SRC}
         ${ENGINE_PLATFORM_WINDOWS_SRC}
     )
+elseif(APPLE)
+    file(GLOB ENGINE_PLATFORM_MAC_SRC
+        "Engine/Platform/Mac/*.cpp"
+        "Engine/Platform/Mac/*.h"
+    )
+
+    set(ENGINE_PLATFORM_SRC
+        ${ENGINE_PLATFORM_SRC}
+        ${ENGINE_PLATFORM_MAC_SRC}
+    )
 endif()
 
 build_engine_module_function(
