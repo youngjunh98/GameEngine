@@ -8,7 +8,7 @@
 
 namespace GameEngine
 {
-	#if defined (ENGINE_PLATFORM_WINDOWS)
+	#if defined(ENGINE_PLATFORM_WINDOWS)
 		#if defined(UNICODE) | defined(_UNICODE)
 			using PathString = std::wstring;
 			#define PATH(STR) L##STR
@@ -16,6 +16,9 @@ namespace GameEngine
 			using PathString = std::string;
 			#define PATH(STR) STR
 		#endif
+    #elif defined(ENGINE_PLATFORM_MAC)
+        using PathString = std::string;
+        #define PATH(STR) STR
 	#endif
 
 	namespace Platform

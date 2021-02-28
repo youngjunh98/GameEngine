@@ -19,7 +19,7 @@ namespace GameEngine
 			ENGINE_PLATFORM_API GenericApplication ();
 			ENGINE_PLATFORM_API virtual ~GenericApplication () = 0;
 
-			ENGINE_PLATFORM_API virtual bool Initialize (const std::wstring& name, uint32 width, uint32 height, bool bFullScreenEnabled) = 0;
+			ENGINE_PLATFORM_API virtual bool Initialize (const PathString& name, uint32 width, uint32 height, bool bFullScreenEnabled) = 0;
 			ENGINE_PLATFORM_API virtual void Shutdown () = 0;
 
 			ENGINE_PLATFORM_API virtual bool Update () = 0;
