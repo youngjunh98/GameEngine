@@ -19,14 +19,13 @@ if(WIN32)
     endif()
 elseif(APPLE)
     set(CMAKE_OSX_ARCHITECTURES x86_64)
+    set(CMAKE_XCODE_ATTRIBUTE_SKIP_INSTALL "YES")
 
     enable_language(Swift)
     set(CMAKE_Swift_LANGUAGE_VERSION 5)
     message(STATUS "Swift Version: ${CMAKE_Swift_LANGUAGE_VERSION}")
     message(STATUS "Swift Compiler: ${CMAKE_Swift_COMPILER_ID} (Version ${CMAKE_Swift_COMPILER_VERSION})")
     message(STATUS "==============================")
-
-    #enable_language(OBJCXX)
     
     option(BUILD_METAL "Build Metal RI" ON)
 
@@ -156,9 +155,22 @@ if(WIN32)
     add_executable(Executable WIN32 "Source/Main/WinMain.cpp")
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Executable)
 elseif(APPLE)
-    file(GLOB MAC_EXECUTABLE_SRC "Source/Main/Mac/*.swift")
+    file(GLOB MAC_EXECUTABLE_SRC
+        "Source/Main/MacApplication.swift"
+        "Source/Apple/Application/*.swift"
+        "Source/Apple/Application/*.mm"
+        "Source/Apple/Application/*.m"
+        "Source/Apple/Application/*.h"
+        "Source/Apple/Application/Assets.xcassets"
+    )
     add_executable(Executable ${MAC_EXECUTABLE_SRC})
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY Executable)
+    set_target_properties(Executable PROPERTIES 
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Source/Apple/Application/Info.plist"
+        XCODE_ATTRIBUTE_SKIP_INSTALL "NO"
+        XCODE_ATTRIBUTE_INSTALL_PATH "$(LOCAL_APPS_DIR)"
+        XCODE_ATTRIBUTE_SWIFT_OBJC_BRIDGING_HEADER "${CMAKE_SOURCE_DIR}/Source/Apple/Application/Bridging-Header.h"
+    )
 endif()
 
 set_target_properties(Executable PROPERTIES OUTPUT_NAME "GameEngine")

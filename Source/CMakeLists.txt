@@ -1,5 +1,6 @@
 project(Engine)
 include(${CMAKE_SOURCE_DIR}/CMake/Functions.cmake)
+include(${CMAKE_SOURCE_DIR}/CMake/AppleHelper.cmake)
 
 ###################
 # Engine Platform #
@@ -20,13 +21,21 @@ search_and_append_files(ENGINE_PLATFORM_SRC search_paths
 search_and_append_files(ENGINE_PLATFORM_SRC search_paths
     "Engine/Platform/Mac/*.cpp"
     "Engine/Platform/Mac/*.h"
-    "Engine/Platform/Mac/*.swift"
+    "Apple/Platform/*.swift"
+    "Apple/Platform/*.mm"
+    "Apple/Platform/*.m"
+    "Apple/Platform/*.h"
     if APPLE
 )
 
 build_engine_module_function(
     module_name Engine_Platform
     module_sources ${ENGINE_PLATFORM_SRC}
+)
+
+set_swift_bridging_header(
+    target Engine_Platform
+    header_path "${CMAKE_SOURCE_DIR}/Source/Apple/Platform/Bridging-Header.h"
 )
 
 
@@ -88,7 +97,10 @@ search_and_append_files(ENGINE_RI_SRC search_paths
 search_and_append_files(ENGINE_RI_SRC search_paths
     "Engine/RI/Metal/*.cpp"
     "Engine/RI/Metal/*.h"
-    "Engine/RI/Metal/*.swift"
+    "Apple/Metal/*.swift"
+    "Apple/Metal/*.mm"
+    "Apple/Metal/*.m"
+    "Apple/Metal/*.h"
     if APPLE
 )
 
