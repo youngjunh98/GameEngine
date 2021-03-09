@@ -1,4 +1,4 @@
-﻿#include "Engine.h"
+#include "Engine.h"
 #include "Engine/Platform/Platform.h"
 #include "Engine/Core/Modular/ModuleManager.h"
 #include "Engine/Asset/AssetManager.h"
@@ -30,7 +30,7 @@ namespace GameEngine
 
 		GlobalRendererSettings rendererSettings = { 800, 800, false, 4, true, 60, true };
 
-		if (Platform::GetGenericApplication ().Initialize (L"게임 엔진", 800, 800, false) == false)
+		if (Platform::GetGenericApplication ().Initialize (PATH("게임 엔진"), 800, 800, false) == false)
 		{
 			return false;
 		}

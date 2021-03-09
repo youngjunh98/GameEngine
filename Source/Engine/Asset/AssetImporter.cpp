@@ -1,7 +1,7 @@
 #include "AssetImporter.h"
 #include "AssetManager.h"
 #include "3D/OBJImporter.h"
-#include "3D/FbxImporter.h"
+#include "3D/FBXImporter.h"
 #include "Image/StbImage.h"
 #include "Audio/WavImporter.h"
 #include "Engine/Core/File/File.h"

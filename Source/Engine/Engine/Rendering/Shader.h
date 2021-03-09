@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Engine/Core/CoreForward.h"
+#include "Engine/Core/Object/Object.h"
+#include "Engine/Core/File/FileSystem.h"
 #include "Engine/RI/RenderingInterfaceResource.h"
 #include "Engine/RI/RenderingInterfaceEnum.h"
-#include "Engine/Core/Object/Object.h"
 
 namespace GameEngine
 {
@@ -15,7 +16,7 @@ namespace GameEngine
 		Shader () {}
 		virtual ~Shader () {}
 
-		bool Initialize (const std::wstring & sourcePath);
+		bool Initialize (const PathString& sourcePath);
 		virtual void Destroy () override;
 
 		bool IsShaderStageExist (EShaderStage stage) const;
@@ -46,7 +47,7 @@ namespace GameEngine
 		RI_ShaderConstantBuffer* GetGeometryShaderParameterBuffer () const;
 
 	private:
-		bool InitializeShader (const std::wstring& sourcePath, EShaderStage stage, const std::string& entryPoint, std::unique_ptr<uint8[]>& compiledCode, uint32& compiledCodeSize);
+		bool InitializeShader (const PathString& sourcePath, EShaderStage stage, const std::string& entryPoint, std::unique_ptr<uint8[]>& compiledCode, uint32& compiledCodeSize);
 		bool CreateGlobalBuffer (EShaderStage stage);
 
 	private:

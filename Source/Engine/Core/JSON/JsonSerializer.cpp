@@ -4,14 +4,6 @@ namespace GameEngine
 {
 	namespace Json
 	{
-		JsonSerializer::JsonSerializer ()
-		{
-		}
-
-		JsonSerializer::~JsonSerializer ()
-		{
-		}
-
 		bool JsonSerializer::IsArray (const Json& json, const std::string& name)
 		{
 			if (json.contains (name))

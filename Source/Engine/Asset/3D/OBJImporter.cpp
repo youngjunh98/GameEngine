@@ -1,7 +1,7 @@
 #include <vector>
 #include <memory>
 
-#include "ObjImporter.h"
+#include "OBJImporter.h"
 
 namespace GameEngine
 {

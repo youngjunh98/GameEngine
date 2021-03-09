@@ -5,9 +5,6 @@
 
 namespace GameEngine
 {
-	EditorGUI::EditorGUI () {}
-	EditorGUI::~EditorGUI () {}
-
 	void EditorGUI::PushID (int32 id)
 	{
 		ImGui::PushID (id);

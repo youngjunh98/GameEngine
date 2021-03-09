@@ -1,6 +1,7 @@
 #include "BoxCollider.h"
 #include "Engine/Core/JSON/JsonSerializer.h"
 #include "Editor/Core/EditorGUI.h"
+#include "Engine/Engine/Physics/Physics.h"
 
 namespace GameEngine
 {

@@ -2,6 +2,7 @@
 #include "Engine/Core/JSON/JsonSerializer.h"
 #include "Engine/Engine/GameObject.h"
 #include "Engine/Engine/Component/Transform.h"
+#include "Engine/Engine/Physics/Physics.h"
 
 namespace GameEngine
 {

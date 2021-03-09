@@ -20,7 +20,7 @@
         #warning("Unkown Apple platform!")
     #endif
 
-    #define ENGINE_PLATFORM_EXPORT __attribute__((visibility("default"))
+    #define ENGINE_PLATFORM_EXPORT __attribute__((visibility("default")))
     #define ENGINE_PLATFORM_IMPORT __attribute__((weak_import))
 #endif
 

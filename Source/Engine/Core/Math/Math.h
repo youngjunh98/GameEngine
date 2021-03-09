@@ -16,8 +16,8 @@ namespace GameEngine
 	class ENGINE_CORE_API Math
 	{
 	public:
-		Math () {}
-		virtual ~Math () = 0 {}
+        Math () = delete;
+        ~Math () = delete;
 
 		static float  Sqrt (float value);
 		static double Sqrt (double value);

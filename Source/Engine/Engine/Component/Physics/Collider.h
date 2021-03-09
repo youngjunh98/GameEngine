@@ -2,9 +2,14 @@
 
 #include "Engine/Core/CoreMinimal.h"
 #include "Engine/Engine/EngineMacro.h"
-#include "Engine/Engine/Physics/Physics.h"
 #include "Engine/Engine/Component/Component.h"
 #include "Engine/Engine/Component/Physics/Rigidbody.h"
+
+namespace physx
+{
+    class PxShape;
+    class PxRigidStatic;
+}
 
 namespace GameEngine
 {

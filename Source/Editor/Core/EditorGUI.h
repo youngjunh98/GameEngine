@@ -16,8 +16,8 @@ namespace GameEngine
     class EDITOR_CORE_API EditorGUI final
     {
     private:
-        EditorGUI ();
-        virtual ~EditorGUI () = 0;
+        EditorGUI () = delete;
+        ~EditorGUI () = delete;
 
     public:
         static void PushID (int32 id);

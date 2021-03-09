@@ -95,7 +95,7 @@ namespace GameEngine
 			m_scene = nullptr;
 		}
 
-		m_scenePath = L"";
+		m_scenePath = PATH("");
 	}
 
 	void SceneManager::CreateEmptyScene (const PathString& path)

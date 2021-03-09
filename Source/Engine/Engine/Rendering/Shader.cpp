@@ -7,7 +7,7 @@ namespace GameEngine
 {
 	REGISTER_OBJECT_CPP (Shader)
 
-	bool Shader::Initialize (const std::wstring& sourcePath)
+	bool Shader::Initialize (const PathString& sourcePath)
 	{
 		RenderingInterface& renderingInterface = RenderingInterface::GetModule ();
 		std::unique_ptr<uint8[]> compiledCode;
@@ -367,7 +367,7 @@ namespace GameEngine
 		return m_geometryShaderParameterBuffer.get ();
 	}
 
-	bool Shader::InitializeShader (const std::wstring& sourcePath, EShaderStage stage, const std::string& entryPoint, std::unique_ptr<uint8[]>& compiledCode, uint32& compiledCodeSize)
+	bool Shader::InitializeShader (const PathString& sourcePath, EShaderStage stage, const std::string& entryPoint, std::unique_ptr<uint8[]>& compiledCode, uint32& compiledCodeSize)
 	{
 		bool result = true;
 		RenderingInterface& renderingInterface = RenderingInterface::GetModule ();

@@ -106,8 +106,8 @@ namespace GameEngine
             if (bSameSize && bSameMipMapLevels && bSameFormat)
             {
                 bool bSameMipMapSizes = true;
-                auto& it = m_array.at (0).m_mipMaps.begin ();
-                auto& otherIt = texture.m_array.at (0).m_mipMaps.begin ();
+                auto it = m_array.at (0).m_mipMaps.begin ();
+                auto otherIt = texture.m_array.at (0).m_mipMaps.begin ();
 
                 while (it != m_array.at (0).m_mipMaps.end ())
                 {

@@ -1030,30 +1030,54 @@ namespace GameEngine
 	void GlobalRenderer::UnloadInternalRenderingAsset ()
 	{
 		GlobalRenderer& instance = GetInstance ();
+        
+        if (instance.m_standardShader != nullptr)
+        {
+            instance.m_standardShader->Destroy ();
+            instance.m_standardShader = nullptr;
+        }
 
-		instance.m_standardShader->Destroy ();
-		instance.m_standardShader = nullptr;
+        if (instance.m_standardTessellationShader != nullptr)
+        {
+            instance.m_standardTessellationShader->Destroy ();
+            instance.m_standardTessellationShader = nullptr;
+        }
 
-		instance.m_standardTessellationShader->Destroy ();
-		instance.m_standardTessellationShader = nullptr;
+        if (instance.m_shadowMapShader != nullptr)
+        {
+            instance.m_shadowMapShader->Destroy ();
+            instance.m_shadowMapShader = nullptr;
+        }
 
-		instance.m_shadowMapShader->Destroy ();
-		instance.m_shadowMapShader = nullptr;
+        if (instance.m_omnidirectionalShadowMapShader != nullptr)
+        {
+            instance.m_omnidirectionalShadowMapShader->Destroy ();
+            instance.m_omnidirectionalShadowMapShader = nullptr;
+        }
 
-		instance.m_omnidirectionalShadowMapShader->Destroy ();
-		instance.m_omnidirectionalShadowMapShader = nullptr;
+        if (instance.m_defaultSkyboxShader != nullptr)
+        {
+            instance.m_defaultSkyboxShader->Destroy ();
+            instance.m_defaultSkyboxShader = nullptr;
+        }
 
-		instance.m_defaultSkyboxShader->Destroy ();
-		instance.m_defaultSkyboxShader = nullptr;
+        if (instance.m_defaultSphereMesh != nullptr)
+        {
+            instance.m_defaultSphereMesh->Destroy ();
+            instance.m_defaultSphereMesh = nullptr;
+        }
 
-		instance.m_defaultSphereMesh->Destroy ();
-		instance.m_defaultSphereMesh = nullptr;
+        if (instance.m_defaultSkyTexture != nullptr)
+        {
+            instance.m_defaultSkyTexture->Destroy ();
+            instance.m_defaultSkyTexture = nullptr;
+        }
 
-		instance.m_defaultSkyTexture->Destroy ();
-		instance.m_defaultSkyTexture = nullptr;
-
-		instance.m_defaultSkyMaterial->Destroy ();
-		instance.m_defaultSkyMaterial = nullptr;
+        if (instance.m_defaultSkyMaterial != nullptr)
+        {
+            instance.m_defaultSkyMaterial->Destroy ();
+            instance.m_defaultSkyMaterial = nullptr;
+        }
 	}
 
 	GlobalRendererSettings GlobalRenderer::GetSettings ()

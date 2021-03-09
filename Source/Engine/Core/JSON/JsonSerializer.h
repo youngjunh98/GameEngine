@@ -18,8 +18,8 @@ namespace GameEngine
 		class ENGINE_CORE_API JsonSerializer final
 		{
 		private:
-			JsonSerializer ();
-			virtual ~JsonSerializer () = 0;
+            JsonSerializer () = delete;
+			~JsonSerializer () = delete;
 
 			static bool IsArray (const Json& json, const std::string& name);
 
@@ -54,104 +54,104 @@ namespace GameEngine
 
 				return value;
 			}
-
-			template<>
-			static void Serialize<Vector2> (Json& json, const std::string& name, const Vector2& value)
-			{
-				json[name] = Json::array ();
-				json[name].push_back (value.m_x);
-				json[name].push_back (value.m_y);
-			}
-
-			template<>
-			static Vector2 Deserialize<Vector2> (const Json& json, const std::string& name)
-			{
-				Vector2 value;
-
-				if (IsArray (json, name))
-				{
-					value.m_x = json[name][0].get<float> ();
-					value.m_y = json[name][1].get<float> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<Vector3> (Json& json, const std::string& name, const Vector3& value)
-			{
-				json[name] = Json::array ();
-				json[name].push_back (value.m_x);
-				json[name].push_back (value.m_y);
-				json[name].push_back (value.m_z);
-			}
-
-			template<>
-			static Vector3 Deserialize<Vector3> (const Json& json, const std::string& name)
-			{
-				Vector3 value;
-
-				if (IsArray (json, name))
-				{
-					value.m_x = json[name][0].get<float> ();
-					value.m_y = json[name][1].get<float> ();
-					value.m_z = json[name][2].get<float> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<Vector4> (Json& json, const std::string& name, const Vector4& value)
-			{
-				json[name] = Json::array ();
-				json[name].push_back (value.m_x);
-				json[name].push_back (value.m_y);
-				json[name].push_back (value.m_z);
-				json[name].push_back (value.m_w);
-			}
-
-			template<>
-			static Vector4 Deserialize<Vector4> (const Json& json, const std::string& name)
-			{
-				Vector4 value;
-
-				if (IsArray (json, name))
-				{
-					value.m_x = json[name][0].get<float> ();
-					value.m_y = json[name][1].get<float> ();
-					value.m_z = json[name][2].get<float> ();
-					value.m_w = json[name][3].get<float> ();
-				}
-
-				return value;
-			}
-
-			template<>
-			static void Serialize<Quaternion> (Json& json, const std::string& name, const Quaternion& value)
-			{
-				json[name] = Json::array ();
-				json[name].push_back (value.m_x);
-				json[name].push_back (value.m_y);
-				json[name].push_back (value.m_z);
-				json[name].push_back (value.m_w);
-			}
-
-			template<>
-			static Quaternion Deserialize<Quaternion> (const Json& json, const std::string& name)
-			{
-				Quaternion value;
-
-				if (IsArray (json, name))
-				{
-					value.m_x = json[name][0].get<float> ();
-					value.m_y = json[name][1].get<float> ();
-					value.m_z = json[name][2].get<float> ();
-					value.m_w = json[name][3].get<float> ();
-				}
-
-				return value;
-			}
 		};
+
+		template<>
+        inline void JsonSerializer::Serialize<Vector2> (Json& json, const std::string& name, const Vector2& value)
+        {
+            json[name] = Json::array ();
+            json[name].push_back (value.m_x);
+            json[name].push_back (value.m_y);
+        }
+
+        template<>
+        inline Vector2 JsonSerializer::Deserialize<Vector2> (const Json& json, const std::string& name)
+        {
+            Vector2 value;
+
+            if (IsArray (json, name))
+            {
+                value.m_x = json[name][0].get<float> ();
+                value.m_y = json[name][1].get<float> ();
+            }
+
+            return value;
+        }
+
+        template<>
+        inline void JsonSerializer::Serialize<Vector3> (Json& json, const std::string& name, const Vector3& value)
+        {
+            json[name] = Json::array ();
+            json[name].push_back (value.m_x);
+            json[name].push_back (value.m_y);
+            json[name].push_back (value.m_z);
+        }
+
+        template<>
+        inline Vector3 JsonSerializer::Deserialize<Vector3> (const Json& json, const std::string& name)
+        {
+            Vector3 value;
+
+            if (IsArray (json, name))
+            {
+                value.m_x = json[name][0].get<float> ();
+                value.m_y = json[name][1].get<float> ();
+                value.m_z = json[name][2].get<float> ();
+            }
+
+            return value;
+        }
+
+        template<>
+        inline void JsonSerializer::Serialize<Vector4> (Json& json, const std::string& name, const Vector4& value)
+        {
+            json[name] = Json::array ();
+            json[name].push_back (value.m_x);
+            json[name].push_back (value.m_y);
+            json[name].push_back (value.m_z);
+            json[name].push_back (value.m_w);
+        }
+
+        template<>
+        inline Vector4 JsonSerializer::Deserialize<Vector4> (const Json& json, const std::string& name)
+        {
+            Vector4 value;
+
+            if (IsArray (json, name))
+            {
+                value.m_x = json[name][0].get<float> ();
+                value.m_y = json[name][1].get<float> ();
+                value.m_z = json[name][2].get<float> ();
+                value.m_w = json[name][3].get<float> ();
+            }
+
+            return value;
+        }
+
+        template<>
+        inline void JsonSerializer::Serialize<Quaternion> (Json& json, const std::string& name, const Quaternion& value)
+        {
+            json[name] = Json::array ();
+            json[name].push_back (value.m_x);
+            json[name].push_back (value.m_y);
+            json[name].push_back (value.m_z);
+            json[name].push_back (value.m_w);
+        }
+
+        template<>
+        inline Quaternion JsonSerializer::Deserialize<Quaternion> (const Json& json, const std::string& name)
+        {
+            Quaternion value;
+
+            if (IsArray (json, name))
+            {
+                value.m_x = json[name][0].get<float> ();
+                value.m_y = json[name][1].get<float> ();
+                value.m_z = json[name][2].get<float> ();
+                value.m_w = json[name][3].get<float> ();
+            }
+
+            return value;
+        }
 	}
 }
