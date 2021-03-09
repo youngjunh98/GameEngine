@@ -60,6 +60,7 @@ width="30%" height="30%" title="PBR Metal" alt="PBR Metal"></img>
 ## Roadmap
 
 ### Working
+- Mac, Metal Support
 - 프로젝트 생성 및 관리
 - Thread Job
 - Particle effect
